@@ -1,0 +1,5 @@
+"comparison","n_a","n_b","n_intersect","jaccard","shared_taxa"
+"PCoA1, no date: top3axes vs PCoA1_date-screen",46,199,4,0.016597510373444,"ASV_534;ASV_210;ASV_545;ASV_660"
+"PCoA1, plus date: top3axes vs PCoA1_date-screen",0,21,0,0,""
+"PCoA3, no lure/no date: top3axes vs PCoA3_lure-screen",0,0,0,NA,""
+"PCoA3, no lure/plus date: top3axes vs PCoA3_lure-screen",0,0,0,NA,""

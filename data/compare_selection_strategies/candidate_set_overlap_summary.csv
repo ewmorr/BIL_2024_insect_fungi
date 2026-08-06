@@ -1,0 +1,5 @@
+"comparison","n_a","n_b","n_intersect","jaccard"
+"top3axes_CoCA vs PCoA1_date",200,200,4,0.0101010101010101
+"top3axes_CoCA vs PCoA3_lure",200,200,4,0.0101010101010101
+"PCoA1_date vs PCoA3_lure",200,200,76,0.234567901234568
+"all three sets",NA,NA,1,0.00193423597678917
