@@ -37,6 +37,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(gridExtra)
+library(gtable)
 source("library/library.R")
 
 out_fig_dir <- "figures/presentation_items"
@@ -115,7 +116,7 @@ panel_a <- ggplot(insect_site_mean, aes(x = Site, y = mean_prop, fill = Family))
   scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +
   labs(y = "Mean relative abundance", tag = "a") +
   panel_theme +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+  theme(axis.text.x = element_blank())   # site labels shown once, on panel c below
 
 ## ---- Panel b: fungal Class-level breakdown by site --------------------------
 
@@ -174,7 +175,7 @@ panel_b <- ggplot(fungal_site_mean, aes(x = Site, y = mean_prop, fill = Class)) 
   scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +
   labs(y = "Mean relative abundance", tag = "b") +
   panel_theme +
-  theme(axis.text.x = element_text(angle = 40, hjust = 1))
+  theme(axis.text.x = element_blank())   # site labels shown once, on panel d below
 
 ## ---- Panel c: insect Genus-level breakdown (Curculionidae + Latridiidae only) ----
 
@@ -305,11 +306,21 @@ panel_d <- ggplot(trait_site_mean, aes(x = Site, y = mean_prop, fill = trait_gro
         legend.key.size = unit(0.35, "cm"))
 
 ## ---- Combine + save ----------------------------------------------------------
-# Explicit layout_matrix (rather than relying on grid.arrange's fill order)
-# to guarantee a/b on top and c/d on bottom.
+# grid.arrange's null-unit columns size each panel's plot area independently,
+# so a's/c's and b's/d's panel widths drift apart whenever their legends
+# differ in text width (e.g. panel d's long "lifestyle : growth form"
+# labels vs. panel b's short Class names) -- the axis-b (Site) labels then
+# don't line up between rows. gtable::rbind/cbind fixes this directly: stack
+# each column with rbind (size="max" forces both panels in a column to the
+# wider of the two), then cbind the two columns (size="max" matches row
+# heights left vs. right).
 
-combined <- gridExtra::arrangeGrob(panel_a, panel_b, panel_c, panel_d,
-                                    layout_matrix = rbind(c(1, 2), c(3, 4)))
+ga <- ggplotGrob(panel_a); gb <- ggplotGrob(panel_b)
+gc <- ggplotGrob(panel_c); gd <- ggplotGrob(panel_d)
+
+left_col <- rbind(ga, gc, size = "max")    # rbind/cbind dispatch to gtable's S3 methods once library(gtable) is loaded
+right_col <- rbind(gb, gd, size = "max")
+combined <- cbind(left_col, right_col, size = "max")
 
 ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.png"), combined, width = 12, height = 10, dpi = 300, bg = "white")
 ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.pdf"), combined, width = 12, height = 10)
