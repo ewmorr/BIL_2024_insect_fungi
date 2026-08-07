@@ -1,6 +1,6 @@
 ##############################################################################
-# Presentation figure 1: taxonomic breakdown of the insect and fungal
-# catch/communities, averaged across the four sites.
+# Presentation figure 1: taxonomic (and trait-based) breakdown of the insect
+# and fungal catch/communities, averaged across the four sites.
 #
 # Panel a: insect trap catch, Family level (Coleoptera makes up ~98% of
 #          individuals caught -- see insect_exploratory/insect_ords.R -- so
@@ -11,15 +11,26 @@
 #          (97.8% of reads; the remainder is co-amplified non-fungal
 #          eukaryotic DNA -- plant, arthropod, etc. -- dropped here and
 #          proportions renormalized over fungal reads only).
+# Panel c: insect trap catch, Genus level, restricted to Curculionidae +
+#          Latridiidae -- the two focal families used throughout the rest of
+#          this project's community analyses (69% of all individuals
+#          caught). Proportions are renormalized within this two-family
+#          subset (i.e. "genus composition of the focal insect community"),
+#          not as a fraction of the total catch shown in panel a.
+# Panel d: fungal ITS2 community (same Kingdom==Fungi set as panel b),
+#          summarized by ecological trait instead of taxonomy -- ASV genus
+#          is joined to the FungalTraits database (Polme et al. 2020) by
+#          genus name, and taxa are grouped by primary_lifestyle x growth
+#          form.
 #
-# For both panels: relative abundance is computed per sample, then averaged
-# across all samples collected at each site (unweighted mean of proportions,
-# not a pooled-count proportion), so no single high-read/high-catch sample
-# dominates a site's bar.
+# For all four panels: relative abundance is computed per sample, then
+# averaged across all samples collected at each site (unweighted mean of
+# proportions, not a pooled-count proportion), so no single high-read/
+# high-catch sample dominates a site's bar.
 #
-# Standalone script -- edit n_top_insect_groups / n_top_fungal_groups below
-# to change how many named categories are shown before folding the rest into
-# "Other".
+# Standalone script -- edit n_top_insect_groups / n_top_fungal_groups /
+# n_top_insect_genera / n_top_trait_groups below to change how many named
+# categories are shown per panel before folding the rest into "Other".
 ##############################################################################
 
 library(dplyr)
@@ -165,11 +176,142 @@ panel_b <- ggplot(fungal_site_mean, aes(x = Site, y = mean_prop, fill = Class)) 
   panel_theme +
   theme(axis.text.x = element_text(angle = 40, hjust = 1))
 
+## ---- Panel c: insect Genus-level breakdown (Curculionidae + Latridiidae only) ----
+
+n_top_insect_genera <- 10   # + "Other" = 11 categories
+
+insect_focal_long <- sp_tab %>%
+  filter(Family %in% c("Curculionidae", "Latridiidae")) %>%
+  mutate(Genus = ifelse(is.na(Genus) | Genus == "", "Unclassified", Genus)) %>%
+  pivot_longer(cols = all_of(sample_cols), names_to = "col_names", values_to = "count") %>%
+  group_by(col_names, Genus) %>%
+  summarize(count = sum(count), .groups = "drop")
+
+genus_rank <- insect_focal_long %>%
+  group_by(Genus) %>%
+  summarize(total = sum(count), .groups = "drop") %>%
+  arrange(desc(total))
+
+top_genera <- head(genus_rank$Genus, n_top_insect_genera)
+
+# proportions renormalized within the Curculionidae+Latridiidae subset (the
+# sample total below is computed AFTER filtering to just these two families)
+insect_focal_prop <- insect_focal_long %>%
+  mutate(Genus = ifelse(Genus %in% top_genera, Genus, "Other")) %>%
+  group_by(col_names, Genus) %>%
+  summarize(count = sum(count), .groups = "drop") %>%
+  group_by(col_names) %>%
+  mutate(sample_total = sum(count)) %>%
+  ungroup() %>%
+  filter(sample_total > 0) %>%   # drop any sample with zero Curculionidae/Latridiidae catch
+  mutate(prop = count / sample_total) %>%
+  left_join(insect_meta %>% select(col_names, Site), by = "col_names")
+
+insect_focal_site_mean <- insect_focal_prop %>%
+  group_by(Site, Genus) %>%
+  summarize(mean_prop = mean(prop), .groups = "drop") %>%
+  mutate(Genus = factor(Genus, levels = c(top_genera, "Other")))
+
+cat("\nInsect genus panel (Curculionidae+Latridiidae only): levels shown (rank order):\n")
+print(levels(insect_focal_site_mean$Genus))
+
+panel_c <- ggplot(insect_focal_site_mean, aes(x = Site, y = mean_prop, fill = Genus)) +
+  geom_col(color = "white", linewidth = 0.2) +
+  scale_fill_manual(values = stack_palette(n_top_insect_genera), name = "Genus") +
+  scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +
+  labs(y = "Mean relative abundance", tag = "c") +
+  panel_theme +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1),
+        legend.text = element_text(face = "italic", size = 9))
+
+## ---- Panel d: fungal community by primary_lifestyle x growth form (FungalTraits) ----
+# Joins ASV genus-level taxonomy to the FungalTraits database (Polme et al.
+# 2020, github.com/TartuNaturalHistoryMuseum/FungalTraits) by genus name.
+# FungalTraits lives outside this repo -- update fungal_traits_path below if
+# it moves.
+
+fungal_traits_path <- "/Users/ericmorrison/repo/FungalTraits_Polme/Polme_FungalTraits_1.2_ver_16Dec_2020.csv"
+n_top_trait_groups <- 10   # + "Other" = 11 categories
+
+fungal_traits <- read.csv(fungal_traits_path, fileEncoding = "latin1") %>%
+  distinct(GENUS, .keep_all = TRUE) %>%   # a handful of genera appear twice; keep first
+  transmute(
+    Genus = GENUS,
+    primary_lifestyle = ifelse(is.na(primary_lifestyle) | primary_lifestyle == "", "unspecified", primary_lifestyle),
+    growth_form = ifelse(is.na(Growth_form_template) | Growth_form_template == "", "unspecified", Growth_form_template)
+  )
+
+genus_map <- taxonomy %>%
+  filter(Kingdom == "k__Fungi") %>%
+  transmute(taxon, Genus = sub("^g__", "", Genus)) %>%
+  mutate(Genus = ifelse(is.na(Genus) | Genus == "", NA, Genus)) %>%
+  left_join(fungal_traits, by = "Genus") %>%
+  mutate(
+    # is.na(primary_lifestyle) after the join means the genus had no match in
+    # FungalTraits (as opposed to matching a genus whose lifestyle field was
+    # blank, which was already recoded to "unspecified" above)
+    trait_group = case_when(
+      is.na(Genus) ~ "Unclassified genus",
+      is.na(primary_lifestyle) ~ "No FungalTraits match",
+      TRUE ~ paste0(gsub("_", " ", primary_lifestyle), " : ", gsub("_", " ", growth_form))
+    )
+  )
+
+genus_map_used <- genus_map %>% filter(taxon %in% colnames(fungal_tab_f))
+n_matched <- sum(!genus_map_used$trait_group %in% c("Unclassified genus", "No FungalTraits match"))
+cat("\n", n_matched, "of", nrow(genus_map_used), "fungal ASVs (in this table) matched to a FungalTraits genus entry.\n")
+
+trait_long <- as.data.frame(fungal_tab_f) %>%
+  tibble::rownames_to_column("SequenceID") %>%
+  pivot_longer(cols = -SequenceID, names_to = "taxon", values_to = "count") %>%
+  filter(count > 0) %>%
+  left_join(genus_map %>% select(taxon, trait_group), by = "taxon") %>%
+  group_by(SequenceID, trait_group) %>%
+  summarize(count = sum(count), .groups = "drop")
+
+trait_rank <- trait_long %>%
+  group_by(trait_group) %>%
+  summarize(total = sum(count), .groups = "drop") %>%
+  arrange(desc(total))
+
+top_traits <- head(trait_rank$trait_group, n_top_trait_groups)
+
+trait_prop <- trait_long %>%
+  mutate(trait_group = ifelse(trait_group %in% top_traits, trait_group, "Other")) %>%
+  group_by(SequenceID, trait_group) %>%
+  summarize(count = sum(count), .groups = "drop") %>%
+  group_by(SequenceID) %>%
+  mutate(sample_total = sum(count),
+         prop = ifelse(sample_total > 0, count / sample_total, 0)) %>%
+  ungroup() %>%
+  left_join(fungal_meta, by = "SequenceID")
+
+trait_site_mean <- trait_prop %>%
+  group_by(Site, trait_group) %>%
+  summarize(mean_prop = mean(prop), .groups = "drop") %>%
+  mutate(trait_group = factor(trait_group, levels = c(top_traits, "Other")))
+
+cat("\nFungal trait panel: primary_lifestyle : growth_form levels shown (rank order):\n")
+print(levels(trait_site_mean$trait_group))
+
+panel_d <- ggplot(trait_site_mean, aes(x = Site, y = mean_prop, fill = trait_group)) +
+  geom_col(color = "white", linewidth = 0.2) +
+  scale_fill_manual(values = stack_palette(n_top_trait_groups), name = "Lifestyle : growth form") +
+  scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +
+  labs(y = "Mean relative abundance", tag = "d") +
+  panel_theme +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1),
+        legend.text = element_text(size = 7.5),
+        legend.key.size = unit(0.35, "cm"))
+
 ## ---- Combine + save ----------------------------------------------------------
+# Explicit layout_matrix (rather than relying on grid.arrange's fill order)
+# to guarantee a/b on top and c/d on bottom.
 
-combined <- gridExtra::arrangeGrob(panel_a, panel_b, ncol = 2)
+combined <- gridExtra::arrangeGrob(panel_a, panel_b, panel_c, panel_d,
+                                    layout_matrix = rbind(c(1, 2), c(3, 4)))
 
-ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.png"), combined, width = 11, height = 5, dpi = 300, bg = "white")
-ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.pdf"), combined, width = 11, height = 5)
+ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.png"), combined, width = 12, height = 10, dpi = 300, bg = "white")
+ggsave(file.path(out_fig_dir, "fig1_taxonomic_breakdown.pdf"), combined, width = 12, height = 10)
 
 cat("\nDone. Wrote", file.path(out_fig_dir, "fig1_taxonomic_breakdown.png"), "and .pdf\n")
