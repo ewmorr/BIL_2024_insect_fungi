@@ -75,6 +75,13 @@ stack_palette <- function(n_named) {
 sp_tab <- read.csv("data/2024_insect_data/insect_species_tab.csv")
 insect_meta <- read.csv("data/metadata/insect_community_metadata.csv")
 
+# Display name + panel order for Site -- set once here so it's inherited by
+# every panel (a-d), including fungal_meta below (derived from insect_meta).
+site_levels <- c("Durham", "Pease Airport", "Manchester Cedar Swamp", "Manchester Airport")
+insect_meta <- insect_meta %>%
+  mutate(Site = ifelse(Site == "Pease", "Pease Airport", Site),
+         Site = factor(Site, levels = site_levels))
+
 sample_cols <- sp_tab %>% select(where(is.numeric)) %>% colnames()
 
 insect_long <- sp_tab %>%
