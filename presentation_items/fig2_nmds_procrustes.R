@@ -216,8 +216,15 @@ panel_c <- ggplot() +
   nmds_theme
 
 ## ---- 6. Combine + save --------------------------------------------------------
+# grid.arrange gives the three panels equal overall column width, but each
+# one's internal split between subtitle/legend area and the actual plotted
+# NMDS panel differs (panel c's subtitle is one line shorter, and its
+# Community+Site legend is a different height than a/b's Lure+Date legend),
+# so the bordered panel boxes don't line up top-to-bottom. gtable::cbind
+# (size="max") fixes this the same way fig1 aligns panel widths: it matches
+# row heights (title/subtitle/panel/axis) across the three grobs directly.
 
-row_grob <- gridExtra::arrangeGrob(panel_a, panel_b, panel_c, ncol = 3)
+row_grob <- cbind(ggplotGrob(panel_a), ggplotGrob(panel_b), ggplotGrob(panel_c), size = "max")
 
 ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.png"), row_grob, width = 14, height = 5, dpi = 300, bg = "white")
 ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.pdf"), row_grob, width = 14, height = 5)
