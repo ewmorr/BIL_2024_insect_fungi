@@ -56,6 +56,8 @@ panel_theme <- theme_bw() +
     legend.title = element_text(size = 11, face = "bold"),
     legend.text = element_text(size = 9),
     legend.key.size = unit(0.4, "cm"),
+    legend.justification = "left",   # pin legend to the left of its column so
+    legend.margin = margin(l = 0),   # swatches line up between stacked panels (b/d) whose legend text widths differ
     plot.tag = element_text(size = 14, face = "bold"),
     panel.grid = element_blank()
   )
