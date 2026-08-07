@@ -182,7 +182,8 @@ panel_b <- ggplot(fungal_site_mean, aes(x = Site, y = mean_prop, fill = Class)) 
   scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +
   labs(y = "Mean relative abundance", tag = "b") +
   panel_theme +
-  theme(axis.text.x = element_blank())   # site labels shown once, on panel d below
+  theme(axis.text.x = element_blank(),   # site labels shown once, on panel d below
+        axis.text.y = element_blank(), axis.title.y = element_blank())   # y-axis shown once, on panel a
 
 ## ---- Panel c: insect Genus-level breakdown (Curculionidae + Latridiidae only) ----
 
@@ -309,6 +310,7 @@ panel_d <- ggplot(trait_site_mean, aes(x = Site, y = mean_prop, fill = trait_gro
   labs(y = "Mean relative abundance", tag = "d") +
   panel_theme +
   theme(axis.text.x = element_text(angle = 40, hjust = 1),
+        axis.text.y = element_blank(), axis.title.y = element_blank(),   # y-axis shown once, on panel c
         legend.text = element_text(size = 7.5),
         legend.key.size = unit(0.35, "cm"))
 
