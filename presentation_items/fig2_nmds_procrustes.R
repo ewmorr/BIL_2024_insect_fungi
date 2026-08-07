@@ -148,13 +148,9 @@ nmds_theme <- theme_bw() +
   theme(
     axis.text = element_text(size = 9, color = "black"),
     axis.title = element_text(size = 11),
-    legend.position = "bottom",
-    legend.box = "vertical",   # shape legend and colorbar stack rather than fight for width
     legend.title = element_text(size = 10, face = "bold"),
     legend.text = element_text(size = 8.5),
     legend.key.size = unit(0.4, "cm"),
-    legend.margin = margin(t = 0, b = 0),
-    legend.spacing.y = unit(0.05, "cm"),
     plot.tag = element_text(size = 14, face = "bold"),
     plot.subtitle = element_text(size = 8, family = "mono", color = "grey20", lineheight = 1.15,
                                   margin = margin(t = 2, b = 4)),
@@ -184,8 +180,7 @@ make_nmds_panel <- function(nmds_obj, meta_df, stats_label, title, tag, show_leg
     date_fill_scale +
     lure_shape_scale +
     guides(shape = guide_legend(override.aes = list(fill = "grey40"), order = 1),
-           fill = guide_colorbar(order = 2, title.position = "top",
-                                  barwidth = unit(4, "cm"), barheight = unit(0.35, "cm"))) +
+           fill = guide_colorbar(order = 2)) +
     labs(title = title, subtitle = label_text, tag = tag) +
     nmds_theme
 
@@ -194,9 +189,7 @@ make_nmds_panel <- function(nmds_obj, meta_df, stats_label, title, tag, show_leg
 }
 
 # Lure + Date is the same legend for both a and b (same meta, same scales) --
-# shown once, under panel b, rather than duplicated. The row gtable::cbind
-# builds below still lines up because ggplotGrob reserves the legend row
-# either way; panel a's is just empty.
+# shown once, to the right of panel b, rather than duplicated on both.
 panel_a <- make_nmds_panel(insect_nmds, meta, insect_stats_label, "Insect community", "a", show_legend = FALSE)
 panel_b <- make_nmds_panel(fungal_nmds, meta, fungal_stats_label, "Fungal community", "b")
 
@@ -223,7 +216,7 @@ panel_c <- ggplot() +
   scale_fill_manual(values = c(Insect = "#2166ac", Fungi = "#b2182b"), name = "Community") +
   scale_shape_manual(values = c(21, 22, 23, 24), name = "Site") +
   guides(fill = guide_legend(override.aes = list(shape = 21), order = 1),
-         shape = guide_legend(order = 2, nrow = 2)) +   # 4 site names are too wide for one row in this column
+         shape = guide_legend(order = 2)) +
   labs(x = "Dimension 1", y = "Dimension 2", title = "Procrustes: insect vs. fungal",
        subtitle = proc_label, tag = "c") +
   nmds_theme
@@ -239,7 +232,7 @@ panel_c <- ggplot() +
 
 row_grob <- cbind(ggplotGrob(panel_a), ggplotGrob(panel_b), ggplotGrob(panel_c), size = "max")
 
-ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.png"), row_grob, width = 13, height = 7, dpi = 300, bg = "white")
-ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.pdf"), row_grob, width = 13, height = 7)
+ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.png"), row_grob, width = 15, height = 5.5, dpi = 300, bg = "white")
+ggsave(file.path(out_fig_dir, "fig2_nmds_procrustes.pdf"), row_grob, width = 15, height = 5.5)
 
 cat("\nDone. Wrote", file.path(out_fig_dir, "fig2_nmds_procrustes.png"), "and .pdf\n")
