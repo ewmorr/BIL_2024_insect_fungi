@@ -1,3 +1,9 @@
+### ###############################################################
+### Initial Co-correspondence analysis (CoCA) plus per-taxon lms
+### against insect_PCoA1 to identify fungal taxa that are 
+### correlated with insect community variance
+### ###############################################################
+
 Family/genus composition of the 96 significant CoCA hits:
 - Valsaceae is the top family (10 hits), driven mostly by Cytospora (7 ASVs) — a canker-causing fungal genus (Diaporthales) commonly associated with bark beetle/weevil vectoring in trees. Given the insect data here is Curculionidae (weevils, including Scolytinae bark beetles) and Latridiidae, this is a biologically very plausible hit, not just statistical noise.
 - Spirographa (Spirographaceae, 5 ASVs) — all annotated as S. fusisporella, likely the same organism split across ASVs.
@@ -9,7 +15,10 @@ Internal consistency check (a good sign the signal is real rather than noise): a
 
 Overall 75 of 96 significant taxa share one sign and 21 the other — worth checking later whether that split lines up with a specific direction on the insect ordination (e.g., something distinguishing certain traps/lures) rather than a generic gradient.
 
-#
+### ###############################################################
+### Identify what is driving insect_PCoA1 
+### ###############################################################
+
 PCoA1 is overwhelmingly a seasonal/date gradient (r = 0.78, F = 168, p < 2e-16 — by far the largest term), with weaker but real Lure (F=22) and Site (F=3.9) effects. Let me find which insect taxa actually drive that axis.
 
 
@@ -32,7 +41,10 @@ This ties directly back to the CoCA fungal hits: 75 of 96 significant fungal tax
 
 One caution: because PCoA1 is so strongly collinear with date, and date isn't in the per-taxon test's fixed-effect blocking (only site and lure are), what looks like an "insect community" signal could partly just be a shared seasonal trend in both insect and fungal abundance rather than a direct biotic interaction. Want me to add date as a covariate in the per-taxon model to see how many hits survive that stricter test?
 
-# after adding date
+### ###############################################################
+###  after adding date as a covariate in the per-taxon models
+### ###############################################################
+
 Summary: 0 of 200 significant at q < 0.10 (down from 96/200), only 4 at q < 0.20
 
 The four closest (q = 0.15, all still short of significance):
@@ -53,7 +65,10 @@ What this means: the earlier "48% hit rate" was almost entirely an artifact of i
 
 It's worth noting Cytospora prunicola (ASV_1905) and the Valsaceae group still sit at the top even after this much stricter test (q=0.15, close-ish to conventional significance) — not proof of anything, but a mild "still worth a closer look with more data" signal rather than one that should be dropped outright. Everything else in the earlier list (Spirographa, Tympanis, the broader Cytospora set) does not survive.
 
-############
+### ###############################################################
+### Explain Euclidean distance usage (it's actually Hellinger)
+### ###############################################################
+
  Why did you use euclidean distance in the insect community PCoA instead of Bray-Curtis distance?
 
 That's a comment already baked into the CoCA script (insect_dist <- vegdist(insect_hel, method = "euclidean")  # Hellinger + Euclidean ~ chord distance, compare_insect_fungi/insect_fungal_coca_analysis.general_workflow.r:151) — it's not Euclidean on raw counts, it's Euclidean on Hellinger-transformed data, which is a specific, deliberate combination:
@@ -67,7 +82,10 @@ This is a different choice than insect_ords.R, which uses Bray-Curtis directly w
 
 If you'd rather it match the Bray-Curtis convention used elsewhere in the project (e.g., substituting a PCoA on Bray-Curtis with a Cailliez correction, or non-metric MDS scores instead of classical PCoA), I can swap that in — but the current choice wasn't arbitrary, it's the standard fix for this exact use case.
 
-############
+### ###############################################################
+### Adding a per-taxon test against PCoA2 not just PCoA1
+### ###############################################################
+
 Adding insect_PCoA2 as a second tested axis, and adding a direct per-taxon test of association with collection date (independent of the insect-community axes), for both insect and fungal taxa.
 
 While generalizing the per-taxon permutation test to cover PCoA2, fixed a subtle issue in the original permutation scheme: previously insect_PCoA1 and insect_PCoA2 were shuffled together (same permutation index) even when only testing PCoA1's coefficient. Each axis is now permuted independently while the other stays fixed at its observed value -- the correct way to isolate a single term's marginal effect. This is why the PCoA1-no-date hit count changed from the earlier 96/200 to 81/200 here (stricter, more correct null, not a regression).
@@ -87,7 +105,7 @@ Insect taxa vs. date (direct test, all 52 taxa): 20/52 significant at q<0.10, co
 
 Fungal taxa vs. date: 200/200 tested significant at q<0.10 -- caveat: those 200 were pre-screened as the taxa with the largest raw correlation with date out of 6,887, so near-universal significance among them is expected by construction, not a surprise finding. It does confirm those specific ASVs have a real (not chance) seasonal signal under the trap-blocked permutation null, with very strong t-statistics (~11-14) -- but "200/200" shouldn't be read as "the whole fungal community is seasonal."
 
-# We should add a test for how much of the fungal community is seasonal.
+### [for later] We should add a test for how much of the fungal community is seasonal, not just the pre-selected taxa.
 
 Fungal taxa vs. date, with taxonomy -- a very clean pattern. The top 20 hits split almost entirely into two genera pulling in opposite directions:
 - Mycosphaerellaceae / Ramularia -- increasing over the season (later): 11 of top 20
@@ -99,8 +117,11 @@ Overall takeaway: no confirmed direct fungal-taxon / insect-community-compositio
 
 Output files (data/2024_insect_data/): fungal_insect_association_results.PCoA1_only.csv, fungal_insect_association_results.PCoA1_plus_date.csv, fungal_insect_association_results.PCoA2_only.csv, fungal_insect_association_results.PCoA2_plus_date.csv, insect_taxa_date_association.csv, fungal_taxa_date_association.csv, fungal_taxa_date_association.taxonomy.csv.
 
-############
-Lure had a strong effect on the insect community (Lure F=21.9 in insect_PCoA1 ~ site+lure+date), as expected since it's the trap attractant. But there's no biological reason to expect fungi respond to lure independently, and a companion dataset showed minimal fungal~lure effect there too. Quick check: does including lure in the fungal~insect_PCoA1 model partial out real signal?
+### ###############################################################
+### Test of the effect of partialling lure in the CoCA+ analyses
+### ###############################################################
+
+Lure had a strong effect on the insect community (Lure F=21.9 in insect_PCoA1 ~ site+lure+date), as expected since it's the trap attractant. But there's no biological reason to expect fungi respond to lure independently (all lures contain ethanol), and a companion dataset showed minimal fungal~lure effect there too. Quick check: does including lure in the fungal~insect_PCoA1 model partial out real signal?
 
 Reran the PCoA1 permutation test (same 200 CoCA-ranked candidate taxa) with and without lure in the formula, no-date and date-adjusted:
 - PCoA1, with lure, no date: 81/200 significant (q<0.10)
@@ -116,7 +137,10 @@ Conclusion: lure is a genuine, strong driver of the insect community but has no 
 
 This check is now folded into the main script as two extra PCoA1 test variants (no-lure, no-date/date-adjusted) plus a direct fungal~lure parametric check, rather than a one-off side analysis. Output files added: fungal_insect_association_results.PCoA1_only.no_lure.csv, fungal_insect_association_results.PCoA1_plus_date.no_lure.csv, fungal_taxa_lure_direct_check.csv.
 
-############
+### ###############################################################
+### Test of date against whole fungal community
+### ###############################################################
+
 The 200/200 fungal taxa found significant vs. date earlier were pre-selected for strong |correlation with date|, so that number can't be read as "how seasonal is the fungal community" -- it's true by construction. Added a new script, compare_insect_fungi/fungal_community_seasonality.r, to answer that question two unbiased ways.
 
 1) Per-taxon date test on every prevalence-filtered fungal taxon (no pre-selection), same trap-blocked permutation scheme as before (fungal_clr ~ site + lure + date, permuting date within trap): 2248 of 6887 taxa (32.6%) significant at q<0.10. That's a much more modest, and more trustworthy, estimate of the seasonal fraction of the fungal community than "200/200" implied -- roughly a third of taxa carry a detectable seasonal signal, not "basically everything."
@@ -129,7 +153,11 @@ NMDS (stress ~0.17) plotted with date as a color gradient and site as point shap
 
 Output files added: data/2024_insect_data/fungal_taxa_date_association.all_taxa.csv, data/2024_insect_data/fungal_community_permanova.csv, figures/fungal_community_NMDS.date_and_site.pdf.
 
-############
+### ###############################################################
+### We observed a lure effect in the insect NMDS, but it does not
+### appear in the above CoCA+ analyses, which is the lure axis?
+### ###############################################################
+
 Open question from the fungal PERMANOVA above: site:lure explains 10.1% of fungal community variance (p=0.05), but no lure-associated taxa turned up among the CoCA hits, which were only ever tested against insect_PCoA1/PCoA2. Hypothesis: the lure signal in the insect community lives on a lower-variance axis (3rd, 4th, ...) that a 2-axis PCoA screen wouldn't catch.
 
 Built a new script, compare_insect_fungi/insect_pcoa_lure_association.r, to check this directly -- same Hellinger+Euclidean PCoA strategy as the CoCA script, but keeping all (not just the top 2) PCoA axes, then testing each axis's association with lure. Lure is a trap-level constant (exactly one trap per site x lure combination, sampled repeatedly over dates), so the within-trap date-permutation used elsewhere can't test it -- instead permuted lure labels among the 3 traps within each site (matches how lure actually varies in this design: across traps within a site, not across samples within a trap).
@@ -148,7 +176,11 @@ Hypothesis confirmed: PCoA3, never tested in the original CoCA per-taxon screen,
 
 Output: data/2024_insect_data/insect_pcoa_axes.lure_association.csv, figures/insect_pcoa_scree.lure_highlighted.png, figures/insect_pcoa_top_lure_axis.by_lure.png.
 
-############
+### ###############################################################
+### This section describes the final CoCA+ analysis which includes
+### 3 insect axes in the taxon selection and modeling steps
+### ###############################################################
+
 Extended the CoCA workflow to test insect_PCoA3 as a predictor of fungal abundance, following up on the PCoA3/lure finding above. Also bumped the CoCA algorithm itself (Step 3, the coca() call that ranks candidate taxa by loading strength) from n_axes_use=2 to 3, so the top-200 candidate list is now selected using CoCA axes 1-3 rather than 1-2.
 
 insect_PCoA3 was added as a third covariate alongside PCoA1/PCoA2 in every per-taxon model (all three are mutually controlled for, same logic as the original PCoA1/PCoA2 design: the PCoA axes are orthogonal by construction, so this isn't correcting collinearity between axes, it's making each axis's permutation test specific to "does this taxon track axis k given what's already known about the other axes" rather than a less precise univariate test). Ran the same with/without-date x with/without-lure spec matrix already used for PCoA1 -- the without-lure comparison matters more for PCoA3 than it did for PCoA1, since PCoA3 is itself ~81% explained by lure, so the with-lure models are only testing the ~19% of PCoA3 that isn't lure.
@@ -159,7 +191,10 @@ So despite insect_PCoA3 being the single strongest lure-associated axis in the w
 
 Output files added: fungal_insect_association_results.PCoA3_only.csv, fungal_insect_association_results.PCoA3_plus_date.csv, fungal_insect_association_results.PCoA3_only.no_lure.csv, fungal_insect_association_results.PCoA3_plus_date.no_lure.csv, figures/fungal_insect_volcano.PCoA3.with_lure.png, figures/fungal_insect_volcano.PCoA3.no_lure.png.
 
-############
+### #################################################################################
+### Testing the effect of selecting fungal taxa by direct comparison to date/lure
+### #################################################################################
+
 The 3-axis CoCA loading-strength screen (results moved to data/compare_insects_fungi_top3axes/) selects candidate fungal taxa using CoCA axes 1-3 jointly. Set up two alternative single-axis candidate-selection strategies to compare against it: PCoA1 (the date-associated axis) and PCoA3 (the lure-associated axis), each isolating one specific driver instead of the joint CoCA structure.
 
 cocorresp::coca() requires non-negative "community-style" data for both blocks, so the signed insect_PCoA1/PCoA3 axis scores can't be plugged in directly as a single-column CoCA predictor. Candidate selection instead reuses/extends the unbiased, all-taxa per-taxon screens already used elsewhere in this project: fungal_taxa_date_association.all_taxa.csv (already run, fungal_community_seasonality.r) for the PCoA1 strategy, and a new parallel script, fungal_community_lure_association.r, for PCoA3 -- same design (F-test of the lure term, site+date vs. site+lure+date, trap-within-site permutation, same scheme insect_pcoa_lure_association.r used to screen insect PCoA axes for lure), run on all 6887 prevalence-filtered fungal taxa with no pre-selection. Result: 0 of 6887 fungal taxa individually significant for lure (q<0.10) -- consistent with the earlier finding that fungal PERMANOVA detects a real but small, diffuse lure effect (10.1%, p=0.05) not concentrated in specific taxa. The ranking is still usable as a candidate screen even with no individually-significant taxa, same as how the original CoCA loading-strength ranking never required its top-200 to be individually significant either.
@@ -176,7 +211,9 @@ Overlap among each strategy's own SIGNIFICANT hits (not just candidate membershi
 
 Output files added: data/2024_fungi/fungal_taxa_lure_association.all_taxa.csv; data/compare_insects_fungi_PCoA1_date/ (fungal_insect_association_results.PCoA1_*.csv, lure_partialling_check.summary.csv, fungal_taxa_lure_direct_check.csv); data/compare_insects_fungi_PCoA3_lure/ (fungal_insect_association_results.PCoA3_*.csv, lure_partialling_check.summary.csv, fungal_taxa_lure_direct_check.csv); data/compare_selection_strategies/ (candidate_taxa_membership.csv, candidate_set_overlap_summary.csv, significant_hits_overlap.csv); figures/compare_insects_fungi_PCoA1_date/fungal_insect_volcano.PCoA1.png; figures/compare_insects_fungi_PCoA3_lure/fungal_insect_volcano.PCoA3.{with,no}_lure.png; figures/compare_selection_strategies/candidate_overlap_regions.png.
 
-############
+### #################################################################################
+### Procrustes (whole community)
+
 All the analysis above (CoCA, per-taxon date/lure tests) asks a taxon-level question. Added compare_insect_fungi/insect_fungal_procrustes.r to ask the whole-community version directly with Procrustes analysis: do samples that are close together in insect-ordination space also tend to be close together in fungal-ordination space, taken as full communities rather than one taxon at a time?
 
 Same 69-sample matched dataset (Curculionidae + Latridiidae insect trap catch x fungal ITS2 ASVs) used throughout this comparison. Insect NMDS: raw Bray-Curtis, no autotransform (insect_ords.R's setting for this table, stress ~0.14). Fungal NMDS: rarefaction-averaged Bray-Curtis (same depth-5000 x 100-iteration rarefy-and-average approach as fungal_community_seasonality.r, stress ~0.17) -- deliberately built independently of the insect data, so the comparison isn't circular.
