@@ -90,6 +90,16 @@ insect <- insect_full[id_map$col_names, , drop = FALSE]
 rownames(insect) <- id_map$SequenceID
 fungal <- fungal_full[id_map$SequenceID, , drop = FALSE]
 
+# Restrict to ASVs confirmed as Fungi -- ASV_tab.csv includes non-fungal
+# (plant/animal/protist) and taxonomically unidentified ASVs; see
+# ASVs_taxonomy.tsv (Kingdom column).
+fungal_taxonomy <- read.delim("data/2024_fungi/ASVs_taxonomy.tsv", row.names = 1, check.names = FALSE)
+is_fungus <- !is.na(fungal_taxonomy[colnames(fungal), "Kingdom"]) &
+  fungal_taxonomy[colnames(fungal), "Kingdom"] == "k__Fungi"
+cat(sum(is_fungus), "of", ncol(fungal), "ASVs confirmed Kingdom == k__Fungi (dropping",
+    sum(!is_fungus), "non-fungal/unidentified ASVs).\n")
+fungal <- fungal[, is_fungus, drop = FALSE]
+
 meta <- id_map %>%
   transmute(sample_id = SequenceID, site = Site, lure = Lure, trap_id = trapID,
             date = lubridate::mdy(CollectionDate))
@@ -159,7 +169,7 @@ cat("\nTop 15 fungal taxa by CoCA loading strength:\n")
 print(head(fungal_scores[, c("taxon", "coca_strength")], 15))
 
 # Quick biplot for visual inspection (response block = fungal community)
-pdf("figures/coca_biplot.pdf", width = 7, height = 7)
+pdf("figures/compare_insects_fungi_top3axes/coca_biplot.pdf", width = 7, height = 7)
 plot(coca_mod, which = "response", type = "text",
      main = "Predictive CoCA: fungal (response) ~ insect (predictor)")
 dev.off()
@@ -310,7 +320,7 @@ pcoa_results <- lapply(pcoa_test_specs, function(spec) {
   res <- run_pcoa_association_test(test_axis = spec$axis, include_date = spec$include_date, include_lure = spec$include_lure)
   cat(sum(res$q_value < 0.10), "of", nrow(res), "taxa significant at q<0.10\n")
   print(head(res, 15))
-  write.csv(res, file.path("data/2024_insect_data", spec$file), row.names = FALSE)
+  write.csv(res, file.path("data/compare_insects_fungi_top3axes", spec$file), row.names = FALSE)
   res
 })
 names(pcoa_results) <- sapply(pcoa_test_specs, `[[`, "file")
@@ -366,7 +376,7 @@ lure_direct_check <- bind_rows(lapply(candidate_taxa, function(tax) {
 lure_direct_check$q_lure <- p.adjust(lure_direct_check$p_lure, method = "BH")
 cat(sum(lure_direct_check$q_lure < 0.10, na.rm = TRUE), "of", nrow(lure_direct_check),
     "candidate fungal taxa show a nominally significant lure effect (q<0.10, parametric, not permutation-corrected)\n")
-write.csv(lure_direct_check, "data/2024_insect_data/fungal_taxa_lure_direct_check.csv", row.names = FALSE)
+write.csv(lure_direct_check, "data/compare_insects_fungi_top3axes/fungal_taxa_lure_direct_check.csv", row.names = FALSE)
 
 ## ---- 6. Diagnostic plots (date-adjusted models, the stricter test) --------
 
@@ -383,19 +393,19 @@ make_volcano <- function(res, subtitle) {
 
 volcano <- make_volcano(results_with_date, "insect PCoA1, date-adjusted")
 print(volcano)
-ggsave("figures/fungal_insect_volcano.png", volcano, width = 6, height = 5, dpi = 150)
+ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.png", volcano, width = 6, height = 5, dpi = 150)
 
 # PCoA3, with vs without lure -- the direct visual companion to the lure
 # partialling check above: does dropping lure from the model reveal a
 # fungal signal on PCoA3 that was suppressed while lure was included?
 volcano_pcoa3 <- make_volcano(results_pcoa3_with_date, "insect PCoA3, date-adjusted, with lure")
 print(volcano_pcoa3)
-ggsave("figures/fungal_insect_volcano.PCoA3.with_lure.png", volcano_pcoa3, width = 6, height = 5, dpi = 150)
+ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.PCoA3.with_lure.png", volcano_pcoa3, width = 6, height = 5, dpi = 150)
 
 volcano_pcoa3_nolure <- make_volcano(pcoa_results[["fungal_insect_association_results.PCoA3_plus_date.no_lure.csv"]],
                                       "insect PCoA3, date-adjusted, without lure")
 print(volcano_pcoa3_nolure)
-ggsave("figures/fungal_insect_volcano.PCoA3.no_lure.png", volcano_pcoa3_nolure, width = 6, height = 5, dpi = 150)
+ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.PCoA3.no_lure.png", volcano_pcoa3_nolure, width = 6, height = 5, dpi = 150)
 
 ## ---- 7. Direct seasonal (date) association ----------------------------------
 # Complementary to Step 5: rather than asking whether fungal abundance
@@ -464,9 +474,9 @@ fungal_date_results <- fungal_date_results %>% arrange(q_value)
 cat(sum(fungal_date_results$q_value < 0.10), "of", nrow(fungal_date_results),
     "tested fungal taxa significantly associated with date (q<0.10)\n")
 print(head(fungal_date_results, 15))
-write.csv(fungal_date_results, "data/2024_insect_data/fungal_taxa_date_association.csv", row.names = FALSE)
+write.csv(fungal_date_results, "data/compare_insects_fungi_top3axes/fungal_taxa_date_association.csv", row.names = FALSE)
 
-cat("\nDone. Outputs written to data/2024_insect_data/:\n",
+cat("\nDone. Outputs written to data/compare_insects_fungi_top3axes/:\n",
     "  fungal_insect_association_results.PCoA1_only.csv\n",
     "  fungal_insect_association_results.PCoA1_plus_date.csv\n",
     "  fungal_insect_association_results.PCoA2_only.csv\n",
@@ -478,9 +488,11 @@ cat("\nDone. Outputs written to data/2024_insect_data/:\n",
     "  fungal_insect_association_results.PCoA3_only.no_lure.csv\n",
     "  fungal_insect_association_results.PCoA3_plus_date.no_lure.csv\n",
     "  fungal_taxa_lure_direct_check.csv\n",
-    "  insect_taxa_date_association.csv\n",
     "  fungal_taxa_date_association.csv\n",
-    "and figures/:\n",
+    "and data/2024_insect_data/:\n",
+    "  insect_taxa_date_association.csv\n",
+    "and figures/compare_insects_fungi_top3axes/:\n",
+    "  coca_biplot.pdf\n",
     "  fungal_insect_volcano.png (PCoA1)\n",
     "  fungal_insect_volcano.PCoA3.with_lure.png\n",
     "  fungal_insect_volcano.PCoA3.no_lure.png\n")

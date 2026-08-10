@@ -64,6 +64,16 @@ id_map <- id_map %>% filter(SequenceID %in% shared_ids)
 
 fungal <- fungal_full[id_map$SequenceID, , drop = FALSE]
 
+# Restrict to ASVs confirmed as Fungi -- ASV_tab.csv includes non-fungal
+# (plant/animal/protist) and taxonomically unidentified ASVs; see
+# ASVs_taxonomy.tsv (Kingdom column).
+fungal_taxonomy <- read.delim("data/2024_fungi/ASVs_taxonomy.tsv", row.names = 1, check.names = FALSE)
+is_fungus <- !is.na(fungal_taxonomy[colnames(fungal), "Kingdom"]) &
+  fungal_taxonomy[colnames(fungal), "Kingdom"] == "k__Fungi"
+cat(sum(is_fungus), "of", ncol(fungal), "ASVs confirmed Kingdom == k__Fungi (dropping",
+    sum(!is_fungus), "non-fungal/unidentified ASVs).\n")
+fungal <- fungal[, is_fungus, drop = FALSE]
+
 meta <- id_map %>%
   transmute(sample_id = SequenceID, site = Site, lure = Lure, trap_id = trapID,
             date = lubridate::mdy(CollectionDate))
@@ -137,7 +147,7 @@ cat(sum(fungal_date_all$q_value < 0.10), "of", nrow(fungal_date_all), "prevalenc
     round(pct_sig, 1), "%) are significantly associated with date (q<0.10), unbiased",
     "(no pre-selection on date correlation)\n")
 print(head(fungal_date_all, 15))
-write.csv(fungal_date_all, "data/2024_insect_data/fungal_taxa_date_association.all_taxa.csv", row.names = FALSE)
+write.csv(fungal_date_all, "data/2024_fungi/fungal_taxa_date_association.all_taxa.csv", row.names = FALSE)
 
 ## ---- 3. Whole fungal community: rarefaction-based PERMANOVA (site/lure/date) ----
 # Sequencing depth varies ~150x across these 69 samples, so the RAW
@@ -163,9 +173,9 @@ meta_rare <- meta[match(rownames(fungal_rare_dist_avg), meta$sample_id), ]
 stopifnot(all(rownames(fungal_rare_dist_avg) == meta_rare$sample_id))
 
 cat("\n--- PERMANOVA: whole fungal community ~ site + site:lure + site:date (rarefied, averaged Bray-Curtis) ---\n")
-fungal_permanova <- adonis2(as.dist(fungal_rare_dist_avg) ~ site + site:lure + site:date, data = meta_rare, by = "terms")
+fungal_permanova <- adonis2(as.dist(fungal_rare_dist_avg) ~ site + lure + date, data = meta_rare, by = "margin")
 print(fungal_permanova)
-write.csv(as.data.frame(fungal_permanova), "data/2024_insect_data/fungal_community_permanova.csv")
+write.csv(as.data.frame(fungal_permanova), "data/2024_fungi/fungal_community_permanova.csv")
 
 cat("\nRunning NMDS on the averaged rarefied Bray-Curtis distance matrix...\n")
 fungal_nmds <- metaMDS(as.dist(fungal_rare_dist_avg), try = 20, trymax = 100)
@@ -186,6 +196,6 @@ pdf("figures/fungal_community_NMDS.date_and_site.pdf", width = 8, height = 6)
 print(fungal_nmds_plot)
 dev.off()
 
-cat("\nDone. Outputs written to data/2024_insect_data/fungal_taxa_date_association.all_taxa.csv,",
-    "data/2024_insect_data/fungal_community_permanova.csv,",
+cat("\nDone. Outputs written to data/2024_fungi/fungal_taxa_date_association.all_taxa.csv,",
+    "data/2024_fungi/fungal_community_permanova.csv,",
     "figures/fungal_community_NMDS.date_and_site.pdf\n")

@@ -223,3 +223,35 @@ Result: Procrustes correlation = 0.56, p = 0.001 (999 permutations, symmetric ro
 Worst-matched (highest-residual) samples span several sites and lures rather than clustering in one condition (top of the list: NH.34, Durham, Alpha-pinene_EtOH, 2024-05-15; NH.99 and NH.46, Manchester Cedar Swamp; NH.113, Pease) -- no obvious single site/lure/date driving the discordance, though this hasn't been formally tested.
 
 Output files: data/2024_insect_data/insect_fungal_procrustes_summary.csv (correlation, sum-of-squares, p-value), data/2024_insect_data/insect_fungal_procrustes_residuals.csv (per-sample residuals with metadata); figures/insect_fungal_procrustes.pdf (standard Procrustes vector diagram + residuals-by-sample plot), figures/insect_fungal_procrustes.NMDS_overlay.png (ggplot overlay of both NMDS configurations post-rotation, colored by community and shaped by site).
+
+### #################################################################################
+### Non-fungal ASV filtering: the fungal community table was never restricted
+### to Kingdom == Fungi
+### #################################################################################
+
+Discovered that ASV_tab.csv (and therefore every core script's fungal community table) had never been filtered to confirmed fungal taxa -- ASVs_taxonomy.tsv includes ASVs identified as Rhizaria, Viridiplantae (plant), and Metazoa (animal), plus a large unidentified-Kingdom (NA) bucket, all left in alongside real fungi.
+
+Quick check on the 69-sample matched dataset's prevalence-filtered taxa (>=5 samples, the filter shared by all 5 core scripts): of 6,887 retained ASVs, 545 (7.9%) were not confirmed Fungi -- 470 completely unidentified (NA Kingdom), 48 Viridiplantae, 20 Rhizaria, 7 Metazoa. By read count these 545 ASVs were a much smaller share, 2.09% of total reads (210,303 / 10,069,212) -- mostly low-abundance ASVs, not dominating the community signal. Spot-checking the top-200 candidates actually used in the date-association permutation test found 8 with no Kingdom assignment at all, two of which (ASV_1079, ASV_4243) were among the top "significant" seasonal hits at q=0.001 -- i.e. taxonomically unidentified sequences were sitting inside a headline result, not just padding out the tail.
+
+Fix: added a `Kingdom == "k__Fungi"` filter (via ASVs_taxonomy.tsv) to all 5 core scripts immediately after loading and sample-matching the ASV table, before the existing prevalence filter -- insect_fungal_coca_analysis.general_workflow.r, .PCoA1_date_axis.r, .PCoA3_lure_axis.r, fungal_community_seasonality.r, fungal_community_lure_association.r. Consistent across all 5 (same 69-sample matched dataset): 15,422 of 17,139 ASVs confirmed Kingdom == k__Fungi (1,717 dropped), of which 6,342 pass the prevalence filter (vs. 6,887 before).
+
+Before vs. after comparison, rerunning all 5 scripts:
+
+| Result | Before | After |
+|---|---|---|
+| Whole-community PERMANOVA -- site R2 | 14.8%, p=0.001 | 15.0%, p=0.001 |
+| -- lure R2 | 2.81%, p=0.129 | 2.80%, p=0.143 |
+| -- date R2 | 16.3%, p=0.001 | 16.5%, p=0.001 |
+| Date-association, unbiased screen (all prevalence-filtered taxa) | 2,248/6,887 sig. (32.6%) | 2,116/6,342 sig. (33.4%) |
+| Lure-association, unbiased screen | 0/6,887 sig. | 0/6,342 sig. |
+| insect_PCoA1 only (top-200 CoCA candidates) | 199/200 sig. | 199/200 sig. |
+| insect_PCoA1 + date | 21/200 sig. | 27/200 sig. |
+| insect_PCoA3 (with/without date, with/without lure) | 0/200 sig. | 0/200 sig. |
+
+Every prior conclusion holds -- nothing flips significance direction, effect sizes shift by low single-digit percentage points at most. Concretely: ASV_1079 and ASV_4243, the two unidentified-Kingdom ASVs flagged above, are correctly excluded from the date-association results now. One knock-on effect worth flagging: the whole-community rarefied PERMANOVA/NMDS lost a sample (69 -> 68) -- one sample's total read count fell below the common rarefaction depth once its non-fungal reads were stripped out, since a chunk of what had been counted toward its sequencing depth wasn't fungal to begin with.
+
+While rerunning, also fixed two pre-existing, unrelated bugs surfaced by the rerun rather than caused by it:
+- fungal_community_seasonality.r was writing fungal_taxa_date_association.all_taxa.csv to data/2024_insect_data/, while every script that reads it (insect_fungal_coca_analysis.PCoA1_date_axis.r, compare_selection_strategies.r, presentation_items/fig3_volcano_plots.R) expected it at data/2024_fungi/ -- a stale manually-relocated copy at the expected path was silently going stale on every rerun. Fixed the write path to match.
+- insect_fungal_coca_analysis.general_workflow.r's per-axis-model comparison outputs (the 10 fungal_insect_association_results.*.csv files, fungal_taxa_lure_direct_check.csv, fungal_taxa_date_association.csv, and the CoCA biplot / volcano figures) were writing to data/2024_insect_data/ and figures/ directly, unlike the two single-axis scripts which each write to their own data/compare_insects_fungi_PCoA1_date(or PCoA3_lure)/ and figures/compare_insects_fungi_PCoA1_date(or PCoA3_lure)/ subfolders. Redirected these to data/compare_insects_fungi_top3axes/ and figures/compare_insects_fungi_top3axes/ for structural parity across all three model variants. insect_taxa_date_association.csv stays in data/2024_insect_data/ since it isn't axis-model-specific.
+
+Output files updated in place (same filenames, taxonomy-filtered content): data/2024_fungi/fungal_community_permanova.csv, data/2024_fungi/fungal_taxa_date_association.all_taxa.csv, data/2024_fungi/fungal_taxa_lure_association.all_taxa.csv, data/compare_insects_fungi_top3axes/*, data/compare_insects_fungi_PCoA1_date/*, data/compare_insects_fungi_PCoA3_lure/*, figures/compare_insects_fungi_top3axes/*, figures/fungal_community_NMDS.date_and_site.pdf.

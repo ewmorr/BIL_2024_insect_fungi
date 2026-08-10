@@ -75,6 +75,16 @@ insect <- insect_full[id_map$col_names, , drop = FALSE]
 rownames(insect) <- id_map$SequenceID
 fungal <- fungal_full[id_map$SequenceID, , drop = FALSE]
 
+# Restrict to ASVs confirmed as Fungi -- ASV_tab.csv includes non-fungal
+# (plant/animal/protist) and taxonomically unidentified ASVs; see
+# ASVs_taxonomy.tsv (Kingdom column).
+fungal_taxonomy <- read.delim("data/2024_fungi/ASVs_taxonomy.tsv", row.names = 1, check.names = FALSE)
+is_fungus <- !is.na(fungal_taxonomy[colnames(fungal), "Kingdom"]) &
+  fungal_taxonomy[colnames(fungal), "Kingdom"] == "k__Fungi"
+cat(sum(is_fungus), "of", ncol(fungal), "ASVs confirmed Kingdom == k__Fungi (dropping",
+    sum(!is_fungus), "non-fungal/unidentified ASVs).\n")
+fungal <- fungal[, is_fungus, drop = FALSE]
+
 meta <- id_map %>%
   transmute(sample_id = SequenceID, site = Site, lure = Lure, trap_id = trapID,
             date = lubridate::mdy(CollectionDate))
