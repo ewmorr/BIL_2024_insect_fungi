@@ -114,13 +114,14 @@ if (!force_recompute && file.exists(cache_file)) {
 
 ## ---- 3. PERMANOVA (site / lure / date) --------------------------------------
 # Project convention throughout compare_insect_fungi/ and insect_exploratory/:
-# lure and date are nested within site (site + site:lure + site:date), not
-# fit as independent main effects -- reported below as "Site" / "Lure" /
-# "Date" for readability.
+# Fit marginal effects for accurate r2 values
+# note the p-values were hardcoded into the file as these were run in a separate
+# script using permute::how() to derive accurate p-values
 
-insect_permanova <- adonis2(insect ~ site + site:lure + site:date, data = meta, by = "terms")
-print(insect_permanova)
-write.csv(as.data.frame(insect_permanova), file.path(out_data_dir, "insect_community_permanova.csv"))
+#insect_permanova <- adonis2(insect ~ site + lure + date, data = meta, by = "margin")
+#print(insect_permanova)
+#write.csv(as.data.frame(insect_permanova), file.path(out_data_dir, "insect_community_permanova.csv"))
+insect_permanova <- read.csv(file.path(out_data_dir, "insect_community_permanova.csv"), row.names = 1, check.names = FALSE)
 
 # fungal PERMANOVA: use the pre-computed result (compare_insect_fungi/
 # fungal_community_seasonality.r), same matched dataset + model, rather than
@@ -130,7 +131,7 @@ fungal_permanova <- read.csv("data/2024_fungi/fungal_community_permanova.csv", r
 extract_term <- function(tab, term) list(r2 = tab[term, "R2"], p = tab[term, "Pr(>F)"])
 
 fmt_p <- function(p) ifelse(p < 0.001, "p<0.001", paste0("p=", sprintf("%.3f", p)))
-fmt_stats <- function(tab, site_term = "site", lure_term = "site:lure", date_term = "site:date") {
+fmt_stats <- function(tab, site_term = "site", lure_term = "lure", date_term = "date") {
   s <- extract_term(tab, site_term); l <- extract_term(tab, lure_term); d <- extract_term(tab, date_term)
   paste0(
     "Site  R²=", sprintf("%.2f", s$r2), ", ", fmt_p(s$p), "\n",

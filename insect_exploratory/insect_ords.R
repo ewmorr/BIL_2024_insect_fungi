@@ -172,11 +172,66 @@ mod1
 # We need to find out if we can compare to the spore trap dataset directly
 # or if there is a way to calc concordance bweteen our data and that
 
-# let's add date and ditch risk
-mod1 = adonis2(sp_tab.curcus_latris.no_singleton ~ Site + Site:Lure + Site:mdy, data = curcus_latris.nmds.sites.metadata, by = "terms")
-mod1
+# Builiding correct calls for adoni2 here
+# # date
+perm_date <- how(
+  blocks = curcus_latris.nmds.sites.metadata$Site,
+  plots  = Plots(strata = curcus_latris.nmds.sites.metadata$trapID, type = "none"),
+  within = Within(type = "free"),
+  nperm  = 999
+)
+
+adonis2(sp_tab.curcus_latris.no_singleton ~ Site + Lure + mdy, data = curcus_latris.nmds.sites.metadata, permutations = perm_date, by = "margin")
+
+#         Df SumOfSqs      R2       F Pr(>F)    
+#Site      3   2.0162 0.09739  3.3367  0.001 ***
+#Lure      2   2.9315 0.14160  7.2771  0.001 ***
+#mdy       1   2.9332 0.14168 14.5627  0.001 ***
+#Residual 64  12.8908 0.62265                   
+#Total    70  20.7032 1.00000                   
+
+adonis2(sp_tab.curcus_latris.no_singleton ~ Site/Lure + Site/Lure/mdy, data = curcus_latris.nmds.sites.metadata, permutations = perm_date, by = "margin")
+
+
+# Lure
+
+# we have unequal samples for each trap bc a date is missing so we subsample
+set.seed(1)
+
+trap_counts <- table(curcus_latris.nmds.sites.metadata$trapID)
+min_n <- min(trap_counts)
+
+keep_rows <- unlist(lapply(split(seq_len(nrow(curcus_latris.nmds.sites.metadata)), curcus_latris.nmds.sites.metadata$trapID), function(idx) {
+  sample(idx, size = min_n)
+}))
+
+meta_bal      <- curcus_latris.nmds.sites.metadata[keep_rows, ]
+sp_matrix_bal <- sp_tab.curcus_latris.no_singleton[keep_rows, , drop = FALSE]
+
+table(meta_bal$trapID)  # confirm equal now
+table(meta_bal$Site)  # confirm equal now
+
+perm_lure <- how(
+  blocks = meta_bal$Site,
+  plots  = Plots(strata = meta_bal$trapID, type = "free"),
+  within = Within(type = "none"),
+  nperm  = 999
+)
+
+
+adonis2(sp_matrix_bal ~ Site + Lure + mdy, data = meta_bal, permutations = perm_lure, by = "margin")
+
+#         Df SumOfSqs      R2      F Pr(>F)    
+#Site      3   1.6869 0.09938 2.3898  0.001 ***
+#Lure      2   2.5819 0.15210 5.4866  0.002 ** 
+#Residual 54  12.7059 0.74852                  
+#Total    59  16.9748 1.00000               
+
+# the lure r2 here is affected by removing random samples to balance
+# use the lure r2 from the full model but use this p-val for lure
+
 # strong and almost equal effects of Site and Date
-# not surprising but good to fibnd
+# not surprising but good to find
 
 #adonis2(formula = sp_tab.curcus_latris.no_singleton ~ Site + Site:Lure + Site:mdy, data = curcus_latris.nmds.sites.metadata, by = "terms")
 #          Df SumOfSqs      R2      F Pr(>F)    
