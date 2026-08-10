@@ -44,7 +44,7 @@ dir.create(out_fig_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_data_dir, showWarnings = FALSE, recursive = TRUE)
 
 cache_file <- file.path(out_data_dir, "fig2_ordination_cache.rds")
-force_recompute <- FALSE
+force_recompute <- T
 
 ## ---- 1. Load and match insect + fungal data (same as compare_insect_fungi/*) ----
 
@@ -68,6 +68,16 @@ id_map <- id_map %>% filter(SequenceID %in% shared_ids)
 insect <- insect_full[id_map$col_names, , drop = FALSE]
 rownames(insect) <- id_map$SequenceID
 fungal <- fungal_full[id_map$SequenceID, , drop = FALSE]
+
+# Restrict to ASVs confirmed as Fungi -- ASV_tab.csv includes non-fungal
+# (plant/animal/protist) and taxonomically unidentified ASVs; see
+# ASVs_taxonomy.tsv (Kingdom column).
+fungal_taxonomy <- read.delim("data/2024_fungi/ASVs_taxonomy.tsv", row.names = 1, check.names = FALSE)
+is_fungus <- !is.na(fungal_taxonomy[colnames(fungal), "Kingdom"]) &
+  fungal_taxonomy[colnames(fungal), "Kingdom"] == "k__Fungi"
+cat(sum(is_fungus), "of", ncol(fungal), "ASVs confirmed Kingdom == k__Fungi (dropping",
+    sum(!is_fungus), "non-fungal/unidentified ASVs).\n")
+fungal <- fungal[, is_fungus, drop = FALSE]
 
 meta <- id_map %>%
   transmute(sample_id = SequenceID, site = Site, lure = Lure, trap_id = trapID,
@@ -95,15 +105,24 @@ if (!force_recompute && file.exists(cache_file)) {
   rarefy_depth <- 5000
   rarefy_iterations <- 100
   fungal_rare_list <- multiple_subsamples(x = fungal, depth = rarefy_depth, iterations = rarefy_iterations)
-  stopifnot(nrow(fungal_rare_list[[1]]) == nrow(fungal))   # all matched samples exceed depth 5000
+  n_dropped <- nrow(fungal) - nrow(fungal_rare_list[[1]])
+  if (n_dropped > 0) {
+    dropped_ids <- setdiff(rownames(fungal), rownames(fungal_rare_list[[1]]))
+    cat(n_dropped, "sample(s) dropped from the fungal rarefaction (total reads fell below depth",
+        rarefy_depth, "after the taxonomy filter):", paste(dropped_ids, collapse = ", "), "\n")
+  }
   fungal_rare_dist_list <- lapply(fungal_rare_list, vegdist, method = "bray")
   fungal_rare_dist_avg <- avg_matrix_list(fungal_rare_dist_list)
 
   fungal_nmds <- metaMDS(as.dist(fungal_rare_dist_avg), try = 20, trymax = 100)
   cat("Fungal NMDS stress:", round(fungal_nmds$stress, 3), "\n")
 
-  insect_scores <- scores(insect_nmds, display = "sites")[meta$sample_id, ]
-  fungal_scores <- scores(fungal_nmds, display = "sites")[meta$sample_id, ]
+  # Procrustes requires matching insect/fungal sample sets -- restrict both
+  # to the fungal rarefaction survivors (panels a & b keep their own full
+  # sample sets; only the Procrustes fit/panel c is affected by a drop).
+  proc_sample_ids <- rownames(fungal_rare_dist_avg)
+  insect_scores <- scores(insect_nmds, display = "sites")[proc_sample_ids, ]
+  fungal_scores <- scores(fungal_nmds, display = "sites")[proc_sample_ids, ]
   proc <- procrustes(X = insect_scores, Y = fungal_scores, symmetric = TRUE)
   proc_test <- protest(X = insect_scores, Y = fungal_scores, permutations = 999, symmetric = TRUE)
   cat("Procrustes correlation:", round(proc_test$t0, 3), ", p =", proc_test$signif, "\n")
