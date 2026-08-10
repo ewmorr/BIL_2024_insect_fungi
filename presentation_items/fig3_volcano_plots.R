@@ -1,8 +1,21 @@
 ##############################################################################
-# Presentation figure 3: volcano plots for the two main per-taxon fungal
-# screens.
+# Presentation figure 3: volcano plots for the three main per-taxon
+# insect/fungal screens.
 #
-# Panel a: fungal abundance ~ insect_PCoA1, no lure/date covariates -- the
+# Panel a: insect abundance ~ collection date, direct test, run on all 52
+#          insect taxa (Curculionidae + Latridiidae) with no pre-selection --
+#          compare_insect_fungi/insect_fungal_coca_analysis.general_
+#          workflow.r, file data/2024_insect_data/insect_taxa_date_
+#          association.csv. Confirms the spring bark/ambrosia-beetle vs.
+#          later-season fungivorous-beetle turnover described in
+#          interpretation.md.
+# Panel b: fungal abundance ~ collection date, direct test, run on every
+#          prevalence-filtered fungal taxon with NO pre-selection (unlike
+#          panel c's CoCA-loading screen) -- compare_insect_fungi/
+#          fungal_community_seasonality.r, file data/2024_fungi/
+#          fungal_taxa_date_association.all_taxa.csv. The unbiased estimate
+#          of how much of the fungal community is seasonal (~33%).
+# Panel c: fungal abundance ~ insect_PCoA1, no lure/date covariates -- the
 #          top-200 CoCA-loading candidate taxa (compare_insect_fungi/
 #          insect_fungal_coca_analysis.general_workflow.r), file
 #          data/compare_insects_fungi_top3axes/fungal_insect_association_
@@ -11,17 +24,12 @@
 #          shared seasonal trend (insect_PCoA1 is ~78% collinear with date --
 #          see interpretation.md -- so this is the more permissive test;
 #          the date-adjusted version collapses to 0/200 significant).
-# Panel b: fungal abundance ~ collection date, direct test, run on every
-#          prevalence-filtered fungal taxon with NO pre-selection (unlike
-#          panel a's CoCA-loading screen) -- compare_insect_fungi/
-#          fungal_community_seasonality.r, file data/2024_fungi/
-#          fungal_taxa_date_association.all_taxa.csv. The unbiased estimate
-#          of how much of the fungal community is seasonal (~33%).
 #
 # Points are colored by FDR significance (q<0.10); the several
 # most-significant taxa on each side (positive/negative t-statistic) are
-# labeled by Genus/species (or Family, if unclassified at genus level) using
-# ASVs_taxonomy.tsv.
+# labeled -- by Genus/species (or Family, if unclassified at genus level)
+# from ASVs_taxonomy.tsv for the fungal panels (b/c), or directly by the
+# already-resolved insect Genus/species name for panel a.
 ##############################################################################
 
 library(dplyr)
@@ -70,9 +78,14 @@ volcano_theme <- theme_bw() +
   )
 
 make_volcano <- function(res, x_label, title, subtitle, tag) {
-  res <- res %>%
-    mutate(sig = q_value < q_threshold) %>%
-    left_join(taxonomy %>% select(taxon, label), by = "taxon")
+  res <- res %>% mutate(sig = q_value < q_threshold)
+  if (!"label" %in% names(res)) {
+    # Fungal panels: taxon is an ASV ID, resolve to a readable Genus/species
+    # (or Family) via the taxonomy lookup built above.
+    res <- res %>% left_join(taxonomy %>% select(taxon, label), by = "taxon")
+  }
+  # Insect panels: taxon is already a resolved Genus/species name (see
+  # panel a below, which sets label = taxon directly, no join needed).
 
   # Rank labeled hits by |t-statistic| (effect size) rather than q-value --
   # with n_perm=999 many taxa tie at the minimum achievable q-value, which
@@ -87,27 +100,28 @@ make_volcano <- function(res, x_label, title, subtitle, tag) {
     geom_vline(xintercept = 0, linetype = "solid", color = "grey85") +
     geom_point(aes(color = sig), size = 1.6, alpha = 0.75) +
     ggrepel::geom_text_repel(
-      data = to_label, aes(label = label), size = 2.6, fontface = "italic",
+      data = to_label, aes(label = label), size = 3.3, fontface = "italic",
       max.overlaps = Inf, segment.size = 0.25, segment.color = "grey50",
-      min.segment.length = 0, box.padding = 0.5, force = 6, force_pull = 0.3,
+      min.segment.length = 0, box.padding = 0.5, force = 12, force_pull = 0.15,
       max.time = 3, max.iter = 20000, direction = "both",
-      nudge_y = 0.15, ylim = c(NA, Inf)
+      nudge_y = 0.2
     ) +
     scale_color_manual(values = sig_colors) +
     scale_x_continuous(expand = expansion(mult = c(0.14, 0.14))) +
-    scale_y_continuous(expand = expansion(mult = c(0.02, 0.14))) +
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.3))) +
     labs(x = x_label, y = expression(-log[10](italic(q)*"-value")),
          title = title, subtitle = subtitle, tag = tag) +
     volcano_theme
 }
 
-## ---- Panel a: fungal ~ insect PCoA1 (no lure, no date; CoCA-selected candidates) ----
+## ---- Panel a: insect ~ collection date (all 52 taxa, unbiased) -------------------
 
-res_a <- read.csv("data/compare_insects_fungi_top3axes/fungal_insect_association_results.PCoA1_only.no_lure.csv")
-subtitle_a <- paste0("n=", nrow(res_a), " CoCA-selected candidates, ",
+res_a <- read.csv("data/2024_insect_data/insect_taxa_date_association.csv") %>%
+  mutate(label = taxon)   # already a resolved Genus/species name, no taxonomy join needed
+subtitle_a <- paste0("n=", nrow(res_a), " taxa (unbiased), ",
                       sum(res_a$q_value < q_threshold), " significant (q<0.10)")
-panel_a <- make_volcano(res_a, "t-statistic (fungal abundance ~ insect PCoA1)",
-                         "Fungal taxa vs. insect community", subtitle_a, "a")
+panel_a <- make_volcano(res_a, "t-statistic (insect abundance ~ collection date)",
+                         "Insect taxa vs. collection date", subtitle_a, "a")
 
 ## ---- Panel b: fungal ~ collection date (all prevalence-filtered taxa) ------------
 
@@ -117,11 +131,35 @@ subtitle_b <- paste0("n=", nrow(res_b), " prevalence-filtered taxa (unbiased), "
 panel_b <- make_volcano(res_b, "t-statistic (fungal abundance ~ collection date)",
                          "Fungal taxa vs. collection date", subtitle_b, "b")
 
+## ---- Panel c: fungal ~ insect PCoA1 (no lure, no date; CoCA-selected candidates) ----
+
+res_c <- read.csv("data/compare_insects_fungi_top3axes/fungal_insect_association_results.PCoA1_only.no_lure.csv")
+subtitle_c <- paste0("n=", nrow(res_c), " CoCA-selected candidates, ",
+                      sum(res_c$q_value < q_threshold), " significant (q<0.10)")
+panel_c <- make_volcano(res_c, "t-statistic (fungal abundance ~ insect PCoA1)",
+                         "Fungal taxa vs. insect community", subtitle_c, "c")
+
 ## ---- Combine + save -----------------------------------------------------------
 
-combined <- gridExtra::arrangeGrob(panel_a, panel_b, ncol = 2)
+combined <- gridExtra::arrangeGrob(panel_a, panel_b, panel_c, ncol = 3)
 
-ggsave(file.path(out_fig_dir, "fig3_volcano_plots.png"), combined, width = 11, height = 5.2, dpi = 300, bg = "white")
-ggsave(file.path(out_fig_dir, "fig3_volcano_plots.pdf"), combined, width = 11, height = 5.2)
+# ggrepel computes label positions per-device using that device's font
+# metrics, which can make labels overlap in one output format but not
+# another even from the same plot object (cairo_pdf would normally fix
+# this, but it's unavailable on this machine -- no X11/cairo libs). Instead,
+# render once to the PNG device, grab the fully-drawn (post-repel) grob,
+# and replay that exact frozen layout to the PDF device so both formats
+# show byte-identical label placement.
+png_path <- file.path(out_fig_dir, "fig3_volcano_plots.png")
+pdf_path <- file.path(out_fig_dir, "fig3_volcano_plots.pdf")
+
+grDevices::png(png_path, width = 16.5, height = 5.2, units = "in", res = 300, bg = "white")
+grid::grid.draw(combined)
+frozen <- grid::grid.grab()
+grDevices::dev.off()
+
+grDevices::pdf(pdf_path, width = 16.5, height = 5.2, bg = "white")
+grid::grid.draw(frozen)
+grDevices::dev.off()
 
 cat("\nDone. Wrote", file.path(out_fig_dir, "fig3_volcano_plots.png"), "and .pdf\n")
