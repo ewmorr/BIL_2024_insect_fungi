@@ -55,3 +55,24 @@ plot(fungi_insect_lure_no_date$t_stat)
 # 
 fungi_insect_no_date_no_lure %>% filter(t_stat > 0)
 
+fungi_date$Family %>% unique() %>% sort()
+fungi_date %>% filter(Family == "f__Mycosphaerellaceae")
+
+fungi_insect_no_date_no_lure$Order %>% unique() %>% sort()
+fungi_insect_no_date_no_lure %>% filter(Order == "o__Saccharomycetales")
+fungi_insect_no_date_no_lure$Family %>% unique() %>% sort()
+fungi_insect_no_date_no_lure %>% filter(Family == "f__Saccharomycetaceae")
+
+fungi_date %>% filter(Order == "o__Saccharomycetales")
+
+
+sum(!fungi_insect_no_date_no_lure$taxon %in% fungi_date$taxon)
+# 17 of the insect only taxa are not in date
+sum(!fungi_insect_lure_no_date$taxon %in% fungi_date$taxon)
+# 17 still. Are these the same
+fungi_insect_no_date_no_lure[!fungi_insect_no_date_no_lure$taxon %in% fungi_date$taxon,"taxon"] -> insect_no_date_no_lure_uniqe_taxa
+fungi_insect_lure_no_date[!fungi_insect_lure_no_date$taxon %in% fungi_date$taxon,"taxon"] -> insect_no_date_with_lure_uniqe_taxa
+sum(insect_no_date_no_lure_uniqe_taxa %in% insect_no_date_with_lure_uniqe_taxa)
+# 13 of the 17 match
+# 
+

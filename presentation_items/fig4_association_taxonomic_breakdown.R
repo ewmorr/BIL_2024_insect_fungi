@@ -161,11 +161,18 @@ make_diverging_breakdown <- function(res, n_top, x_label, title, subtitle, tag,
       signed_n = ifelse(direction == pos_label, n, -n)
     )
 
+  # Display-only label shortening: "<Class>_ord_Incertae_sedis" -> "Incertae_sedis".
+  # The group/Class values themselves (used for faceting and the counts
+  # table) are untouched -- an Incertae-sedis order still facets under its
+  # own class, this just de-clutters the printed axis label.
+  group_labels <- setNames(sub("^.*_ord_Incertae_sedis$", "Incertae_sedis", levels(counts$group)), levels(counts$group))
+
   p <- ggplot(counts, aes(x = group, y = signed_n, fill = direction)) +
     geom_col(color = "white", linewidth = 0.2, width = 0.75) +
     geom_text(aes(label = n, hjust = ifelse(signed_n >= 0, -0.3, 1.3)), size = 2.8) +
     geom_hline(yintercept = 0, color = "grey30", linewidth = 0.3) +
     coord_flip(clip = "off") +
+    scale_x_discrete(labels = group_labels) +
     scale_y_continuous(labels = abs, expand = expansion(mult = c(0.12, 0.12))) +
     scale_fill_manual(values = setNames(c(pos_color, neg_color), c(pos_label, neg_label)),
                        name = legend_title) +
