@@ -53,5 +53,5 @@ plot(fungi_insect_lure_no_date$t_stat)
 # the four that are picked up in lure partial but not unpartialled are not particularly strong t-stats (-2.7 - -3.4)
 # Candida ponderosae
 # 
-
+fungi_insect_no_date_no_lure %>% filter(t_stat > 0)
 
