@@ -197,21 +197,25 @@ insect_axes$sample_id <- rownames(insect)
 # trap), preserving the trap-level structure under the null.
 #
 # NOTE ON DATE: insect_PCoA1 is strongly collinear with collection date
-# (r ~ 0.78) -- it is mostly a seasonal turnover axis (early-season
-# Scolytinae-dominated catches vs. later-season Latridiidae-dominated
-# catches). We run this test twice, WITHOUT and WITH date as a fixed
-# covariate, and keep both results: the no-date version answers "does
-# fungal abundance track insect community composition" (which may just
-# reflect a shared seasonal trend); the date-adjusted version answers the
-# stricter question of whether that association holds *beyond* a shared
-# seasonal trend. Comparing the two is itself informative -- a taxon that
-# drops out once date is added is (at least partly) riding the season, not
-# necessarily tracking the insects directly.
+# (r = 0.78, F = 168, permutation p = 0.001 --
+# compare_insect_fungi/insect_pcoa_date_lure_association.r) -- it is mostly
+# a seasonal turnover axis (early-season Scolytinae-dominated catches vs.
+# later-season Latridiidae-dominated catches). We run this test twice,
+# WITHOUT and WITH date as a fixed covariate, and keep both results: the
+# no-date version answers "does fungal abundance track insect community
+# composition" (which may just reflect a shared seasonal trend); the
+# date-adjusted version answers the stricter question of whether that
+# association holds *beyond* a shared seasonal trend. Comparing the two is
+# itself informative -- a taxon that drops out once date is added is (at
+# least partly) riding the season, not necessarily tracking the insects
+# directly.
 #
 # NOTE ON LURE / PCoA3: insect_PCoA3 is strongly collinear with lure
 # (partial R2 = 0.81, permutation q = 0.013 --
-# compare_insect_fungi/insect_pcoa_lure_association.r), the mirror image of
-# PCoA1's relationship to date. Because "lure" is also in rhs_terms below,
+# compare_insect_fungi/insect_pcoa_lure_association.r; restricted to just
+# PCoA1-3, compare_insect_fungi/insect_pcoa_date_lure_association.r gets
+# partial R2 = 0.81, q = 0.0045), the mirror image of PCoA1's relationship
+# to date. Because "lure" is also in rhs_terms below,
 # testing insect_PCoA3 WITH lure included asks a narrow question -- do
 # fungi track the ~19% of PCoA3 that ISN'T lure -- while dropping lure
 # (include_lure = FALSE) asks the broader question of whether fungi track
