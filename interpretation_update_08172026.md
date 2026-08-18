@@ -116,7 +116,8 @@ Cleanly one-directional orders:
 - **Mycosphaerellales** (*Ramularia*-dominated): 169 later vs. 12 earlier
 - **Tremellales**: 113 later vs. 4 earlier
 - **Dothideales**: 97 later vs. 8 earlier
-- **Diaporthales** (*Cytospora*-dominated): 87 earlier vs. ~6 later
+- **Russulales**: 54 later vs. 5 earlier
+- **Diaporthales** (*Cytospora*-dominated): 87 earlier vs. 13 later
 - **Helotiales**: 76 earlier vs. relatively few later
 
 Class-level split (fig4 facets): **Dothideomycetes** (Mycosphaerellales, Dothideales, Capnodiales) skews later-season; **Sordariomycetes** (Diaporthales, Xylariales, Hypocreales) skews earlier-season — the two dominant fungal classes point in opposite seasonal directions.
@@ -137,6 +138,14 @@ Pooled across all classes (fig7), the date signal is dominated by two trait cate
 This is the trait-level restatement of the Order/Class pattern above — foliar leaf-spot pathogens build up over the growing season; canker pathogens track the early-season bark-beetle-associated end. Pooling across Class (as the fig7 view does) makes "plant pathogen" look only mildly seasonal (247 vs. 205, close to even) when in fact it's two strong, opposite, taxonomically separable trends that largely cancel out.
 
 For PCoA1 hits (fig7/fig8, n=77), trait categories skew heavily toward the earlier-season/bark-beetle end almost everywhere: plant pathogen 19 earlier vs. 1 later; wood saprotroph 10 vs. 2; litter/nectar-tap saprotroph yeasts (5 vs. 0, matching the *Wickerhamomyces*/§2 finding) all earlier. Sordariomycetes plant pathogens alone account for 11 of the 19 earlier-season "plant pathogen" PCoA1 hits — i.e. the PCoA1 trait pattern is substantially the same *Cytospora*-driven signal seen in §2 and §3, viewed through a different lens.
+
+Three other fig8 date-panel bars are worth a genus-level look, since each turns out to be a near-single-genus signal rather than a taxonomically broad trend (same genus join used throughout, re-derived directly from `fungal_taxa_date_association.all_taxa.csv` + `ASVs_taxonomy.tsv` + FungalTraits, not from fig8's pooled counts):
+
+- **Dothideomycetes / sooty mold (46 later, 1 earlier, 47 total):** entirely *Aureobasidium* — 46 later-season, 1 earlier. Mostly *A. pullulans* (37 later, 1 earlier), plus 9 ASVs unresolved to species. A single-genus bar, not a diverse assemblage.
+- **Dothideomycetes / litter saprotroph (+plant pathogen) (70 later, 1 earlier, 71 total):** two genera, both later-season-skewed — *Cladosporium* (44 taxa: 43 later incl. *C. cladosporioides* 10, *C. herbarum* 10, plus 22 unresolved to species; 1 earlier) and *Sphaerulina* (26 taxa, all later: *S. pelargonii* 18, unresolved 6, *S. abeliceae* 2), plus a single *Sclerostagonospora rosae* hit.
+- **Agaricomycetes / wood saprotroph (+plant pathogen) (47 later, 4 earlier, 51 total):** the later-season side is essentially one genus, *Peniophora* (45 taxa, all later: *P. cinerea* 25, unresolved 17, *P. crassitunicata* 2, *P. laxitexta* 1), plus 2 later *Polyporus*. The earlier-season side (4 taxa) is a *different* genus pair entirely — *Daedaleopsis confragosa* (3) and *Hymenochaete curtisii* (1) — so the later/earlier split in this bar is genus-driven, not one genus spanning both directions.
+
+Same caveat as the *Ramularia*/*Cytospora* pattern above: each of these bars reads as "Class x lifestyle x direction," but under the hood it's typically one or two genera carrying the entire count, worth checking before treating any of them as evidence of a broad, Class-wide seasonal trend.
 
 ---
 
