@@ -10,6 +10,8 @@ dat
 dat[is.na(dat$No.of.species), "No.of.species"] = 1
 head(dat)
 
+dat %>% filter(No.of.species > 1)
+
 #fill undefined taxonomic columns with NA
 # could filter by the tax columns
 tax_columns = c("Class", "Order", "Family", "Subfamily", "Genus", "Species")
@@ -94,6 +96,16 @@ head(dat.wide)
 dat.wide %>%
     mutate(across(where(is.numeric), ~replace_na(., 0))) -> dat.wide
 head(dat.wide)
+nrow(dat.wide)
+# 426
+dat.wide %>%
+    summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>% sum()
+dat.wide$Species %>% length()
+#426
+dat.wide$Species %>% unique() %>% length()
+#337
+sum(is.na(dat.wide$Species))
+#90
 
 write.csv(dat.wide, "data/2024_insect_data/species_tab.csv", quote = F, row.names = F)
 
@@ -102,3 +114,49 @@ write.csv(dat.wide, "data/2024_insect_data/species_tab.csv", quote = F, row.name
 
 write.table(colnames(dat.wide[8:ncol(dat.wide)]), "data/2024_insect_data/sampleIDs.txt", quote = F, sep = "\t", row.names = F, col.names = F)
 
+# we need to get a count on the number of taxa associated with the 
+11386-10926
+# 460 individuals that were in non-unique groups (i.e., no.of.species > 1)
+dat %>% 
+    filter(No.of.species > 1) %>%
+    select(sampleID, all_of(tax_columns), Finest.ID, Count) %>%
+    pivot_wider(names_from = sampleID, values_from = Count)
+# 15 groups 
+
+# beetles accounted for x% of trap catch, constituting x unique taxa, of which x% were identified to species and x% to genus
+head(dat.wide)
+dat.wide %>% filter(Order == "Coleoptera") %>% nrow()
+# 369 unnique taxa
+dat.wide %>% 
+    filter(Order == "Coleoptera") %>%
+    summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>% sum()
+#10695
+10695/10926
+#98%
+dat.wide %>% 
+    filter(Order == "Coleoptera" & !is.na(Species)) %>% nrow()
+#318
+318/369
+dat.wide %>% 
+    filter(Order == "Coleoptera" & !is.na(Genus)) %>% nrow()
+#358
+358/369
+#97%
+
+dat.wide %>% filter(Subfamily == "Scolytinae") %>% nrow()
+#45
+dat.wide %>% 
+    filter(Subfamily == "Scolytinae") %>%
+    summarise(across(where(is.numeric), \(x) sum(x, na.rm = TRUE))) %>% sum()
+#5280
+dat.wide %>% 
+    filter(Subfamily == "Scolytinae" & !is.na(Species)) %>% nrow()
+#45
+dat.wide %>% 
+    filter(Subfamily == "Scolytinae" & !is.na(Species)) %>%
+    pull(Species) %>% unique() %>% length()
+#45
+dat.wide %>% 
+    filter(Subfamily == "Scolytinae" & !is.na(Species)) %>%
+    pull(Genus) %>% unique() %>% length()
+#28
