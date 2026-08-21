@@ -76,3 +76,55 @@ sum(insect_no_date_no_lure_uniqe_taxa %in% insect_no_date_with_lure_uniqe_taxa)
 # 13 of the 17 match
 # 
 
+# how many of the late Mycosphaerellales are ramularia
+fungi_date %>%
+    filter(t_stat > 0 & Order == "o__Mycosphaerellales") %>%
+    summarize(n = n(), .by = "Genus")
+
+fungi_date %>%
+    filter(t_stat < 0 & Order == "o__Mycosphaerellales") %>%
+    summarize(n = n(), .by = "Genus")
+
+# check o__Diaporthales season numbers
+fungi_date %>%
+    filter(t_stat < 0) %>%
+    summarize(n = n(), .by = "Order")
+fungi_date %>%
+    filter(t_stat > 0) %>%
+    summarize(n = n(), .by = "Order")
+fungi_date %>%
+    filter(t_stat > 0 & Order == "o__Diaporthales") %>%
+    summarize(n = n(), .by = "Genus")
+fungi_date %>%
+    filter(t_stat < 0 & Order == "o__Diaporthales") %>%
+    summarize(n = n(), .by = "Genus")
+
+fungi_date %>%
+    filter(t_stat > 0 & Order == "o__Russulales") %>%
+    summarize(n = n(), .by = "Genus")
+# 45 g__Peniophora
+
+fungi_date %>%
+    filter(t_stat < 0 & Order == "o__Helotiales") %>%
+    summarize(n = n(), .by = "Family") %>% arrange(n)
+
+fungi_date %>%
+    filter(t_stat > 0 & Order == "o__Helotiales") %>%
+    summarize(n = n(), .by = "Family") %>% arrange(n)
+
+fungi_insect_no_date_no_lure %>%
+    filter(t_stat < 0 & Order == "o__Atractiellales") 
+
+fungi_insect_no_date_no_lure %>%
+    filter(t_stat < 0 & Order == "o__Diaporthales") 
+
+fungi_insect_no_date_no_lure %>%
+    filter(t_stat < 0 & Order == "o__Saccharomycetales")
+
+
+fungi_date %>%
+    filter(t_stat < 0 & Class == "c__Dothideomycetes") %>%
+    summarize(n = n(), .by = "Family")
+
+fungi_insect_no_date_no_lure %>%
+    arrange(t_stat)
