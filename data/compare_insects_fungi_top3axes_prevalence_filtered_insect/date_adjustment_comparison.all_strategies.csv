@@ -1,0 +1,9 @@
+"axis","model","n_sig"
+"PCoA1","no date",59
+"PCoA1","linear date",9
+"PCoA1","linear+quadratic date",19
+"PCoA1","factor(date)",18
+"PCoA2","no date",6
+"PCoA2","linear date",7
+"PCoA2","linear+quadratic date",0
+"PCoA2","factor(date)",9

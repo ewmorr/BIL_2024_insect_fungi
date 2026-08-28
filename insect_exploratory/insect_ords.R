@@ -266,18 +266,10 @@ p2
 dev.off()
 
 
-
 #################################################
-# Also testing an NMDS with everything but these
+#################################################
+#################################################
+# testing prevalence filtered NMDS here 
+# instead of family level filter
 
 
-head(metadata)
-
-
-
-
-head(metadata)
-nrow(metadata)
-nrow(sp_tab.curcus_latris.no_singleton)
-length(table_ids)
-table_ids[!table_ids %in% metadata$sampleID]

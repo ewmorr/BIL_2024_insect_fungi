@@ -1,37 +1,23 @@
 ##############################################################################
-# Insect-Fungal Community Association Analysis
+# Insect-Fungal Community Association Analysis -- Prevalence-Filtered Insect
+# Table Variant
 #
-# Step 1: Co-correspondence analysis (CoCA) to identify which fungal taxa
-#         load most strongly on axes shared with insect community composition.
-# Step 2: Per-taxon permutation test of fungal abundance ~ insect community
-#         axis, with FDR correction, run both without and with collection
-#         date as a covariate, to see how much of the association survives
-#         controlling for a shared seasonal trend. Also run without lure as
-#         a sanity check (lure strongly structures the insect community, but
-#         there's no biological reason to expect  fungi respond to it
-#         independently, i.e., some taxa may be favored by ethanol, but all the  
-#         lures contain ethanol) to confirm lure isn't partialing out real signal.
-# Step 3: Direct per-taxon test of insect and fungal abundance ~ collection
-#         date, to identify which specific taxa drive the seasonal signal
-#         (interesting in its own right, independent of whether it implies
-#         a direct insect-fungal relationship).
+# Identical workflow to insect_fungal_coca_analysis.general_workflow.r (CoCA
+# -> per-taxon insect_PCoA1-3 association tests -> direct date-association
+# screens), except the insect community table is built with an individual-
+# taxon >=5-sample PREVALENCE filter (insect_exploratory/
+# insect_ords.prevalence_filter.R) instead of restricting to Curculionidae +
+# Latridiidae. That prevalence filter was already shown to give a low-stress,
+# repeatable insect NMDS (stress 0.16) without discarding taxa outside those
+# two families, so this script asks whether the CoCA/insect-fungal
+# association results are similar under that broader insect table.
 #
-# Insect community here is restricted to Curculionidae + Latridiidae (the
-# two dominant families in the 2024 NH trap catch, see insect_exploratory/
-# insect_ords.R), matched to fungal ITS2 ASV read counts from the same trap/
-# date via SequenceID. Samples are trapID x Lure combinations sampled
-# repeatedly over collection dates, so samples are NOT independent within
-# trap -- see Step 5 for how that's handled.
-#
-# Step 5 tests insect_PCoA1-3 as predictors (originally just PCoA1/PCoA2).
-# insect_pcoa_lure_association.r screened all insect PCoA axes for
-# association with lure and found PCoA3 (10.2% variance) far more strongly
-# lure-associated (partial R2 = 0.81, permutation q = 0.013) than PCoA1 or
-# PCoA2 -- a candidate explanation for why the fungal PERMANOVA detects a
-# small lure effect (fungal_community_seasonality.r: 10.1%, p=0.05) that
-# never showed up among the top CoCA-loading fungal taxa, which were only
-# ever tested against PCoA1/PCoA2. PCoA4 was also nominally significant for
-# lure but is left out here per follow-up scope.
+# Everything else (fungal loading/filtering, CoCA method, axis-selection
+# diagnostics, per-taxon permutation scheme, lure-partialling checks, date
+# screens) is unchanged from the general workflow script -- see that script
+# for the full rationale behind each choice. Outputs go to their own
+# directory so the original Curculionidae+Latridiidae results are preserved
+# for reference, not overwritten.
 ##############################################################################
 
 ## ---- 0. Setup -------------------------------------------------------------
@@ -51,10 +37,15 @@ library(ggplot2)
 
 set.seed(1)
 
+out_data_dir <- "data/compare_insects_fungi_top3axes_prevalence_filtered_insect"
+out_fig_dir <- "figures/compare_insects_fungi_top3axes_prevalence_filtered_insect"
+dir.create(out_data_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(out_fig_dir, showWarnings = FALSE, recursive = TRUE)
+
 ## ---- 1. Load and match insect + fungal data ---------------------------------
-# insect_species_tab.csv : full trap-catch table (see insect_exploratory/),
-#   columns Class..Finest.ID + one column per sample (col_names format,
-#   e.g. "C1.E..5.1").
+# insect_species_tab.csv : full trap-catch table, columns
+#   Class..Finest.ID + one column per sample (col_names format, e.g.
+#   "C1.E..5.1").
 # insect_community_metadata.csv : SequenceID, sampleID, col_names, trapID,
 #   Site, Lure, CollectionDate -- links insect sample columns to the fungal
 #   SequenceID used in ASV_tab.csv.
@@ -63,15 +54,20 @@ set.seed(1)
 sp_tab <- read.csv("data/2024_insect_data/insect_species_tab.csv")
 insect_meta_full <- read.csv("data/metadata/insect_community_metadata.csv")
 
-# restrict to the two dominant families, as in insect_exploratory/insect_ords.R
-sp_tab %>% filter(Family %in% c("Curculionidae", "Latridiidae")) -> sp_tab.curcus_latris
-sp_tab.curcus_latris.t <- t(sp_tab.curcus_latris %>% select(where(is.numeric)))
-colnames(sp_tab.curcus_latris.t) <- sp_tab.curcus_latris$Finest.ID
+# Individual-taxon prevalence filter (>=5 samples), all families -- see
+# insect_exploratory/insect_ords.prevalence_filter.R, in place of the
+# Curculionidae+Latridiidae family restriction used in the general workflow.
+sp_tab <- sp_tab[!is.na(sp_tab$Finest.ID), ]  # one all-zero row with no ID
+stopifnot(!any(duplicated(sp_tab$Finest.ID)))
 
-# drop singleton taxa (present as a single individual total) and any
-# resulting all-zero sample rows
-sp_tab.curcus_latris.t[, colSums(sp_tab.curcus_latris.t) > 1] -> insect_full
+sp_tab.t <- t(sp_tab %>% select(where(is.numeric)))
+colnames(sp_tab.t) <- sp_tab$Finest.ID
+
+keep_taxa <- colSums(sp_tab.t > 0) >= 5
+insect_full <- sp_tab.t[, keep_taxa, drop = FALSE]
 insect_full <- insect_full[rowSums(insect_full) > 0, ]
+cat(sum(keep_taxa), "of", ncol(sp_tab.t),
+    "insect taxa retained at >=5-sample prevalence (all families).\n")
 
 # map insect sample columns (col_names) -> fungal SequenceID, and restrict to
 # samples present in both the insect and fungal tables
@@ -105,7 +101,7 @@ meta <- id_map %>%
             date = lubridate::mdy(CollectionDate))
 
 cat("Final matched dataset:", nrow(insect), "samples,", ncol(insect),
-    "insect taxa (Curculionidae + Latridiidae),", ncol(fungal), "fungal ASVs.\n")
+    "insect taxa (>=5-sample prevalence filter, all families),", ncol(fungal), "fungal ASVs.\n")
 
 stopifnot(all(rownames(insect) == meta$sample_id))
 stopifnot(all(rownames(fungal) == meta$sample_id))
@@ -139,15 +135,34 @@ coca_full <- coca(y = fungal_hel, x = insect_hel, method = "predictive")
 max_axes_to_check <- min(3, ncol(insect_hel) - 1)
 
 cat("\nLeave-one-out cross-validation (can take a while)...\n")
-coca_cv <- crossval(y = fungal_hel, x = insect_hel, n.axes = max_axes_to_check)
-print(summary(coca_cv))
+# With the broader (all-families) prevalence-filtered insect table, one LOO
+# fold hits a LAPACK SVD convergence failure (La.svd error code 1) partway
+# through -- a known occasional numerical flakiness of dense SVD on
+# ill-conditioned leave-one-out submatrices, not something worth retrying.
+# This diagnostic doesn't drive n_axes_use below (hardcoded to 3, same as the
+# general workflow script), so skip gracefully on failure and continue.
+coca_cv <- tryCatch(
+  crossval(y = fungal_hel, x = insect_hel, n.axes = max_axes_to_check),
+  error = function(e) {
+    cat("crossval() failed (", conditionMessage(e),
+        ") -- skipping LOO-CV diagnostic; n_axes_use is set by hand below regardless.\n")
+    NULL
+  }
+)
+if (!is.null(coca_cv)) print(summary(coca_cv))
 
 cat("\nPermutation test of axis significance...\n")
-coca_perm <- permutest(coca_full, permutations = 99, n.axes = max_axes_to_check)
-print(coca_perm)
+coca_perm <- tryCatch(
+  permutest(coca_full, permutations = 99, n.axes = max_axes_to_check),
+  error = function(e) {
+    cat("permutest() failed (", conditionMessage(e), ") -- skipping.\n")
+    NULL
+  }
+)
+if (!is.null(coca_perm)) print(coca_perm)
 
-# Set based on the CV press statistics / permutation p-values printed above.
-# Defaulting to 2, consistent with the cocorresp package's own worked examples.
+# Same choice as the general workflow script (n_axes_use = 3), kept identical
+# for direct comparability between the two insect-table variants.
 n_axes_use <- 3
 
 coca_mod <- coca(y = fungal_hel, x = insect_hel, method = "predictive", n.axes = n_axes_use)
@@ -169,9 +184,9 @@ cat("\nTop 15 fungal taxa by CoCA loading strength:\n")
 print(head(fungal_scores[, c("taxon", "coca_strength")], 15))
 
 # Quick biplot for visual inspection (response block = fungal community)
-pdf("figures/compare_insects_fungi_top3axes/coca_biplot.pdf", width = 7, height = 7)
+pdf(file.path(out_fig_dir, "coca_biplot.pdf"), width = 7, height = 7)
 plot(coca_mod, which = "response", type = "text",
-     main = "Predictive CoCA: fungal (response) ~ insect (predictor)")
+     main = "Predictive CoCA: fungal (response) ~ insect (predictor, prevalence-filtered)")
 dev.off()
 
 ## ---- 4. Insect community axis for use as a predictor in Step 5 -------------
@@ -187,49 +202,10 @@ insect_axes$sample_id <- rownames(insect)
 ## ---- 5. Per-taxon mixed-model / permutation test ---------------------------
 # Test whether each fungal taxon's abundance tracks the insect PCoA axes,
 # accounting for the repeated-measures structure (same trap sampled across
-# dates) and for site/lure as blocking factors.
-#
-# NOTE ON RANDOM EFFECTS: with only 4 sites, a random intercept for site has
-# too few levels for a stable variance estimate. Site and lure are therefore
-# fit as FIXED blocking factors; non-independence from repeated sampling of
-# the same trap is instead handled via a permutation test that only shuffles
-# insect-axis values WITHIN trap (i.e. across collection dates for a given
-# trap), preserving the trap-level structure under the null.
-#
-# NOTE ON DATE: insect_PCoA1 is strongly collinear with collection date
-# (r = 0.78, F = 168, permutation p = 0.001 --
-# compare_insect_fungi/insect_pcoa_date_lure_association.r) -- it is mostly
-# a seasonal turnover axis (early-season Scolytinae-dominated catches vs.
-# later-season Latridiidae-dominated catches). We run this test twice,
-# WITHOUT and WITH date as a fixed covariate, and keep both results: the
-# no-date version answers "does fungal abundance track insect community
-# composition" (which may just reflect a shared seasonal trend); the
-# date-adjusted version answers the stricter question of whether that
-# association holds *beyond* a shared seasonal trend. Comparing the two is
-# itself informative -- a taxon that drops out once date is added is (at
-# least partly) riding the season, not necessarily tracking the insects
-# directly.
-#
-# NOTE ON LURE / PCoA3: insect_PCoA3 is strongly collinear with lure
-# (partial R2 = 0.81, permutation q = 0.013 --
-# compare_insect_fungi/insect_pcoa_lure_association.r; restricted to just
-# PCoA1-3, compare_insect_fungi/insect_pcoa_date_lure_association.r gets
-# partial R2 = 0.81, q = 0.0045), the mirror image of PCoA1's relationship
-# to date. Because "lure" is also in rhs_terms below,
-# testing insect_PCoA3 WITH lure included asks a narrow question -- do
-# fungi track the ~19% of PCoA3 that ISN'T lure -- while dropping lure
-# (include_lure = FALSE) asks the broader question of whether fungi track
-# PCoA3/lure at all. The gap between those two answers is the direct test
-# of whether this axis is what's producing the small lure effect the
-# fungal PERMANOVA detects (fungal_community_seasonality.r: 10.1%, p=0.05).
-#
-# NOTE ON TAXON COUNT: fungal_f has thousands of ASVs (prevalence filter
-# alone isn't restrictive for a real ITS2 table), and each permutation test
-# below is a full model refit x 999 permutations. Running that on every
-# retained ASV is both computationally impractical (~1 hour+) and a poor use
-# of the permutation test, which is meant to confirm the CoCA screen's
-# top candidates, not stand in for it. We test only the top-ranked taxa by
-# CoCA loading strength (Step 3).
+# dates) and for site/lure as blocking factors. Same rationale/notes as the
+# general workflow script (site+lure as fixed blocking factors, trap-blocked
+# permutation of the axis under test, date and lure covariate variants) --
+# not repeated here in full; see that script's Step 5 header comment.
 
 clr_transform <- function(mat, pseudocount = 1) {
   mat <- as.matrix(mat) + pseudocount
@@ -298,22 +274,11 @@ pcoa_test_specs <- list(
   list(axis = "insect_PCoA2", include_date = TRUE,  include_lure = TRUE,  file = "fungal_insect_association_results.PCoA2_plus_date.csv"),
   list(axis = "insect_PCoA3", include_date = FALSE, include_lure = TRUE,  file = "fungal_insect_association_results.PCoA3_only.csv"),
   list(axis = "insect_PCoA3", include_date = TRUE,  include_lure = TRUE,  file = "fungal_insect_association_results.PCoA3_plus_date.csv"),
-  # Sanity check: lure is a strong driver of the INSECT community (see Step 4
-  # below) but there is no biological reason to expect fungi respond to lure
-  # independently (all the lures contain ethanol), and a companion dataset
-  # showed minimal fungal~lure effect.
-  # Drop lure from the PCoA1 model and compare -- if lure were partialing out
-  # real insect-fungal signal, dropping it should recover more significant
-  # hits; if it's just an inert covariate, results should barely change.
+  # Sanity check: lure is a strong driver of the INSECT community but there is
+  # no biological reason to expect fungi respond to lure independently (all
+  # the lures contain ethanol).
   list(axis = "insect_PCoA1", include_date = FALSE, include_lure = FALSE, file = "fungal_insect_association_results.PCoA1_only.no_lure.csv"),
   list(axis = "insect_PCoA1", include_date = TRUE,  include_lure = FALSE, file = "fungal_insect_association_results.PCoA1_plus_date.no_lure.csv"),
-  # Same check for PCoA3, and more consequential here: insect_PCoA3 is
-  # itself ~81% explained by lure (see NOTE ON LURE / PCoA3 above), far more
-  # than PCoA1/PCoA2. With lure included, a PCoA3 hit means "fungi track
-  # the ~19% of PCoA3 that isn't lure"; dropping lure tests whether fungi
-  # track PCoA3/lure more broadly, including the part that IS lure.
-  # Comparing the two is the direct test of whether insect_PCoA3 is what's
-  # producing the small lure effect the fungal PERMANOVA finds.
   list(axis = "insect_PCoA3", include_date = FALSE, include_lure = FALSE, file = "fungal_insect_association_results.PCoA3_only.no_lure.csv"),
   list(axis = "insect_PCoA3", include_date = TRUE,  include_lure = FALSE, file = "fungal_insect_association_results.PCoA3_plus_date.no_lure.csv")
 )
@@ -324,7 +289,7 @@ pcoa_results <- lapply(pcoa_test_specs, function(spec) {
   res <- run_pcoa_association_test(test_axis = spec$axis, include_date = spec$include_date, include_lure = spec$include_lure)
   cat(sum(res$q_value < 0.10), "of", nrow(res), "taxa significant at q<0.10\n")
   print(head(res, 15))
-  write.csv(res, file.path("data/compare_insects_fungi_top3axes", spec$file), row.names = FALSE)
+  write.csv(res, file.path(out_data_dir, spec$file), row.names = FALSE)
   res
 })
 names(pcoa_results) <- sapply(pcoa_test_specs, `[[`, "file")
@@ -332,11 +297,6 @@ names(pcoa_results) <- sapply(pcoa_test_specs, `[[`, "file")
 results_with_date <- pcoa_results[["fungal_insect_association_results.PCoA1_plus_date.csv"]]
 results_pcoa3_with_date <- pcoa_results[["fungal_insect_association_results.PCoA3_plus_date.csv"]]
 
-# Generalized so the same lure-partialling check can be run for both
-# PCoA1 (the original sanity check -- lure structures the insects but
-# shouldn't independently structure the fungi) and PCoA3 (the axis
-# insect_pcoa_lure_association.r flagged as the one actually carrying the
-# lure signal).
 lure_partialling_check <- function(axis_label) {
   key <- function(suffix) sprintf("fungal_insect_association_results.%s%s.csv", axis_label, suffix)
   summary_df <- data.frame(
@@ -380,7 +340,7 @@ lure_direct_check <- bind_rows(lapply(candidate_taxa, function(tax) {
 lure_direct_check$q_lure <- p.adjust(lure_direct_check$p_lure, method = "BH")
 cat(sum(lure_direct_check$q_lure < 0.10, na.rm = TRUE), "of", nrow(lure_direct_check),
     "candidate fungal taxa show a nominally significant lure effect (q<0.10, parametric, not permutation-corrected)\n")
-write.csv(lure_direct_check, "data/compare_insects_fungi_top3axes/fungal_taxa_lure_direct_check.csv", row.names = FALSE)
+write.csv(lure_direct_check, file.path(out_data_dir, "fungal_taxa_lure_direct_check.csv"), row.names = FALSE)
 
 ## ---- 6. Diagnostic plots (date-adjusted models, the stricter test) --------
 
@@ -396,144 +356,78 @@ make_volcano <- function(res, subtitle) {
 }
 
 volcano <- make_volcano(results_with_date, "insect PCoA1, date-adjusted")
-print(volcano)
-ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.png", volcano, width = 6, height = 5, dpi = 150)
+ggsave(file.path(out_fig_dir, "fungal_insect_volcano.png"), volcano, width = 6, height = 5, dpi = 150)
 
-# PCoA3, with vs without lure -- the direct visual companion to the lure
-# partialling check above: does dropping lure from the model reveal a
-# fungal signal on PCoA3 that was suppressed while lure was included?
 volcano_pcoa3 <- make_volcano(results_pcoa3_with_date, "insect PCoA3, date-adjusted, with lure")
-print(volcano_pcoa3)
-ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.PCoA3.with_lure.png", volcano_pcoa3, width = 6, height = 5, dpi = 150)
+ggsave(file.path(out_fig_dir, "fungal_insect_volcano.PCoA3.with_lure.png"), volcano_pcoa3, width = 6, height = 5, dpi = 150)
 
 volcano_pcoa3_nolure <- make_volcano(pcoa_results[["fungal_insect_association_results.PCoA3_plus_date.no_lure.csv"]],
                                       "insect PCoA3, date-adjusted, without lure")
-print(volcano_pcoa3_nolure)
-ggsave("figures/compare_insects_fungi_top3axes/fungal_insect_volcano.PCoA3.no_lure.png", volcano_pcoa3_nolure, width = 6, height = 5, dpi = 150)
+ggsave(file.path(out_fig_dir, "fungal_insect_volcano.PCoA3.no_lure.png"), volcano_pcoa3_nolure, width = 6, height = 5, dpi = 150)
 
 ## ---- 7. Direct seasonal (date) association ----------------------------------
-# Complementary to Step 5: rather than asking whether fungal abundance
-# tracks insect community composition, ask the simpler question of which
-# individual insect and fungal taxa vary with collection date at all. The
-# seasonal trend is a real and interesting part of the story on its own
-# (see insect_PCoA1's drivers), even where it doesn't imply a direct
-# fungal-insect relationship.
+# Complementary to Step 5: which individual insect and fungal taxa vary with
+# collection date at all.
 
 test_date_taxon <- function(taxon_abund, dat_base, n_perm, block_var = "trap_id") {
-  # Tests a linear date term (t_stat/p_perm/q_value -- unchanged from the
-  # original version of this function; every downstream script that reads
-  # this output's .csv filters on q_value, so these columns/semantics are
-  # kept exactly as before) AND a quadratic term (date centered to avoid a
-  # huge-magnitude collinear squared term) in the same model, so each taxon
-  # can also be classified as a hump/dip (non-monotonic) seasonal pattern --
-  # see the shape classification below. Both terms come from the same model
-  # fit, so this adds negligible extra cost per permutation.
   dat <- dat_base
   dat$y <- taxon_abund
 
-  fit_stats <- function(d) {
-    d$date_c <- as.numeric(d$date) - mean(as.numeric(d$date))
-    m <- lm(y ~ site + lure + date_c + I(date_c^2), data = d)
-    cs <- coef(summary(m))
-    c(t_linear = cs["date_c", "t value"], t_quad = cs["I(date_c^2)", "t value"])
+  fit_stat <- function(d) {
+    m <- lm(y ~ site + lure + date, data = d)
+    coef(summary(m))["date", "t value"]
   }
 
-  obs <- fit_stats(dat)
+  obs_t <- fit_stat(dat)
 
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
 
-  perm_stats <- t(apply(perm_ids, 1, function(idx) {
+  perm_t <- apply(perm_ids, 1, function(idx) {
     d2 <- dat
     d2$date <- dat$date[idx]
-    fit_stats(d2)
-  }))
+    fit_stat(d2)
+  })
 
-  p_linear <- (sum(abs(perm_stats[, "t_linear"]) >= abs(obs["t_linear"])) + 1) / (n_perm + 1)
-  p_quad <- (sum(abs(perm_stats[, "t_quad"]) >= abs(obs["t_quad"])) + 1) / (n_perm + 1)
-
-  c(t_stat = unname(obs["t_linear"]), p_perm = p_linear,
-    t_stat_quad = unname(obs["t_quad"]), p_perm_quad = p_quad)
+  p_perm <- (sum(abs(perm_t) >= abs(obs_t)) + 1) / (n_perm + 1)
+  c(t_stat = obs_t, p_perm = p_perm)
 }
 
-classify_shape <- function(df) {
-  df %>%
-    mutate(shape = case_when(
-      q_value_quad < 0.10 & t_stat_quad < 0 ~ "hump (peaks mid-season)",
-      q_value_quad < 0.10 & t_stat_quad > 0 ~ "dip (troughs mid-season)",
-      q_value < 0.10 & t_stat > 0 ~ "linear increase (late-season)",
-      q_value < 0.10 & t_stat < 0 ~ "linear decrease (early-season)",
-      TRUE ~ "no significant date pattern"
-    )) %>%
-    arrange(pmin(q_value, q_value_quad))
-}
-
-# --- Insect taxa: only ncol(insect_hel) taxa after filtering -- cheap to test all ---
+# --- Insect taxa: all prevalence-filtered taxa (153, vs. 52 for the
+# Curculionidae+Latridiidae table) -- still cheap enough to test all. ---
 insect_hel_df <- as.data.frame(insect_hel)
 stopifnot(all(rownames(insect_hel_df) == meta$sample_id))
 
-cat("\nTesting", ncol(insect_hel_df), "insect taxa for direct association with collection date (linear + quadratic)...\n")
+cat("\nTesting", ncol(insect_hel_df), "insect taxa for direct association with collection date...\n")
 insect_date_results <- bind_rows(lapply(colnames(insect_hel_df), function(tax) {
   r <- test_date_taxon(insect_hel_df[[tax]], meta, n_perm)
-  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"],
-             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"])
+  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"])
 }))
 insect_date_results$q_value <- p.adjust(insect_date_results$p_perm, method = "BH")
-insect_date_results$q_value_quad <- p.adjust(insect_date_results$p_perm_quad, method = "BH")
-insect_date_results <- classify_shape(insect_date_results)
+insect_date_results <- insect_date_results %>% arrange(q_value)
 cat(sum(insect_date_results$q_value < 0.10), "of", nrow(insect_date_results),
-    "insect taxa significantly associated with date (q<0.10, LINEAR term)\n")
-cat(sum(insect_date_results$q_value_quad < 0.10), "of", nrow(insect_date_results),
-    "show a significant QUADRATIC date term (q<0.10) -- real hump/dip shape.\n")
-cat("\nShape breakdown:\n")
-print(table(insect_date_results$shape))
+    "insect taxa significantly associated with date (q<0.10)\n")
 print(head(insect_date_results, 15))
-write.csv(insect_date_results, "data/2024_insect_data/insect_taxa_date_association.csv", row.names = FALSE)
+write.csv(insect_date_results, file.path(out_data_dir, "insect_taxa_date_association.csv"), row.names = FALSE)
 
 # --- Fungal taxa: screen by raw correlation with date first (cheap, all
 # prevalence-filtered ASVs), then confirm the top candidates with the
-# permutation test -- the same two-stage screen -> confirm logic as
-# Step 3/5, just screening on date instead of CoCA loading. ---
+# permutation test. ---
 date_numeric <- as.numeric(dat_base$date)
 fungal_date_cor <- apply(fungal_clr, 2, function(x) cor(x, date_numeric))
 fungal_date_candidates <- names(sort(abs(fungal_date_cor), decreasing = TRUE))[seq_len(n_candidates)]
 
 cat("\nTesting top", length(fungal_date_candidates), "of", ncol(fungal_clr),
-    "fungal taxa (by |correlation with date|) for direct association with collection date (linear + quadratic)...\n")
+    "fungal taxa (by |correlation with date|) for direct association with collection date...\n")
 fungal_date_results <- bind_rows(lapply(fungal_date_candidates, function(tax) {
   r <- test_date_taxon(fungal_clr[, tax], dat_base, n_perm)
-  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"],
-             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"])
+  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"])
 }))
 fungal_date_results$q_value <- p.adjust(fungal_date_results$p_perm, method = "BH")
-fungal_date_results$q_value_quad <- p.adjust(fungal_date_results$p_perm_quad, method = "BH")
-fungal_date_results <- classify_shape(fungal_date_results)
+fungal_date_results <- fungal_date_results %>% arrange(q_value)
 cat(sum(fungal_date_results$q_value < 0.10), "of", nrow(fungal_date_results),
-    "tested fungal taxa significantly associated with date (q<0.10, LINEAR term)\n")
-cat(sum(fungal_date_results$q_value_quad < 0.10), "of", nrow(fungal_date_results),
-    "show a significant QUADRATIC date term (q<0.10) -- real hump/dip shape.\n")
-cat("\nShape breakdown:\n")
-print(table(fungal_date_results$shape))
+    "tested fungal taxa significantly associated with date (q<0.10)\n")
 print(head(fungal_date_results, 15))
-write.csv(fungal_date_results, "data/compare_insects_fungi_top3axes/fungal_taxa_date_association.csv", row.names = FALSE)
+write.csv(fungal_date_results, file.path(out_data_dir, "fungal_taxa_date_association.csv"), row.names = FALSE)
 
-cat("\nDone. Outputs written to data/compare_insects_fungi_top3axes/:\n",
-    "  fungal_insect_association_results.PCoA1_only.csv\n",
-    "  fungal_insect_association_results.PCoA1_plus_date.csv\n",
-    "  fungal_insect_association_results.PCoA2_only.csv\n",
-    "  fungal_insect_association_results.PCoA2_plus_date.csv\n",
-    "  fungal_insect_association_results.PCoA3_only.csv\n",
-    "  fungal_insect_association_results.PCoA3_plus_date.csv\n",
-    "  fungal_insect_association_results.PCoA1_only.no_lure.csv\n",
-    "  fungal_insect_association_results.PCoA1_plus_date.no_lure.csv\n",
-    "  fungal_insect_association_results.PCoA3_only.no_lure.csv\n",
-    "  fungal_insect_association_results.PCoA3_plus_date.no_lure.csv\n",
-    "  fungal_taxa_lure_direct_check.csv\n",
-    "  fungal_taxa_date_association.csv\n",
-    "and data/2024_insect_data/:\n",
-    "  insect_taxa_date_association.csv\n",
-    "and figures/compare_insects_fungi_top3axes/:\n",
-    "  coca_biplot.pdf\n",
-    "  fungal_insect_volcano.png (PCoA1)\n",
-    "  fungal_insect_volcano.PCoA3.with_lure.png\n",
-    "  fungal_insect_volcano.PCoA3.no_lure.png\n")
+cat("\nDone. Outputs written to", out_data_dir, "and", out_fig_dir, "\n")

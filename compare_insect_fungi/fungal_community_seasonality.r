@@ -101,27 +101,40 @@ stopifnot(all(dat_base$sample_id == rownames(fungal_clr)))
 n_perm <- 999
 
 test_date_taxon <- function(taxon_abund, dat_base, n_perm, block_var = "trap_id") {
+  # Tests a linear date term (t_stat/p_perm/q_value -- unchanged from the
+  # original version of this function, kept as the primary columns since
+  # every downstream script that reads this output's .csv filters on
+  # q_value) AND a quadratic term (date centered to avoid a huge-magnitude
+  # collinear squared term) in the same model, so each taxon can also be
+  # classified as a hump/dip (non-monotonic) seasonal pattern -- see the
+  # shape classification below. Both terms come from the same model fit, so
+  # this adds negligible extra cost per permutation.
   dat <- dat_base
   dat$y <- taxon_abund
 
-  fit_stat <- function(d) {
-    m <- lm(y ~ site + lure + date, data = d)
-    coef(summary(m))["date", "t value"]
+  fit_stats <- function(d) {
+    d$date_c <- as.numeric(d$date) - mean(as.numeric(d$date))
+    m <- lm(y ~ site + lure + date_c + I(date_c^2), data = d)
+    cs <- coef(summary(m))
+    c(t_linear = cs["date_c", "t value"], t_quad = cs["I(date_c^2)", "t value"])
   }
 
-  obs_t <- fit_stat(dat)
+  obs <- fit_stats(dat)
 
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
 
-  perm_t <- apply(perm_ids, 1, function(idx) {
+  perm_stats <- t(apply(perm_ids, 1, function(idx) {
     d2 <- dat
     d2$date <- dat$date[idx]
-    fit_stat(d2)
-  })
+    fit_stats(d2)
+  }))
 
-  p_perm <- (sum(abs(perm_t) >= abs(obs_t)) + 1) / (n_perm + 1)
-  c(t_stat = obs_t, p_perm = p_perm)
+  p_linear <- (sum(abs(perm_stats[, "t_linear"]) >= abs(obs["t_linear"])) + 1) / (n_perm + 1)
+  p_quad <- (sum(abs(perm_stats[, "t_quad"]) >= abs(obs["t_quad"])) + 1) / (n_perm + 1)
+
+  c(t_stat = unname(obs["t_linear"]), p_perm = p_linear,
+    t_stat_quad = unname(obs["t_quad"]), p_perm_quad = p_quad)
 }
 
 # Testing every retained taxon (unlike the CoCA script's top-200
@@ -131,21 +144,44 @@ test_date_taxon <- function(taxon_abund, dat_base, n_perm, block_var = "trap_id"
 # across taxa.
 n_cores <- max(1, min(8, detectCores() - 1))
 cat("\nTesting all", ncol(fungal_clr), "prevalence-filtered fungal taxa (no pre-selection) for",
-    "direct association with date, using", n_cores, "cores...\n")
+    "direct association with date (linear + quadratic), using", n_cores, "cores...\n")
 
 t0 <- Sys.time()
 fungal_date_all <- bind_rows(mclapply(colnames(fungal_clr), function(tax) {
   r <- test_date_taxon(fungal_clr[, tax], dat_base, n_perm)
-  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"])
+  data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"],
+             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"])
 }, mc.cores = n_cores))
 fungal_date_all$q_value <- p.adjust(fungal_date_all$p_perm, method = "BH")
-fungal_date_all <- fungal_date_all %>% arrange(q_value)
+fungal_date_all$q_value_quad <- p.adjust(fungal_date_all$p_perm_quad, method = "BH")
+
+# Shape classification: a significant quadratic term takes priority (a real
+# hump/dip is a more complete description than the linear direction a
+# skewed hump can spuriously produce); a negative quadratic coefficient is
+# concave-down (hump/peak mid-season), positive is concave-up (dip/trough
+# mid-season). Falls back to the linear-only early-/late-season direction
+# when the quadratic term isn't significant. q_value/q_value_quad (the
+# linear-only significance call) are untouched by this and remain the
+# columns every downstream script filters on.
+fungal_date_all <- fungal_date_all %>%
+  mutate(shape = case_when(
+    q_value_quad < 0.10 & t_stat_quad < 0 ~ "hump (peaks mid-season)",
+    q_value_quad < 0.10 & t_stat_quad > 0 ~ "dip (troughs mid-season)",
+    q_value < 0.10 & t_stat > 0 ~ "linear increase (late-season)",
+    q_value < 0.10 & t_stat < 0 ~ "linear decrease (early-season)",
+    TRUE ~ "no significant date pattern"
+  )) %>%
+  arrange(pmin(q_value, q_value_quad))
 cat("Completed in", round(as.numeric(Sys.time() - t0, units = "mins"), 1), "min\n")
 
 pct_sig <- 100 * mean(fungal_date_all$q_value < 0.10)
 cat(sum(fungal_date_all$q_value < 0.10), "of", nrow(fungal_date_all), "prevalence-filtered fungal taxa (",
-    round(pct_sig, 1), "%) are significantly associated with date (q<0.10), unbiased",
+    round(pct_sig, 1), "%) are significantly associated with date (q<0.10, LINEAR term), unbiased",
     "(no pre-selection on date correlation)\n")
+cat(sum(fungal_date_all$q_value_quad < 0.10), "of", nrow(fungal_date_all),
+    "show a significant QUADRATIC date term (q<0.10) -- these are the taxa with a real hump/dip shape.\n")
+cat("\nShape breakdown (quadratic takes priority over linear when both are significant):\n")
+print(table(fungal_date_all$shape))
 print(head(fungal_date_all, 15))
 write.csv(fungal_date_all, "data/2024_fungi/fungal_taxa_date_association.all_taxa.csv", row.names = FALSE)
 
