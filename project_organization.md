@@ -281,3 +281,14 @@ side, the statistical approach, or shared infrastructure:
   top-level taxonomic/ecological summaries after the Kingdom==Fungi filter
   fix, explicitly noting which earlier numbers it supersedes. Not a living
   document in the same way as the other two -- treat as a dated snapshot.
+  Covers Lineage A (family-filtered) only.
+- `interpretation_update_prevalence_filtered_insect_08282026.md` -- the
+  Lineage B (prevalence-filtered insect table) counterpart to the above:
+  top-line numbers for everything ported to Lineage B so far, with explicit
+  comparison to Lineage A throughout. Same dated-snapshot status, not a
+  living document -- when more Lineage B analyses are ported (see "Known
+  gaps"), add a new dated interpretation file rather than editing this one
+  in place, matching the convention `interpretation_update_08172026.md`
+  already established. Naming pattern for any future one:
+  `interpretation_update_<lineage-suffix>_MMDDYYYY.md`, omitting the
+  lineage suffix only for Lineage A (the original/default).
