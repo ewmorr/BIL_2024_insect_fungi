@@ -1,0 +1,69 @@
+"sample_id","residual","site","lure","trap_id","date"
+"NH.34",0.272667456349776,"Durham","Alpha-pinene_EtOH","D2-EA",2024-05-15
+"NH.99",0.203334711616633,"Manchester Cedar Swamp","Ips","C3-I",2024-05-01
+"NH.46",0.191227512122184,"Manchester Cedar Swamp","Ethanol","C1-E",2024-05-01
+"NH.113",0.180207375694992,"Pease","Ips","P3-I",2024-05-01
+"NH.105",0.172249569925026,"Durham","Ips","D3-I",2024-05-01
+"NH.133",0.165855754635889,"Durham","Alpha-pinene_EtOH","D2-EA",2024-05-29
+"NH.100",0.161395682086494,"Pease","Ethanol","P1-E",2024-05-15
+"NH.92",0.156938120991861,"Durham","Ethanol","D1-E",2024-05-15
+"NH.39",0.155656300695589,"Pease","Alpha-pinene_EtOH","P2-EA",2024-05-01
+"NH.97",0.136516781864756,"Manchester Airport","Ips","M3-I",2024-05-15
+"NH.72",0.12735801671319,"Pease","Ethanol","P1-E",2024-05-29
+"NH.61",0.125601277635531,"Manchester Airport","Ips","M3-I",2024-06-26
+"NH.110",0.117666427222402,"Manchester Airport","Ips","M3-I",2024-07-10
+"NH.122",0.116610828087604,"Pease","Alpha-pinene_EtOH","P2-EA",2024-05-29
+"NH.81",0.114499602956208,"Manchester Cedar Swamp","Ethanol","C1-E",2024-05-15
+"NH.106",0.11112493825077,"Pease","Ethanol","P1-E",2024-05-01
+"NH.56",0.106430328745713,"Durham","Ips","D3-I",2024-06-12
+"NH.78",0.105548137994528,"Manchester Cedar Swamp","Ethanol","C1-E",2024-06-26
+"NH.62",0.103348759163378,"Manchester Cedar Swamp","Ips","C3-I",2024-06-26
+"NH.59",0.10248854712973,"Manchester Cedar Swamp","Ips","C3-I",2024-05-29
+"NH.89",0.102417399333617,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-05-01
+"NH.131",0.0970219771981459,"Pease","Alpha-pinene_EtOH","P2-EA",2024-06-26
+"NH.95",0.0918829821450662,"Pease","Ips","P3-I",2024-06-26
+"NH.91",0.0907603663119874,"Pease","Alpha-pinene_EtOH","P2-EA",2024-05-15
+"NH.85",0.0902243824130414,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-05-15
+"NH.55",0.0864543754946388,"Durham","Ethanol","D1-E",2024-05-29
+"NH.75",0.0855133429890706,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-07-10
+"NH.138",0.0843231748985582,"Manchester Airport","Ethanol","M1-E",2024-07-10
+"NH.60",0.0835151663558039,"Manchester Airport","Ethanol","M1-E",2024-06-26
+"NH.50",0.0794662688770996,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-06-12
+"NH.90",0.0780664152005995,"Manchester Cedar Swamp","Ips","C3-I",2024-05-15
+"NH.76",0.0745688278785401,"Manchester Airport","Ips","M3-I",2024-05-29
+"NH.114",0.0731265084875293,"Durham","Ips","D3-I",2024-07-10
+"NH.107",0.0711739082548299,"Durham","Ips","D3-I",2024-05-15
+"NH.36",0.0685001706145282,"Pease","Ethanol","P1-E",2024-06-26
+"NH.129",0.0684205800260651,"Pease","Ips","P3-I",2024-05-15
+"NH.68",0.0674478828450342,"Manchester Cedar Swamp","Ips","C3-I",2024-06-12
+"NH.77",0.0665884351120727,"Durham","Alpha-pinene_EtOH","D2-EA",2024-06-12
+"NH.132",0.0650555891319549,"Pease","Ips","P3-I",2024-05-29
+"NH.73",0.0641095877401862,"Durham","Ethanol","D1-E",2024-06-12
+"NH.115",0.0640475593194725,"Pease","Ips","P3-I",2024-07-10
+"NH.109",0.0630011864351886,"Manchester Airport","Ips","M3-I",2024-06-12
+"NH.33",0.0620587659820842,"Manchester Airport","Ethanol","M1-E",2024-05-15
+"NH.69",0.0583525183867327,"Manchester Airport","Ethanol","M1-E",2024-05-29
+"NH.117",0.0512725098400467,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-05-01
+"NH.139",0.0491808463658793,"Manchester Airport","Ethanol","M1-E",2024-06-12
+"NH.124",0.0487475755941843,"Pease","Alpha-pinene_EtOH","P2-EA",2024-07-10
+"NH.137",0.0483031571711966,"Pease","Ethanol","P1-E",2024-07-10
+"NH.87",0.0451798584119747,"Manchester Cedar Swamp","Ethanol","C1-E",2024-07-10
+"NH.65",0.0414676658533196,"Durham","Ips","D3-I",2024-05-29
+"NH.41",0.0411646543947797,"Manchester Airport","Ethanol","M1-E",2024-05-01
+"NH.38",0.0403460777834859,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-06-12
+"NH.134",0.0346983870446985,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-05-29
+"NH.53",0.0343610009831495,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-06-26
+"NH.84",0.0343541849635947,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-05-15
+"NH.74",0.0316225246599092,"Manchester Airport","Alpha-pinene_EtOH","M2-EA",2024-06-26
+"NH.70",0.0309809786498305,"Pease","Alpha-pinene_EtOH","P2-EA",2024-06-12
+"NH.44",0.0280637669407794,"Durham","Ethanol","D1-E",2024-05-01
+"NH.66",0.0276856460670403,"Durham","Alpha-pinene_EtOH","D2-EA",2024-07-10
+"NH.35",0.0266535944689533,"Pease","Ethanol","P1-E",2024-06-12
+"NH.57",0.0261154043510791,"Manchester Cedar Swamp","Ips","C3-I",2024-07-10
+"NH.67",0.0235503494132793,"Durham","Alpha-pinene_EtOH","D2-EA",2024-06-26
+"NH.51",0.0231991110175138,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-05-29
+"NH.52",0.0198244503043759,"Manchester Cedar Swamp","Alpha-pinene_EtOH","C2-EA",2024-07-10
+"NH.94",0.0157528830062555,"Manchester Cedar Swamp","Ethanol","C1-E",2024-05-29
+"NH.49",0.0154621173929463,"Durham","Ethanol","D1-E",2024-07-10
+"NH.116",0.0150670356696949,"Durham","Ethanol","D1-E",2024-06-26
+"NH.104",0.0129359477639578,"Durham","Alpha-pinene_EtOH","D2-EA",2024-05-01

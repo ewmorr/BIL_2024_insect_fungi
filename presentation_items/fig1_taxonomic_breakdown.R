@@ -11,12 +11,16 @@
 #          (97.8% of reads; the remainder is co-amplified non-fungal
 #          eukaryotic DNA -- plant, arthropod, etc. -- dropped here and
 #          proportions renormalized over fungal reads only).
-# Panel c: insect trap catch, Genus level, restricted to Curculionidae +
-#          Latridiidae -- the two focal families used throughout the rest of
-#          this project's community analyses (69% of all individuals
-#          caught). Proportions are renormalized within this two-family
-#          subset (i.e. "genus composition of the focal insect community"),
-#          not as a fraction of the total catch shown in panel a.
+# Panel c: insect trap catch, Genus level, ranked across ALL families -- the
+#          10 most abundant insect genera overall. Proportions use the same
+#          denominator as panel a (each sample's total catch), so panel c
+#          reads as a finer-grained panel a. Genus-less rows (no genus-level
+#          ID) are excluded from the ranking -- they pool many families and
+#          aren't a genus -- but their individuals still count toward each
+#          sample's total and fall into "Other". 8 of the top 10 are
+#          Curculionidae/Latridiidae (the two focal families used elsewhere
+#          in this project); Enoclerus (Cleridae) and Asemum (Cerambycidae)
+#          are the two that fall outside them.
 # Panel d: fungal ITS2 community (same Kingdom==Fungi set as panel b),
 #          summarized by ecological trait instead of taxonomy -- ASV genus
 #          is joined to the FungalTraits database (Polme et al. 2020) by
@@ -187,46 +191,54 @@ panel_b <- ggplot(fungal_site_mean, aes(x = Site, y = mean_prop, fill = Class)) 
   theme(axis.text.x = element_blank(),   # site labels shown once, on panel d below
         axis.text.y = element_blank(), axis.title.y = element_blank())   # y-axis shown once, on panel a
 
-## ---- Panel c: insect Genus-level breakdown (Curculionidae + Latridiidae only) ----
+## ---- Panel c: insect Genus-level breakdown, top 10 genera across ALL families ----
+# Ranked over the whole trap catch, not just the two focal families. Genus-
+# less rows are excluded from the RANKING (they pool many families and aren't
+# a genus) but still count toward each sample's total and land in "Other", so
+# panel c uses the same denominator as panel a (total catch per sample).
 
 n_top_insect_genera <- 10   # + "Other" = 11 categories
 
-insect_focal_long <- sp_tab %>%
-  filter(Family %in% c("Curculionidae", "Latridiidae")) %>%
-  mutate(Genus = ifelse(is.na(Genus) | Genus == "", "Unclassified", Genus)) %>%
+insect_genus_long <- sp_tab %>%
   pivot_longer(cols = all_of(sample_cols), names_to = "col_names", values_to = "count") %>%
-  group_by(col_names, Genus) %>%
+  mutate(has_genus = !(is.na(Genus) | Genus == ""),
+         Genus = ifelse(has_genus, Genus, "Unclassified")) %>%
+  group_by(col_names, Genus, has_genus) %>%
   summarize(count = sum(count), .groups = "drop")
 
-genus_rank <- insect_focal_long %>%
+genus_rank <- insect_genus_long %>%
+  filter(has_genus) %>%                     # rank real genera only
   group_by(Genus) %>%
   summarize(total = sum(count), .groups = "drop") %>%
   arrange(desc(total))
 
 top_genera <- head(genus_rank$Genus, n_top_insect_genera)
 
-# proportions renormalized within the Curculionidae+Latridiidae subset (the
-# sample total below is computed AFTER filtering to just these two families)
-insect_focal_prop <- insect_focal_long %>%
-  mutate(Genus = ifelse(Genus %in% top_genera, Genus, "Other")) %>%
+# family of each shown genus, for the console log / sanity check
+genus_family <- sp_tab %>% filter(Genus %in% top_genera) %>% distinct(Genus, Family)
+
+insect_genus_prop <- insect_genus_long %>%
+  mutate(Genus = ifelse(Genus %in% top_genera, Genus, "Other")) %>%  # non-top genera + genus-less rows -> "Other"
   group_by(col_names, Genus) %>%
   summarize(count = sum(count), .groups = "drop") %>%
   group_by(col_names) %>%
-  mutate(sample_total = sum(count)) %>%
+  mutate(sample_total = sum(count)) %>%     # = total catch for the sample (all families, all genera)
   ungroup() %>%
-  filter(sample_total > 0) %>%   # drop any sample with zero Curculionidae/Latridiidae catch
+  filter(sample_total > 0) %>%              # drop the one zero-catch trap-date, as in panel a
   mutate(prop = count / sample_total) %>%
   left_join(insect_meta %>% select(col_names, Site), by = "col_names")
 
-insect_focal_site_mean <- insect_focal_prop %>%
+insect_genus_site_mean <- insect_genus_prop %>%
   group_by(Site, Genus) %>%
   summarize(mean_prop = mean(prop), .groups = "drop") %>%
   mutate(Genus = factor(Genus, levels = c(top_genera, "Other")))
 
-cat("\nInsect genus panel (Curculionidae+Latridiidae only): levels shown (rank order):\n")
-print(levels(insect_focal_site_mean$Genus))
+cat("\nInsect genus panel (top", n_top_insect_genera, "genera across all families): levels shown (rank order):\n")
+print(levels(insect_genus_site_mean$Genus))
+cat("Family of each shown genus:\n")
+print(genus_family[match(top_genera, genus_family$Genus), ])
 
-panel_c <- ggplot(insect_focal_site_mean, aes(x = Site, y = mean_prop, fill = Genus)) +
+panel_c <- ggplot(insect_genus_site_mean, aes(x = Site, y = mean_prop, fill = Genus)) +
   geom_col(color = "white", linewidth = 0.2) +
   scale_fill_manual(values = stack_palette(n_top_insect_genera), name = "Genus") +
   scale_y_continuous(labels = scales::percent, expand = expansion(mult = c(0, 0.02))) +

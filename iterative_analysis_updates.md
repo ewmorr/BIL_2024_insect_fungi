@@ -557,3 +557,207 @@ Non-trivial fractions of every taxon set show a real hump/dip shape rather than 
 - *Anisandrus sayi* is a good example of why the quadratic term matters: its LINEAR term is completely null (p=0.218, family-filtered table) but its quadratic term is highly significant (q=0.017, hump-shaped) -- a taxon the original linear-only screen would have called "not date-associated" at all.
 
 Output: data/2024_fungi/fungal_taxa_date_association.all_taxa.csv (updated in place, new columns appended), data/2024_insect_data/insect_taxa_date_association.csv (updated in place), data/compare_insects_fungi_top3axes/fungal_taxa_date_association.csv (updated in place), data/compare_insects_fungi_top3axes_prevalence_filtered_insect/insect_taxa_date_association.csv (new, with Family/Subfamily/Order context columns).
+
+### #################################################################################
+### 2026-08-31 -- Lineage B port: whole-community Procrustes + fig2 (NMDS/Procrustes)
+### #################################################################################
+
+Started porting the "Known gaps" list in project_organization.md to Lineage B
+(prevalence-filtered, all-families, >=5-sample insect table). Two scripts this round.
+
+**1. compare_insect_fungi/insect_fungal_procrustes.prevalence_filtered_insect.r** --
+Lineage-B rebuild of insect_fungal_procrustes.r. Same whole-community Procrustes
+concordance test (insect NMDS vs. an independently-built rarefied fungal NMDS), same
+69-sample matched dataset, only the insect table changes: 153-taxon >=5-sample
+prevalence filter (all families) instead of the Curculionidae+Latridiidae restriction.
+Two deliberate deviations from the Lineage-A standalone script, both bringing it in
+line with presentation_items/fig2_nmds_procrustes.R (which already does both):
+  - Added the `Kingdom == "k__Fungi"` ASV filter. The Lineage-A standalone procrustes
+    script was never one of the "5 core scripts" that filter was retrofitted into, so
+    it still runs on the unfiltered ASV table; this port uses the filter (15,422 of
+    17,139 ASVs confirmed fungal).
+  - Handles the rarefaction sample drop (NH.54 falls below depth 5000 once non-fungal
+    reads are stripped -- the same 69->68 drop documented in the Kingdom-filter entry
+    above) by restricting the Procrustes fit to the 68 survivors, instead of the
+    Lineage-A script's `stopifnot` that assumed no drop.
+Also computes and writes the matched-69-sample insect community PERMANOVA
+(site + lure + date, marginal, permute::how() with the within-trap/site-blocked
+scheme from insect_ords.prevalence_filter.R) so the fig2 port can annotate its insect
+panel without re-running an ordination -- same role fungal_community_seasonality.r
+plays as the (lineage-invariant) source of the fungal PERMANOVA.
+
+Output dir: data/compare_insects_fungi_procrustes_prevalence_filtered_insect/,
+figures/compare_insects_fungi_procrustes_prevalence_filtered_insect/ (dedicated
+Lineage-B dir -- the Lineage-A script wrote CSVs into data/2024_insect_data/ and
+figures/ root, the same anti-pattern the Kingdom-filter cleanup fixed for
+general_workflow.r; not replicated here).
+
+**Results -- the Procrustes conclusion is unchanged under Lineage B:**
+  - Insect NMDS stress 0.163 (repeatable; matches insect_ords.prevalence_filter.R's
+    0.162 for this table). Fungal NMDS stress 0.166.
+  - **Procrustes correlation = 0.604, p = 0.001** (999 perms, symmetric) -- vs.
+    Lineage A's 0.56. Essentially the same moderate, significant whole-community
+    concordance: real shared structure, far from a 1:1 mapping. Consistent, as in
+    Lineage A, with both community PERMANOVAs being dominated by a shared seasonal/
+    site term (see below + fungal Site:date R2=22.7% established earlier), and with
+    the per-taxon finding that no individual fungal taxon's association with an insect
+    PCoA axis survives proper date adjustment -- a ~0.6 whole-community correlation is
+    what shared season+site structure alone should produce, not evidence of direct
+    taxon-to-taxon interaction.
+  - Matched-dataset insect PERMANOVA: site R2=9.5% (F=3.00, p=0.001), lure R2=11.0%
+    (F=5.18, p=0.001), date R2=13.5% (F=12.69, p=0.001), residual 65.8%. All three
+    terms significant, same three-way structure as (a) the Lineage-A fig2 insect
+    PERMANOVA (site 9.7%, lure 14.2%, date 14.2%) and (b) insect_ords.prevalence_
+    filter.R's 71-sample version (site 9.5%, lure 11.4%, date 12.7%) -- the 69-sample
+    match trims lure/date effect sizes slightly but changes nothing qualitatively.
+  - Worst-matched (highest-residual) samples: NH.34 (Durham, Alpha-pinene_EtOH,
+    2024-05-15), NH.99 & NH.46 (Manchester Cedar Swamp), NH.113 (Pease) -- all
+    early-season (May), and nearly the same set the Lineage-A script flagged (NH.34,
+    NH.99, NH.46, NH.113 all appeared there too). Still spans several sites/lures, no
+    single obvious driver.
+
+**2. presentation_items_prevalence_filtered_insect/fig2_nmds_procrustes.R** --
+Lineage-B counterpart of presentation_items/fig2_nmds_procrustes.R, same filename
+(dedicated-folder convention), same 3-panel layout / aesthetics / fig-number mapping.
+Panel a insect NMDS + PERMANOVA annotation from script 1's output; panel b fungal
+NMDS annotated from the shared data/2024_fungi/fungal_community_permanova.csv (fungal
+side is lineage-invariant, so this is the exact file Lineage-A fig2 reads); panel c
+Procrustes overlay (r = 0.60, p = 0.001, 68 samples). One insect NMDS + one fungal
+NMDS run feed all three panels; the fungal rarefaction/NMDS/Procrustes fit is cached
+to data/presentation_items_prevalence_filtered_insect/fig2_ordination_cache.rds
+(force_recompute <- T by default, as in Lineage A).
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig2_nmds_procrustes.
+{png,pdf}; data/compare_insects_fungi_procrustes_prevalence_filtered_insect/
+(insect_fungal_procrustes_summary.csv, insect_fungal_procrustes_residuals.csv,
+insect_community_permanova.csv); figures/compare_insects_fungi_procrustes_prevalence_
+filtered_insect/ (insect_fungal_procrustes.pdf, insect_fungal_procrustes.NMDS_
+overlay.png).
+
+### #################################################################################
+### 2026-08-31 -- fig1 panel c: top insect genera OVERALL, not just within the
+### two focal families
+### #################################################################################
+
+presentation_items/fig1_taxonomic_breakdown.R panel c previously showed the 10 most
+abundant genera *within Curculionidae + Latridiidae*, renormalized inside that
+two-family subset. Changed it to the 10 most abundant insect genera across ALL
+families, renormalized against each sample's total catch (the same denominator as
+panel a), so panel c now reads as a finer-grained panel a. Panels a, b, d and the
+rest of the script are unchanged.
+
+First checked whether this actually changes what's shown -- i.e. whether the top
+genera overall are just the focal-family genera anyway. They are not:
+
+| Rank | Genus | Individuals | % of catch (n=10,962) | Family | In focal 2? |
+|---|---|---|---|---|---|
+| 1 | *Xylosandrus* | 2451 | 22.4% | Curculionidae | yes |
+| 2 | *Melanophthalma* | 1829 | 16.7% | Latridiidae | yes |
+| 3 | *Xyleborinus* | 867 | 7.9% | Curculionidae | yes |
+| 4 | *Anisandrus* | 522 | 4.8% | Curculionidae | yes |
+| 5 | *Enoclerus* | 313 | 2.9% | **Cleridae** | **no** |
+| 6 | (genus-less bucket) | 291 | 2.7% | >=13 families | -- |
+| 7 | *Cyclorhipidion* | 258 | 2.4% | Curculionidae | yes |
+| 8 | *Dendroctonus* | 199 | 1.8% | Curculionidae | yes |
+| 9 | *Pissodes* | 182 | 1.7% | Curculionidae | yes |
+| 10 | *Heteroborips* | 154 | 1.4% | Curculionidae | yes |
+| 11 | *Asemum* | 144 | 1.3% | **Cerambycidae** | **no** |
+
+So the focal-family restriction was hiding *Enoclerus* (Cleridae -- checkered
+beetles, common bark-beetle predators) at rank 5. The rank-6 slot is a genus-level-
+unclassified bucket that pools Staphylinidae/Anthocoridae/Chrysomelidae/Cicadellidae/
+etc. -- not a real genus.
+
+Handling (per user decision): the genus-less rows are **excluded from the ranking**
+(they aren't a genus and span many families) but still count toward each sample's
+total and fall into "Other". With that exclusion the shown set is 10 real genera --
+the 8 focal-family genera above plus *Enoclerus* (Cleridae, rank 5) and *Asemum*
+(Cerambycidae, promoted into rank 10). Switching to the overall ranking also drops
+*Orthotomicus* and *Dryocoetes* out of the shown set relative to the old panel c.
+Because the denominator is now the whole catch, panel c's "Other" bar is large
+(~44-58% per site): it absorbs every non-top genus across all ~98 families plus the
+genus-less individuals.
+
+Note fig1 is entirely lineage-invariant -- every panel is built from the raw trap
+catch / raw ASV table, none of it touches the 52-taxon (Lineage A) or 153-taxon
+(Lineage B) community table -- so this edit is not lineage-specific and there is no
+separate Lineage-B fig1 to keep in sync.
+
+Output: figures/presentation_items/fig1_taxonomic_breakdown.{png,pdf} (regenerated).
+
+### #################################################################################
+### 2026-08-31 -- Lineage B port: fig3 volcano plots, expanded to carry the
+### quadratic date term
+### #################################################################################
+
+presentation_items_prevalence_filtered_insect/fig3_volcano_plots.R. The Lineage-A
+fig3 was a 1x3 row of volcanoes on the LINEAR date term (a insect~date, b
+fungal~date) plus one fungal~insect_PCoA1 panel (c). Under Lineage B the direct
+date screens now also carry a QUADRATIC date term and a hump/dip `shape` column
+(the 2026-08-31 taxon~date entries above), and there is no clean way to show two
+t-statistics per taxon on one volcano. Resolved by expanding to a **2x3 grid,
+rows = functional form of the seasonal test**:
+
+| | insect ~ date | fungal ~ date | fungal ~ insect axis |
+|---|---|---|---|
+| **Row 1 -- linear** | a  linear-term volcano | b  linear-term volcano | c  PCoA1, factor(date)-adjusted |
+| **Row 2 -- quadratic** | d  quadratic-term volcano | e  quadratic-term volcano | f  PCoA2, factor(date)-adjusted |
+
+- Volcano y = -log10(q) throughout. Row 1 a/b x = linear t (wings = earlier / later
+  season). Row 2 d/e x = quadratic t, with the sign mapped to shape in the axis
+  label: `t < 0: hump` (concave-down, mid-season peak) / `t > 0: dip`. So d/e read
+  with the same left/right grammar as a/b.
+- Panel f = fungal ~ insect_PCoA2 was the user's call: it makes row 2 cohere as
+  "the non-linear seasonal story" -- d/e are the quadratic date terms, and
+  insect_PCoA2 is the axis whose fungal hits are what first surfaced the quadratic
+  date trend (the "what IS insect_PCoA2" entry above). c and f are a matched pair:
+  PCoA1 (the ~linear date axis) in row 1, PCoA2 (the hump-shaped date axis) in row 2.
+- **Panels c and f use the factor(date)-adjusted results**
+  (`fungal_insect_association_results.PCoA{1,2}_plus_factordate.csv`), not the
+  permissive unadjusted ones, per user request and per
+  `interpretation_update_prevalence_filtered_insect_08282026.md` sec. 5. factor(date)
+  is a 6-level term absorbing any functional form of season, so these panels show
+  the DESEASONALIZED insect-community association -- the defensible version -- rather
+  than the date-collinear one. Both are the with-lure variant (no `.no_lure`
+  factordate file exists), so c and f are also matched on lure handling.
+  - Panel c (PCoA1): 17/200 sig. PCoA1's hit count is stable once any non-linear
+    date flexibility is allowed (9 linear -> 19 quadratic -> 17 factor(date)), so no
+    instability caveat needed. Note *Cytospora prunicola* (ASV_1905) is NOT among the
+    labeled hits here -- it fails factor(date) adjustment (q=0.257), consistent with
+    the CORRECTION entries. The labeled hits are a mix of both directions (Exophiala,
+    Diatrype stigma on the negative side; Sarcotrochila, a Verrucariaceae taxon,
+    several unclassified on the positive side).
+  - Panel f (PCoA2): 9/200 sig, headline count, BUT the subtitle flags PCoA2 as
+    unstable across date controls -- 6/200 unadjusted, 0/200 under a quadratic date
+    term, 9/200 under factor(date) -- and small-sample-sensitive (see text). Labeled
+    hits include *Tympanis* sp. and two *Cytospora* sp. ASVs -- the genus/family-level
+    Valsaceae + *Tympanis* reappearance that sec. 5 of the interpretation doc
+    identifies as the defensible reading, as opposed to *C. prunicola* by name.
+- `make_volcano()` generalized with `t_col`/`q_col` args so the one builder draws
+  both the linear (t_stat/q_value) and quadratic (t_stat_quad/q_value_quad)
+  volcanoes; significance and label-ranking use whichever term is plotted. c and f
+  use the default t_stat/q_value columns (the PCoA-axis coefficient from the
+  factor(date)-adjusted model).
+
+Dynamic panel counts on this run: a 69/153 sig (linear), b 2186/6342, c 17/200
+(factor(date)-adjusted), d 38/153 (quadratic q<0.10), e 707/6342, f 9/200
+(factor(date)-adjusted; 6/200 unadjusted, 0/200 quadratic). Sanity checks against
+the log: *Xyleborinus attenuatus* lands on the DIP side of panel d (t_quad>0) and
+*Anisandrus sayi* on the HUMP side with a near-null linear term -- both as described
+in the 2026-08-31 taxon~date entry.
+
+Panels b and e read the shared, lineage-invariant
+`data/2024_fungi/fungal_taxa_date_association.all_taxa.csv`; if Lineage-A fig3 is
+ever given the same quadratic expansion, its b/e panels would be identical to these.
+
+The 2x3 is assembled with `gtable` `rbind`/`cbind` (size="max"), matching fig1/fig2
+rather than the Lineage-A fig3's `gridExtra::arrangeGrob` -- each column is an
+rbind of its two panels (equalizes y-axis/panel widths so the boxes and x-tick
+labels line up top-to-bottom), then the three columns are cbind'd (equalizes
+row heights left-to-right, so panel f's 2-line subtitle bumps the whole bottom
+subtitle band uniformly instead of pushing f's panel box out of line). The
+freeze-to-PNG / replay-to-PDF step for ggrepel label-position consistency is
+unchanged.
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig3_volcano_plots.
+{png,pdf}.
