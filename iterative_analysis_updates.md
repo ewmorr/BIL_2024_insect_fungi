@@ -822,3 +822,267 @@ Output: data/ and figures/compare_insects_fungi_pairwise_taxa_prevalence_filtere
 insect/ (full grid + significant hits + per-insect / per-fungal / family summaries
 for the main run; *.date_site_residualized.csv + original_vs_residualized_
 comparison.{csv,png} for the follow-up).
+
+### #################################################################################
+### 2026-09-01 -- Lineage B port: fig4/fig5 taxonomic breakdowns, with linear +
+### quadratic date terms combined onto one set of axes as dodged bars
+### #################################################################################
+
+presentation_items_prevalence_filtered_insect/fig4_association_taxonomic_breakdown.R
+and fig5_family_breakdown_by_order.R. Lineage-A's fig4/fig5 broke down the LINEAR-
+term hits only (fig4: insect~date by subfamily, fungal~date by order/class,
+fungal~insect_PCoA1 by order/class; fig5: family-within-order detail for the two
+fungal panels). Ported forward with the quadratic date term (added to the direct
+taxon~date screens on 2026-08-28, same as fig3) included alongside the linear term,
+per user request, on the SAME taxonomic-group axes rather than in separate panels --
+each group gets up to 4 dodged (side-by-side) bars: existing blue (#0072B2, later
+season/linear t>0) and vermillion (#D55E00, earlier season/linear t<0), plus two new
+Okabe-Ito colors for the quadratic term, sky blue (#56B4E9, dip/t>0) and orange
+(#E69F00, hump/t<0). This only applies where linear and quadratic are two terms of
+the SAME test (insect~date, fungal~date) -- fig4 panels c/d (fungal~insect_PCoA1,
+fungal~insect_PCoA2) are different predictor axes, not a linear/quadratic pair of one
+test (no quadratic variant of a PCoA-axis coefficient exists in this project), so
+they stay single-term, using the same factor(date)-adjusted CoCA files and direction
+framing fig3 established (panel c keeps PCoA1's guild-level Scolytinae-vs-
+fungivorous-Latridiidae/Corticariinae language; panel d uses generic PCoA2+/- labels
+since PCoA2 is a within-Scolytinae species-composition axis, not a guild split, and
+its subtitle carries the same instability caveat as fig3 -- 9/200 factor(date)-
+adjusted, 6/200 unadjusted, 0/200 quadratic-date).
+
+- fig4 is **3 columns**: a insect~date (linear+quadratic combined, dodged, by
+  subfamily) and b fungal~date (linear+quadratic combined, dodged, by order/class)
+  each get a full-height column; c fungal~PCoA1 and d fungal~PCoA2 (both single-term,
+  factor(date)-adjusted) stack in a third, narrower column, the same layout idea
+  fig5 uses for its busy vs. narrow panels.
+- The top-n fold cutoff for a/b (top 15 + "Other") ranks groups by the COMBINED
+  linear+quadratic hit count, per user request -- a taxon significant in both terms
+  counts twice toward its group's total. Panel a needed this folding for the first
+  time in this lineage: Lineage A's insect~date panel never needed it (only 4
+  subfamilies, family-filtered table), but Lineage B spans 53 families/74
+  subfamilies. Subfamily fallback-to-Family logic was generalized to match:
+  insect_taxa_date_association.csv carries baked-in Family/Subfamily/Order columns
+  (no join needed, unlike Lineage A), but Subfamily uses two upstream conventions --
+  literal "NA" (unresolved, Family also "NA") and "NoSubfamily_<x>" (Family resolved,
+  no subfamily rank) -- both collapse to Family, extending Lineage A's original
+  is.na(Subfamily)-only fallback. Panels a/b stay unfaceted at the Order level for
+  insects specifically (b IS faceted by fungal Class) -- Lineage B insect taxa are
+  92% Coleoptera (140/153), so an order facet would produce one dominant facet and
+  several near-empty ones, unlike the fungal panels' more even Class split.
+- fig5 is **3 panels**: a = family-within-order breakdown of fig4 panel a/b's
+  fungal~date COMBINED result (same dodge design and combined-count fold rule as
+  fig4), b = fig4 panel c's fungal~PCoA1 breakdown (single-term, unchanged design),
+  c = fig4 panel d's fungal~PCoA2 breakdown (single-term). Panel c (PCoA2, only 9
+  taxa across 4 orders) is small but genuinely informative: Helotiales alone splits
+  into 3 different families (incl. Tympanidaceae) that fig4 panel d's order-level bar
+  collapses into one, and Diaporthales resolves to Valsaceae specifically -- the
+  "Tympanis-as-a-group" / "Valsaceae/Cytospora-as-a-group" framing the interpretation
+  doc already recommends for this axis (sec. 6). Panel a's layout uses a 2-column
+  arrangeGrob with panel a (the busiest, combined-term) wide on the left and b/c
+  stacked narrower on the right.
+- Every kept group gets a complete 4-category block via `tidyr::complete(...,
+  fill = list(n = 0))` even where a category has zero hits, so `position_dodge2()`
+  reserves the same 4 dodge slots for every group/facet row -- without this, groups
+  with fewer non-zero categories would dodge to different widths/offsets than groups
+  with all 4, breaking cross-row alignment. Zero-count bars render at zero height
+  with a blank (not "0") text label.
+- Both fig4/fig5 hit the same gtable-alignment limitation fig5-Lineage-A already
+  found: the gtable rbind/cbind technique fig3 uses (column = rbind of its row
+  panels, then cbind the columns) requires every column to have the same total row
+  count, and here panels are facet_grid'd with DIFFERING numbers of Class/Order
+  facets -- so cbind fails. Used gridExtra::arrangeGrob instead (Lineage A's
+  original approach for these two figures), which places each panel as an opaque
+  grob and sidesteps the row-count requirement.
+- **Bug found and fixed**: the combined-panel builder initially computed `group =
+  factor(group, levels = ...)` BEFORE the `left_join(group_class, ...)` used for
+  Class faceting. `dplyr::left_join` silently coerces a factor join column back to
+  character when the other side is character, which drops the factor's levels -- so
+  `levels(counts$group)` came back NULL, the label lookup vector built from it was
+  empty, and every faceted row's axis label rendered as literal "NA" (correct bar
+  lengths/positions, wrong text -- isolated to the facet_by_class path since the
+  unfaceted insect panel was unaffected). Fixed by moving the join before the factor
+  conversion, matching the order the working single-term builder already used, and
+  applied consistently in fig5's combined builder (join Order/Family back onto
+  `fam_id` while still character, convert to factor after).
+- A couple of subtitle-clipping issues (text running past a narrow column's width,
+  e.g. panel d's instability caveat) were fixed with explicit "\n" line breaks at
+  natural clause boundaries, verified by re-rendering.
+
+Dynamic counts on this run -- fig4: a 92/153 taxa sig in >=1 term (69 linear + 38
+quadratic = 107 hit-instances, 55 subfamilies), b 2490/6342 (2186 linear + 707
+quadratic = 2893 hit-instances, 102 orders), c 17/200 (PCoA1 factor(date), 10
+orders), d 9/200 (PCoA2 factor(date), 4 orders, unstable across date controls --
+6/200 unadjusted, 0/200 quadratic-date). fig5: a 1467 taxa/14 orders (1280 linear +
+467 quadratic = 1747 hit-instances), b 13 taxa/9 orders, c 9 taxa/4 orders.
+
+Both scripts run standalone end-to-end (verified with Rscript, output inspected
+visually, spot-checked e.g. fig4 panel a's Scolytinae row -- 12 linear hits split 10
+earlier/2 later, 6 quadratic hits split 3 hump/3 dip -- against the raw CSV) and
+write only into figures/ and data/presentation_items_prevalence_filtered_insect/ --
+no Lineage-A file touched.
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig4_association_
+taxonomic_breakdown.{png,pdf}, fig5_family_breakdown_by_order.{png,pdf}; per-group
+counts as data/presentation_items_prevalence_filtered_insect/fig4_taxonomic_
+breakdown.{insect_date_combined.by_subfamily,fungal_date_combined.by_order,
+fungal_insectPCoA1_factordate.by_order,fungal_insectPCoA2_factordate.by_order}.csv
+and fig5_family_breakdown_by_order.{fungal_date_combined,fungal_insectPCoA1_
+factordate,fungal_insectPCoA2_factordate}.csv.
+
+### #################################################################################
+### 2026-09-01 -- Lineage B port: fig6 (responsive-taxa abundance/count by site),
+### using a combined linear-or-quadratic date definition and combined PCoA1-or-PCoA2
+### insect definition
+### #################################################################################
+
+presentation_items_prevalence_filtered_insect/fig6_responsive_taxa_abundance_and_
+counts_by_site.R. Same 2x2 layout as Lineage A's fig6 (a/b mean relative sequence
+abundance by site, c/d ASV count/richness by site; columns = date-associated vs.
+insect-associated), rebuilt on the Lineage-B matched dataset (all-families, >=5-
+sample prevalence-filtered insect table, same construction as fig2's Lineage-B port
+-- 69 matched samples, 15,422 Kingdom==Fungi ASVs) and, per user request, on a
+COMBINED significance definition for each association type rather than Lineage A's
+single-test one:
+
+- "Date-associated" = q<0.10 on EITHER the linear or quadratic date term
+  (fungal_taxa_date_association.all_taxa.csv, lineage-invariant -- same file Lineage
+  A's fig6 reads, but Lineage A only used the linear term since the quadratic term
+  didn't exist yet when that figure was built). 2490/15422 taxa (2186 linear + 707
+  quadratic, matching fig4 panel b's numbers exactly, since it's the same union).
+- "Insect-associated" = q<0.10 on EITHER insect_PCoA1 or insect_PCoA2, factor(date)-
+  adjusted (fungal_insect_association_results.PCoA{1,2}_plus_factordate.csv -- same
+  deseasonalized files fig3/fig4/fig5 use, replacing Lineage A's single permissive
+  no-lure PCoA1 test). Both files test the identical top-200 CoCA-loading candidate
+  set, and PCoA1's 17 hits and PCoA2's 9 hits don't overlap at all, so the union is a
+  clean 26/15422 taxa, no double-counting to worry about.
+- Site labels use the raw `Site` metadata column (Durham/Pease/Manchester Cedar
+  Swamp/Manchester Airport), matching fig2's Lineage-B convention, rather than
+  Lineage A's fig6 "Pease" -> "Pease Airport" display rename.
+
+Panel c and panel d's total bar heights are identical per site by construction (both
+partition the SAME 15,422-taxon presence data into "associated"/"not", just under a
+different definition of "associated") -- confirmed visually and expected, not a
+scaling artifact: Durham 2401+7443 = 20+9824 = 9844; Pease 2363+6871 = 26+9208 = 9234;
+Manchester Cedar Swamp 2356+6779 = 11+9124 = 9135; Manchester Airport 2126+5474 =
+5+7595 = 7600.
+
+Headline pattern matches Lineage A qualitatively: a small taxon share (2490/15422 =
+16.2% date-associated; 26/15422 = 0.17% insect-associated) carries disproportionate
+sequence abundance and richness. Exact per-site numbers underlying each panel
+(site order matches the figure's site_levels; abundance = mean relative sequence
+abundance across that site's samples):
+
+**Panel a -- relative abundance, date-associated:**
+
+| Site | Date-associated | Not date-associated |
+|---|---|---|
+| Durham | 86.9108% | 13.0892% |
+| Pease | 88.3081% | 11.6919% |
+| Manchester Cedar Swamp | 88.2896% | 11.7104% |
+| Manchester Airport | 81.4339% | 18.5661% |
+
+**Panel b -- relative abundance, insect-associated:**
+
+| Site | Insect-associated | Not insect-associated |
+|---|---|---|
+| Durham | 0.183432% | 99.8381% |
+| Pease | 1.03079% | 99.2117% |
+| Manchester Cedar Swamp | 0.00944035% | 99.9958% |
+| Manchester Airport | 0.00509525% | 99.9988% |
+
+**Panel c -- ASV count, date-associated:**
+
+| Site | Date-associated | Not date-associated | Total |
+|---|---|---|---|
+| Durham | 2401 | 7443 | 9844 |
+| Pease | 2363 | 6871 | 9234 |
+| Manchester Cedar Swamp | 2356 | 6779 | 9135 |
+| Manchester Airport | 2126 | 5474 | 7600 |
+
+**Panel d -- ASV count, insect-associated:**
+
+| Site | Insect-associated | Not insect-associated | Total |
+|---|---|---|---|
+| Durham | 20 | 9824 | 9844 |
+| Pease | 26 | 9208 | 9234 |
+| Manchester Cedar Swamp | 11 | 9124 | 9135 |
+| Manchester Airport | 5 | 7595 | 7600 |
+
+The insect-associated slice is small enough (26 taxa total) to be barely visible in
+panel b and only a thin sliver in panel d. Pease stands out numerically as carrying
+the most of both its abundance (1.03%, ~5.6x Durham's 0.18%, the next highest) and
+count (26 ASVs, also the site max) in the insect-associated category, but all four
+sites carry the full Ethanol/Alpha-pinene_EtOH/Ips lure set (no site is lure-
+restricted), so this is a site-level pattern, not a lure-design artifact -- not
+further investigated here. Overall the insect-community-association signal is far
+weaker and narrower than the seasonal one under Lineage B, matching the sec. 5/6
+finding.
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig6_responsive_taxa_
+abundance_and_counts_by_site.{png,pdf}.
+
+### #################################################################################
+### 2026-09-01 -- Lineage B port: fig7/fig8 (trait breakdowns), same combined-term
+### dodged-bar design as fig4/fig5 -- Lineage B presentation-figure set now complete
+### #################################################################################
+
+presentation_items_prevalence_filtered_insect/fig7_association_trait_breakdown.R and
+fig8_association_trait_breakdown.R. Same FungalTraits/Polme et al. 2020 genus-join
+trophic-mode breakdown as Lineage A (fig7 faceted by growth_form, fig8 by taxonomic
+Class), rebuilt per user request with the same design already established for fig4/
+fig5: the linear and quadratic date terms share one set of trait-group axes as 4
+dodged bars (blue/vermillion linear later/earlier season, sky-blue/orange quadratic
+dip/hump), and insect_PCoA1/PCoA2 stay as separate single-term panels (factor(date)-
+adjusted, replacing Lineage A's permissive no-lure PCoA1-only test) rather than
+merged, since they're different predictor axes with different direction semantics
+(PCoA1 guild-level, PCoA2 within-Scolytinae composition -- same reasoning as fig4c/d).
+
+- Both figures are now **2 columns**: panel a (fungal trait vs. date, combined dodge)
+  full-height on the left; panels b (PCoA1) and c (PCoA2), both single-term, stacked
+  narrower on the right -- the same a-wide/b+c-stacked layout fig5 uses, since fig7/
+  fig8 have only one "combined-term" panel (trait vs. date) rather than fig4's two
+  (insect~date AND fungal~date both combined), unlike fig4's 3-column layout.
+- fig7 (growth_form facets): panel a folds to the top 25 trait groups + "Other",
+  ranked by COMBINED linear+quadratic hit count (2490 taxa, 2186 linear + 707
+  quadratic = 2893 hit-instances, 42 trait groups, matching fig4 panel b's date
+  numbers exactly since it's the same taxon set under a different grouping).
+  "Unclassified genus" / "No FungalTraits match" kept as their own pseudo-facet bars,
+  unchanged from Lineage A.
+- fig8 (Class facets, trait_group x Class is a genuine cross-tab, not a 1:1 nesting
+  like fig4's Order-within-Class): panel a's two Lineage-A thresholds -- drop a Class
+  facet with too few total hits, fold a (lifestyle, Class) cell with too few hits
+  into that facet's "Other" -- now use the COMBINED hit count via
+  `min_facet_hits_date = 6` (unchanged value from Lineage A). This run: 10 of 25
+  classes dropped (30 hit-instances, all <6), 29 lifestyle-within-class cells folded
+  (65 hit-instances). "Unclassified genus" / "No FungalTraits match" are DROPPED
+  entirely here (not their own bars) -- unchanged from Lineage A, opposite of fig7's
+  treatment, same rationale as before (thin Class-by-Class splitting vs. one legible
+  bucket).
+- Implementation: both combined-panel builders reuse fig4's join-before-factor
+  ordering (facet/axis_id joined while columns are still character, converted to
+  factor only in the final mutate) to avoid the "NA" axis-label bug fig4 hit and
+  fixed on its first pass -- both scripts rendered correctly on the first run this
+  time, no follow-up fix needed. fig8's builder also carries forward fig4/fig7's
+  zero-fill-via-complete()/crossing() trick so every (group,facet) row gets all 4
+  dodge slots reserved even when a category has zero hits, keeping cross-row/cross-
+  facet alignment consistent.
+
+Dynamic counts on this run -- fig7: a 2490/6342 (2186 linear + 707 quadratic, 42
+trait groups), b 17/200 (PCoA1 factor(date), 7 trait groups), c 9/200 (PCoA2
+factor(date), 3 trait groups). fig8 (FungalTraits-matched subset only, "Unclassified
+genus"/"No FungalTraits match" excluded): a 1747 taxa (1546 linear + 478 quadratic =
+2024 hit-instances) across 20 surviving lifestyles/15 surviving classes, b 9 taxa
+across 4 lifestyles/5 classes, c 7 taxa across 2 lifestyles/3 classes (2 of PCoA2's 9
+hits fall in the excluded Unclassified-genus/No-FungalTraits-match buckets, hence 7
+not 9).
+
+This completes the Lineage-B presentation-figure set (fig1 lineage-invariant, no
+port needed; fig2-fig8 all built) -- see project_organization.md's "Known gaps"
+section, now updated to reflect Lineage B as feature-complete with Lineage A other
+than the PCoA1_date_axis/PCoA3_lure_axis/compare_selection_strategies variants and
+alpha diversity (both deliberately out of scope, see that section).
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig7_association_
+trait_breakdown.{png,pdf}, fig8_association_trait_breakdown.{png,pdf}; per-group
+counts as data/presentation_items_prevalence_filtered_insect/fig{7,8}_trait_
+breakdown.{fungal_date_combined,fungal_insectPCoA1_factordate,
+fungal_insectPCoA2_factordate}.csv.

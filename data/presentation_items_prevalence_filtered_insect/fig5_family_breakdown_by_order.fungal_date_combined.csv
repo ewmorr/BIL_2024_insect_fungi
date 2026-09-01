@@ -1,0 +1,213 @@
+"Order","Family","direction","n"
+"Capnodiales","Cladosporiaceae","Later season (linear, t>0)",44
+"Capnodiales","Cladosporiaceae","Dip (quadratic, t>0)",12
+"Capnodiales","Neoantennariellaceae","Hump (quadratic, t<0)",6
+"Capnodiales","Capnodiales_fam_Incertae_sedis","Dip (quadratic, t>0)",2
+"Capnodiales","Capnodiales_fam_Incertae_sedis","Earlier season (linear, t<0)",2
+"Capnodiales","Neodevriesiaceae","Dip (quadratic, t>0)",2
+"Capnodiales","Unclassified","Dip (quadratic, t>0)",2
+"Capnodiales","Unclassified","Earlier season (linear, t<0)",2
+"Capnodiales","Unclassified","Hump (quadratic, t<0)",2
+"Capnodiales","Capnodiales_fam_Incertae_sedis","Later season (linear, t>0)",1
+"Capnodiales","Cladosporiaceae","Earlier season (linear, t<0)",1
+"Chaetothyriales","Herpotrichiellaceae","Earlier season (linear, t<0)",16
+"Chaetothyriales","Epibryaceae","Earlier season (linear, t<0)",10
+"Chaetothyriales","Epibryaceae","Dip (quadratic, t>0)",8
+"Chaetothyriales","Herpotrichiellaceae","Dip (quadratic, t>0)",6
+"Chaetothyriales","Herpotrichiellaceae","Later season (linear, t>0)",5
+"Chaetothyriales","Trichomeriaceae","Later season (linear, t>0)",3
+"Chaetothyriales","Unclassified","Dip (quadratic, t>0)",3
+"Chaetothyriales","Unclassified","Earlier season (linear, t<0)",3
+"Chaetothyriales","Chaetothyriaceae","Later season (linear, t>0)",2
+"Chaetothyriales","Other","Earlier season (linear, t<0)",2
+"Chaetothyriales","Paracladophialophoraceae","Earlier season (linear, t<0)",2
+"Chaetothyriales","Trichomeriaceae","Dip (quadratic, t>0)",2
+"Chaetothyriales","Unclassified","Later season (linear, t>0)",2
+"Chaetothyriales","Other","Later season (linear, t>0)",1
+"Chaetothyriales","Paracladophialophoraceae","Dip (quadratic, t>0)",1
+"Diaporthales","Valsaceae","Earlier season (linear, t<0)",74
+"Diaporthales","Valsaceae","Dip (quadratic, t>0)",26
+"Diaporthales","Gnomoniaceae","Earlier season (linear, t<0)",5
+"Diaporthales","Other","Later season (linear, t>0)",5
+"Diaporthales","Other","Earlier season (linear, t<0)",4
+"Diaporthales","Gnomoniaceae","Hump (quadratic, t<0)",3
+"Diaporthales","Gnomoniaceae","Later season (linear, t>0)",3
+"Diaporthales","Melanconiellaceae","Earlier season (linear, t<0)",3
+"Diaporthales","Erythrogloeaceae","Hump (quadratic, t<0)",2
+"Diaporthales","Erythrogloeaceae","Later season (linear, t>0)",2
+"Diaporthales","Unclassified","Earlier season (linear, t<0)",2
+"Diaporthales","Valsaceae","Later season (linear, t>0)",2
+"Diaporthales","Coryneaceae","Earlier season (linear, t<0)",1
+"Diaporthales","Coryneaceae","Later season (linear, t>0)",1
+"Diaporthales","Other","Dip (quadratic, t>0)",1
+"Diaporthales","Other","Hump (quadratic, t<0)",1
+"Diaporthales","Unclassified","Later season (linear, t>0)",1
+"Dothideales","Saccotheciaceae","Later season (linear, t>0)",48
+"Dothideales","Saccotheciaceae","Hump (quadratic, t<0)",39
+"Dothideales","Dothioraceae","Hump (quadratic, t<0)",38
+"Dothideales","Dothideaceae","Later season (linear, t>0)",32
+"Dothideales","Dothioraceae","Later season (linear, t>0)",28
+"Dothideales","Dothideaceae","Hump (quadratic, t<0)",24
+"Dothideales","Unclassified","Hump (quadratic, t<0)",10
+"Dothideales","Unclassified","Later season (linear, t>0)",9
+"Dothideales","Aureobasidiaceae","Hump (quadratic, t<0)",7
+"Dothideales","Dothideaceae","Earlier season (linear, t<0)",3
+"Dothideales","Dothideales_fam_Incertae_sedis","Earlier season (linear, t<0)",2
+"Dothideales","Aureobasidiaceae","Earlier season (linear, t<0)",1
+"Dothideales","Dothideaceae","Dip (quadratic, t>0)",1
+"Dothideales","Dothioraceae","Earlier season (linear, t<0)",1
+"Dothideales","Saccotheciaceae","Earlier season (linear, t<0)",1
+"Helotiales","Other","Earlier season (linear, t<0)",18
+"Helotiales","Tympanidaceae","Earlier season (linear, t<0)",18
+"Helotiales","Sclerotiniaceae","Earlier season (linear, t<0)",14
+"Helotiales","Hyaloscyphaceae","Earlier season (linear, t<0)",11
+"Helotiales","Unclassified","Earlier season (linear, t<0)",9
+"Helotiales","Unclassified","Later season (linear, t>0)",9
+"Helotiales","Dermateaceae","Earlier season (linear, t<0)",8
+"Helotiales","Helotiales_fam_Incertae_sedis","Hump (quadratic, t<0)",7
+"Helotiales","Other","Later season (linear, t>0)",7
+"Helotiales","Helotiales_fam_Incertae_sedis","Earlier season (linear, t<0)",5
+"Helotiales","Other","Dip (quadratic, t>0)",5
+"Helotiales","Sclerotiniaceae","Hump (quadratic, t<0)",5
+"Helotiales","Sclerotiniaceae","Later season (linear, t>0)",4
+"Helotiales","Tympanidaceae","Dip (quadratic, t>0)",4
+"Helotiales","Helotiales_fam_Incertae_sedis","Dip (quadratic, t>0)",3
+"Helotiales","Hyaloscyphaceae","Hump (quadratic, t<0)",3
+"Helotiales","Hyaloscyphaceae","Later season (linear, t>0)",3
+"Helotiales","Unclassified","Hump (quadratic, t<0)",3
+"Helotiales","Helotiales_fam_Incertae_sedis","Later season (linear, t>0)",2
+"Helotiales","Hyaloscyphaceae","Dip (quadratic, t>0)",2
+"Helotiales","Other","Hump (quadratic, t<0)",2
+"Helotiales","Unclassified","Dip (quadratic, t>0)",2
+"Helotiales","Dermateaceae","Hump (quadratic, t<0)",1
+"Helotiales","Dermateaceae","Later season (linear, t>0)",1
+"Helotiales","Sclerotiniaceae","Dip (quadratic, t>0)",1
+"Hypocreales","Nectriaceae","Earlier season (linear, t<0)",16
+"Hypocreales","Hypocreales_fam_Incertae_sedis","Earlier season (linear, t<0)",9
+"Hypocreales","Nectriaceae","Later season (linear, t>0)",6
+"Hypocreales","Ophiocordycipitaceae","Earlier season (linear, t<0)",3
+"Hypocreales","Other","Later season (linear, t>0)",3
+"Hypocreales","Sarocladiaceae","Later season (linear, t>0)",3
+"Hypocreales","Cylindriaceae","Later season (linear, t>0)",2
+"Hypocreales","Hypocreaceae","Dip (quadratic, t>0)",2
+"Hypocreales","Nectriaceae","Dip (quadratic, t>0)",2
+"Hypocreales","Ophiocordycipitaceae","Dip (quadratic, t>0)",2
+"Hypocreales","Other","Earlier season (linear, t<0)",2
+"Hypocreales","Cylindriaceae","Hump (quadratic, t<0)",1
+"Hypocreales","Hypocreaceae","Later season (linear, t>0)",1
+"Hypocreales","Hypocreales_fam_Incertae_sedis","Dip (quadratic, t>0)",1
+"Hypocreales","Nectriaceae","Hump (quadratic, t<0)",1
+"Hypocreales","Other","Dip (quadratic, t>0)",1
+"Lecanorales","Unclassified","Earlier season (linear, t<0)",15
+"Lecanorales","Parmeliaceae","Earlier season (linear, t<0)",8
+"Lecanorales","Parmeliaceae","Dip (quadratic, t>0)",7
+"Lecanorales","Lecanoraceae","Earlier season (linear, t<0)",6
+"Lecanorales","Parmeliaceae","Later season (linear, t>0)",3
+"Lecanorales","Unclassified","Dip (quadratic, t>0)",3
+"Lecanorales","Unclassified","Later season (linear, t>0)",3
+"Lecanorales","Catillariaceae","Earlier season (linear, t<0)",2
+"Lecanorales","Other","Earlier season (linear, t<0)",2
+"Lecanorales","Ramalinaceae","Earlier season (linear, t<0)",2
+"Lecanorales","Scoliciosporaceae","Earlier season (linear, t<0)",2
+"Lecanorales","Lecanoraceae","Hump (quadratic, t<0)",1
+"Lecanorales","Lecanoraceae","Later season (linear, t>0)",1
+"Lecanorales","Other","Dip (quadratic, t>0)",1
+"Lecanorales","Scoliciosporaceae","Dip (quadratic, t>0)",1
+"Mycosphaerellales","Mycosphaerellaceae","Later season (linear, t>0)",170
+"Mycosphaerellales","Mycosphaerellaceae","Dip (quadratic, t>0)",12
+"Mycosphaerellales","Mycosphaerellaceae","Hump (quadratic, t<0)",8
+"Mycosphaerellales","Mycosphaerellaceae","Earlier season (linear, t<0)",5
+"Mycosphaerellales","Teratosphaeriaceae","Earlier season (linear, t<0)",4
+"Mycosphaerellales","Teratosphaeriaceae","Later season (linear, t>0)",4
+"Mycosphaerellales","Unclassified","Dip (quadratic, t>0)",4
+"Mycosphaerellales","Teratosphaeriaceae","Dip (quadratic, t>0)",2
+"Mycosphaerellales","Unclassified","Earlier season (linear, t<0)",2
+"Mycosphaerellales","Extremaceae","Earlier season (linear, t<0)",1
+"Pleosporales","Other","Earlier season (linear, t<0)",38
+"Pleosporales","Didymellaceae","Later season (linear, t>0)",23
+"Pleosporales","Unclassified","Earlier season (linear, t<0)",14
+"Pleosporales","Cucurbitariaceae","Later season (linear, t>0)",10
+"Pleosporales","Cucurbitariaceae","Earlier season (linear, t<0)",9
+"Pleosporales","Other","Later season (linear, t>0)",9
+"Pleosporales","Pleosporaceae","Later season (linear, t>0)",8
+"Pleosporales","Cucurbitariaceae","Dip (quadratic, t>0)",7
+"Pleosporales","Didymellaceae","Dip (quadratic, t>0)",7
+"Pleosporales","Other","Dip (quadratic, t>0)",7
+"Pleosporales","Phaeosphaeriaceae","Earlier season (linear, t<0)",6
+"Pleosporales","Phaeosphaeriaceae","Later season (linear, t>0)",6
+"Pleosporales","Didymosphaeriaceae","Dip (quadratic, t>0)",5
+"Pleosporales","Unclassified","Dip (quadratic, t>0)",5
+"Pleosporales","Unclassified","Later season (linear, t>0)",5
+"Pleosporales","Didymosphaeriaceae","Later season (linear, t>0)",4
+"Pleosporales","Pleosporaceae","Dip (quadratic, t>0)",4
+"Pleosporales","Didymosphaeriaceae","Earlier season (linear, t<0)",3
+"Pleosporales","Didymosphaeriaceae","Hump (quadratic, t<0)",2
+"Pleosporales","Phaeosphaeriaceae","Dip (quadratic, t>0)",2
+"Pleosporales","Other","Hump (quadratic, t<0)",1
+"Pleosporales","Phaeosphaeriaceae","Hump (quadratic, t<0)",1
+"Pleosporales","Pleosporaceae","Earlier season (linear, t<0)",1
+"Polyporales","Other","Later season (linear, t>0)",29
+"Polyporales","Meruliaceae","Later season (linear, t>0)",17
+"Polyporales","Hyphodermataceae","Later season (linear, t>0)",16
+"Polyporales","Steccherinaceae","Later season (linear, t>0)",14
+"Polyporales","Phanerochaetaceae","Earlier season (linear, t<0)",13
+"Polyporales","Polyporaceae","Earlier season (linear, t<0)",13
+"Polyporales","Fomitopsidaceae","Earlier season (linear, t<0)",11
+"Polyporales","Fomitopsidaceae","Later season (linear, t>0)",9
+"Polyporales","Hyphodermataceae","Dip (quadratic, t>0)",7
+"Polyporales","Other","Dip (quadratic, t>0)",7
+"Polyporales","Phanerochaetaceae","Later season (linear, t>0)",7
+"Polyporales","Polyporaceae","Later season (linear, t>0)",7
+"Polyporales","Steccherinaceae","Dip (quadratic, t>0)",5
+"Polyporales","Phanerochaetaceae","Dip (quadratic, t>0)",4
+"Polyporales","Fomitopsidaceae","Dip (quadratic, t>0)",3
+"Polyporales","Meruliaceae","Earlier season (linear, t<0)",3
+"Polyporales","Other","Earlier season (linear, t<0)",3
+"Polyporales","Meruliaceae","Dip (quadratic, t>0)",1
+"Polyporales","Other","Hump (quadratic, t<0)",1
+"Polyporales","Polyporaceae","Dip (quadratic, t>0)",1
+"Polyporales","Polyporaceae","Hump (quadratic, t<0)",1
+"Russulales","Peniophoraceae","Later season (linear, t>0)",48
+"Russulales","Stereaceae","Earlier season (linear, t<0)",5
+"Russulales","Auriscalpiaceae","Later season (linear, t>0)",3
+"Russulales","Lachnocladiaceae","Later season (linear, t>0)",2
+"Russulales","Stereaceae","Later season (linear, t>0)",2
+"Russulales","Bondarzewiaceae","Dip (quadratic, t>0)",1
+"Russulales","Hericiaceae","Later season (linear, t>0)",1
+"Russulales","Lachnocladiaceae","Dip (quadratic, t>0)",1
+"Russulales","Peniophoraceae","Hump (quadratic, t<0)",1
+"Taphrinales","Taphrinaceae","Later season (linear, t>0)",37
+"Taphrinales","Taphrinaceae","Hump (quadratic, t<0)",22
+"Taphrinales","Taphrinaceae","Earlier season (linear, t<0)",2
+"Tremellales","Bulleribasidiaceae","Later season (linear, t>0)",58
+"Tremellales","Cryptococcaceae","Hump (quadratic, t<0)",21
+"Tremellales","Bulleribasidiaceae","Hump (quadratic, t<0)",20
+"Tremellales","Cryptococcaceae","Later season (linear, t>0)",15
+"Tremellales","Rhynchogastremataceae","Later season (linear, t>0)",15
+"Tremellales","Bulleraceae","Hump (quadratic, t<0)",13
+"Tremellales","Other","Later season (linear, t>0)",13
+"Tremellales","Unclassified","Later season (linear, t>0)",13
+"Tremellales","Rhynchogastremataceae","Hump (quadratic, t<0)",8
+"Tremellales","Bulleraceae","Later season (linear, t>0)",7
+"Tremellales","Tremellaceae","Hump (quadratic, t<0)",5
+"Tremellales","Unclassified","Hump (quadratic, t<0)",5
+"Tremellales","Tremellaceae","Earlier season (linear, t<0)",3
+"Tremellales","Other","Hump (quadratic, t<0)",2
+"Tremellales","Tremellaceae","Later season (linear, t>0)",2
+"Tremellales","Other","Dip (quadratic, t>0)",1
+"Tremellales","Other","Earlier season (linear, t<0)",1
+"Xylariales","Diatrypaceae","Earlier season (linear, t<0)",35
+"Xylariales","Amphisphaeriaceae","Later season (linear, t>0)",15
+"Xylariales","Graphostromataceae","Earlier season (linear, t<0)",6
+"Xylariales","Diatrypaceae","Dip (quadratic, t>0)",5
+"Xylariales","Diatrypaceae","Hump (quadratic, t<0)",4
+"Xylariales","Sporocadaceae","Later season (linear, t>0)",4
+"Xylariales","Diatrypaceae","Later season (linear, t>0)",1
+"Xylariales","Graphostromataceae","Later season (linear, t>0)",1
+"Xylariales","Hypoxylaceae","Dip (quadratic, t>0)",1
+"Xylariales","Hypoxylaceae","Earlier season (linear, t<0)",1
+"Xylariales","Hypoxylaceae","Later season (linear, t>0)",1
+"Xylariales","Sporocadaceae","Earlier season (linear, t<0)",1
+"Xylariales","Sporocadaceae","Hump (quadratic, t<0)",1
+"Xylariales","Xylariales_fam_Incertae_sedis","Earlier season (linear, t<0)",1
+"Xylariales","Xylariales_fam_Incertae_sedis","Later season (linear, t>0)",1

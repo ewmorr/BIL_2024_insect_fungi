@@ -1,0 +1,38 @@
+"group","cat","n"
+"Other","Later season (linear, t>0)",23
+"Other","Hump (quadratic, t<0)",10
+"Scolytinae","Earlier season (linear, t<0)",10
+"Other","Earlier season (linear, t<0)",9
+"Alleculinae","Later season (linear, t>0)",4
+"Other","Dip (quadratic, t>0)",4
+"Elaterinae","Hump (quadratic, t<0)",3
+"Elaterinae","Later season (linear, t>0)",3
+"Melasinae","Later season (linear, t>0)",3
+"Scolytinae","Dip (quadratic, t>0)",3
+"Scolytinae","Hump (quadratic, t<0)",3
+"Ciinae","Hump (quadratic, t<0)",2
+"Cossoninae","Later season (linear, t>0)",2
+"Cryptarchinae","Earlier season (linear, t<0)",2
+"Dendrometrinae","Later season (linear, t>0)",2
+"Melasinae","Dip (quadratic, t>0)",2
+"Scolytinae","Later season (linear, t>0)",2
+"Alleculinae","Dip (quadratic, t>0)",1
+"Ceryloninae","Hump (quadratic, t<0)",1
+"Ceryloninae","Later season (linear, t>0)",1
+"Ciinae","Earlier season (linear, t<0)",1
+"Corticariinae","Hump (quadratic, t<0)",1
+"Corticariinae","Later season (linear, t>0)",1
+"Cossoninae","Dip (quadratic, t>0)",1
+"Dendrometrinae","Dip (quadratic, t>0)",1
+"Dendrometrinae","Hump (quadratic, t<0)",1
+"Dorcatominae","Dip (quadratic, t>0)",1
+"Dorcatominae","Later season (linear, t>0)",1
+"Dryophthorinae","Dip (quadratic, t>0)",1
+"Dryophthorinae","Later season (linear, t>0)",1
+"Elaterinae","Earlier season (linear, t<0)",1
+"Melandryinae","Hump (quadratic, t<0)",1
+"Melandryinae","Later season (linear, t>0)",1
+"Microphysinae","Dip (quadratic, t>0)",1
+"Microphysinae","Later season (linear, t>0)",1
+"Molytinae","Earlier season (linear, t<0)",1
+"Molytinae","Hump (quadratic, t<0)",1

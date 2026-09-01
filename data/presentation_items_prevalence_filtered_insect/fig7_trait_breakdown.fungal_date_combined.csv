@@ -1,0 +1,91 @@
+"facet","group","cat","n"
+"Unclassified genus","Unclassified genus","Earlier season (linear, t<0)",287
+"Unclassified genus","Unclassified genus","Later season (linear, t>0)",267
+"filamentous mycelium","plant pathogen : filamentous mycelium","Later season (linear, t>0)",251
+"filamentous mycelium","plant pathogen : filamentous mycelium","Earlier season (linear, t<0)",212
+"filamentous mycelium","wood saprotroph : filamentous mycelium","Later season (linear, t>0)",188
+"filamentous mycelium","wood saprotroph : filamentous mycelium","Earlier season (linear, t<0)",157
+"Unclassified genus","Unclassified genus","Dip (quadratic, t>0)",128
+"Unclassified genus","Unclassified genus","Hump (quadratic, t<0)",81
+"filamentous mycelium","plant pathogen : filamentous mycelium","Dip (quadratic, t>0)",68
+"dimorphic yeast","plant pathogen : dimorphic yeast","Later season (linear, t>0)",52
+"No FungalTraits match","No FungalTraits match","Earlier season (linear, t<0)",51
+"filamentous mycelium","wood saprotroph (+plant pathogen) : filamentous mycelium","Later season (linear, t>0)",50
+"dimorphic yeast","sooty mold : dimorphic yeast","Later season (linear, t>0)",48
+"filamentous mycelium","litter saprotroph (+plant pathogen) : filamentous mycelium","Later season (linear, t>0)",47
+"filamentous mycelium","plant pathogen : filamentous mycelium","Hump (quadratic, t<0)",46
+"yeast","soil saprotroph : yeast","Later season (linear, t>0)",46
+"filamentous mycelium","wood saprotroph : filamentous mycelium","Hump (quadratic, t<0)",46
+"dimorphic yeast","mycoparasite : dimorphic yeast","Later season (linear, t>0)",42
+"filamentous mycelium","wood saprotroph : filamentous mycelium","Dip (quadratic, t>0)",42
+"dimorphic yeast","sooty mold : dimorphic yeast","Hump (quadratic, t<0)",39
+"No FungalTraits match","No FungalTraits match","Later season (linear, t>0)",35
+"filamentous mycelium","unspecified saprotroph : filamentous mycelium","Earlier season (linear, t<0)",34
+"Other","Other","Later season (linear, t>0)",33
+"dimorphic yeast","plant pathogen : dimorphic yeast","Hump (quadratic, t<0)",31
+"thallus photosynthetic","litter saprotroph (+plant pathogen) : thallus photosynthetic","Later season (linear, t>0)",28
+"yeast","unspecified saprotroph : yeast","Later season (linear, t>0)",26
+"thallus photosynthetic","lichenized : thallus photosynthetic","Earlier season (linear, t<0)",25
+"yeast","unspecified saprotroph : yeast","Hump (quadratic, t<0)",25
+"yeast","nectar/tap saprotroph : yeast","Earlier season (linear, t<0)",24
+"yeast","epiphyte : yeast","Later season (linear, t>0)",23
+"yeast","mycoparasite : yeast","Later season (linear, t>0)",22
+"filamentous mycelium","litter saprotroph : filamentous mycelium","Earlier season (linear, t<0)",21
+"filamentous mycelium","litter saprotroph : filamentous mycelium","Later season (linear, t>0)",21
+"Other","Other","Earlier season (linear, t<0)",20
+"yeast","soil saprotroph : yeast","Hump (quadratic, t<0)",19
+"dimorphic yeast","unspecified saprotroph : dimorphic yeast","Hump (quadratic, t<0)",17
+"dimorphic yeast","unspecified saprotroph : dimorphic yeast","Later season (linear, t>0)",17
+"filamentous mycelium","lichen parasite : filamentous mycelium","Earlier season (linear, t<0)",16
+"yeast","litter saprotroph : yeast","Later season (linear, t>0)",14
+"filamentous mycelium","unspecified saprotroph : filamentous mycelium","Later season (linear, t>0)",14
+"filamentous mycelium","foliar endophyte : filamentous mycelium","Later season (linear, t>0)",13
+"filamentous mycelium","litter saprotroph (+plant pathogen) : filamentous mycelium","Dip (quadratic, t>0)",13
+"Other","Other","Dip (quadratic, t>0)",13
+"dimorphic yeast","mycoparasite : dimorphic yeast","Hump (quadratic, t<0)",12
+"dimorphic yeast","soil saprotroph : dimorphic yeast","Hump (quadratic, t<0)",12
+"filamentous mycelium","animal parasite : filamentous mycelium","Later season (linear, t>0)",11
+"thallus photosynthetic","lichenized : thallus photosynthetic","Dip (quadratic, t>0)",11
+"No FungalTraits match","No FungalTraits match","Hump (quadratic, t<0)",11
+"filamentous mycelium","animal parasite : filamentous mycelium","Earlier season (linear, t<0)",9
+"yeast","litter saprotroph : yeast","Hump (quadratic, t<0)",9
+"No FungalTraits match","No FungalTraits match","Dip (quadratic, t>0)",9
+"dimorphic yeast","plant pathogen : dimorphic yeast","Earlier season (linear, t<0)",9
+"filamentous mycelium","soil saprotroph : filamentous mycelium","Earlier season (linear, t<0)",9
+"filamentous mycelium","animal parasite : filamentous mycelium","Dip (quadratic, t>0)",8
+"thallus photosynthetic","lichenized : thallus photosynthetic","Later season (linear, t>0)",8
+"filamentous mycelium","litter saprotroph (+plant pathogen) : filamentous mycelium","Earlier season (linear, t<0)",8
+"Other","Other","Hump (quadratic, t<0)",8
+"filamentous mycelium","litter saprotroph : filamentous mycelium","Hump (quadratic, t<0)",7
+"filamentous mycelium","soil saprotroph : filamentous mycelium","Later season (linear, t>0)",7
+"filamentous mycelium","litter saprotroph : filamentous mycelium","Dip (quadratic, t>0)",6
+"yeast","litter saprotroph : yeast","Earlier season (linear, t<0)",6
+"yeast","nectar/tap saprotroph : yeast","Later season (linear, t>0)",6
+"filamentous mycelium","unspecified saprotroph : filamentous mycelium","Dip (quadratic, t>0)",6
+"filamentous mycelium","foliar endophyte : filamentous mycelium","Dip (quadratic, t>0)",5
+"filamentous mycelium","lichen parasite : filamentous mycelium","Dip (quadratic, t>0)",5
+"dimorphic yeast","mycoparasite : dimorphic yeast","Earlier season (linear, t<0)",5
+"dimorphic yeast","soil saprotroph : dimorphic yeast","Earlier season (linear, t<0)",5
+"filamentous mycelium","soil saprotroph : filamentous mycelium","Dip (quadratic, t>0)",5
+"dimorphic yeast","unspecified saprotroph : dimorphic yeast","Earlier season (linear, t<0)",5
+"thallus photosynthetic","litter saprotroph (+plant pathogen) : thallus photosynthetic","Hump (quadratic, t<0)",4
+"filamentous mycelium","wood saprotroph (+plant pathogen) : filamentous mycelium","Earlier season (linear, t<0)",4
+"filamentous mycelium","foliar endophyte : filamentous mycelium","Earlier season (linear, t<0)",3
+"filamentous mycelium","litter saprotroph (+plant pathogen) : filamentous mycelium","Hump (quadratic, t<0)",3
+"yeast","nectar/tap saprotroph : yeast","Dip (quadratic, t>0)",3
+"filamentous mycelium","wood saprotroph (+plant pathogen) : filamentous mycelium","Hump (quadratic, t<0)",3
+"dimorphic yeast","mycoparasite : dimorphic yeast","Dip (quadratic, t>0)",2
+"dimorphic yeast","plant pathogen : dimorphic yeast","Dip (quadratic, t>0)",2
+"dimorphic yeast","soil saprotroph : dimorphic yeast","Later season (linear, t>0)",2
+"yeast","soil saprotroph : yeast","Earlier season (linear, t<0)",2
+"yeast","epiphyte : yeast","Earlier season (linear, t<0)",1
+"filamentous mycelium","lichen parasite : filamentous mycelium","Later season (linear, t>0)",1
+"thallus photosynthetic","lichenized : thallus photosynthetic","Hump (quadratic, t<0)",1
+"thallus photosynthetic","litter saprotroph (+plant pathogen) : thallus photosynthetic","Dip (quadratic, t>0)",1
+"yeast","nectar/tap saprotroph : yeast","Hump (quadratic, t<0)",1
+"dimorphic yeast","soil saprotroph : dimorphic yeast","Dip (quadratic, t>0)",1
+"filamentous mycelium","soil saprotroph : filamentous mycelium","Hump (quadratic, t<0)",1
+"dimorphic yeast","sooty mold : dimorphic yeast","Earlier season (linear, t<0)",1
+"dimorphic yeast","unspecified saprotroph : dimorphic yeast","Dip (quadratic, t>0)",1
+"filamentous mycelium","unspecified saprotroph : filamentous mycelium","Hump (quadratic, t<0)",1
+"filamentous mycelium","wood saprotroph (+plant pathogen) : filamentous mycelium","Dip (quadratic, t>0)",1

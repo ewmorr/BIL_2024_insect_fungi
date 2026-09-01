@@ -146,7 +146,11 @@ obvious).
 | `compare_insect_fungi/insect_fungal_pairwise_taxon_association.residualized.prevalence_filtered_insect.r` | Lineage-B counterpart of `insect_fungal_pairwise_taxon_association.residualized.r`: re-runs the grid with each insect predictor residualized against `site + factor(date)` (strict, any-functional-form seasonal control), fungal-side model `site + lure + factor(date) + insect_taxon_resid`. Reads the main grid above for the side-by-side comparison; the flagged-taxon list is data-driven (top 5 insect taxa by main-grid hit count) rather than hard-coded | same dir as above (`*.date_site_residualized.csv`, `original_vs_residualized_comparison.csv`) | same dir as above (`original_vs_residualized_comparison.png`) |
 | `presentation_items_prevalence_filtered_insect/fig2_nmds_procrustes.R` | Lineage-B counterpart of `presentation_items/fig2_nmds_procrustes.R` (same 3-panel NMDS + Procrustes layout). Reads its insect PERMANOVA from the procrustes script above; reuses the shared (lineage-invariant) `data/2024_fungi/fungal_community_permanova.csv` | `data/presentation_items_prevalence_filtered_insect/` (ordination cache) | `figures/presentation_items_prevalence_filtered_insect/` |
 | `presentation_items_prevalence_filtered_insect/fig3_volcano_plots.R` | Lineage-B counterpart of `presentation_items/fig3_volcano_plots.R`, expanded from 1x3 to **2x3, rows = functional form**: row 1 = LINEAR-term date volcanoes (a insect~date, b fungal~date) + c fungal~PCoA1; row 2 = QUADRATIC-term date volcanoes (d insect~date, e fungal~date) + f fungal~PCoA2. Panels c/f use the **factor(date)-adjusted** results (`PCoA{1,2}_plus_factordate.csv`) -- the deseasonalized association, not the permissive unadjusted one; f's subtitle flags PCoA2 as unstable across date controls (6/0/9 of 200 unadjusted/quadratic/factor(date)). Panels b/e read the shared `fungal_taxa_date_association.all_taxa.csv` | -- (reads existing CSVs) | `figures/presentation_items_prevalence_filtered_insect/fig3_volcano_plots.{png,pdf}` |
-| `presentation_items_prevalence_filtered_insect/` (fig4-fig8) | **Not yet written** -- fig2 + fig3 done 2026-08-31; see "Known gaps" below. (fig1 needs no Lineage-B port -- lineage-invariant.) | `data/presentation_items_prevalence_filtered_insect/` | `figures/presentation_items_prevalence_filtered_insect/` |
+| `presentation_items_prevalence_filtered_insect/fig4_association_taxonomic_breakdown.R` | Lineage-B counterpart of `presentation_items/fig4_association_taxonomic_breakdown.R`. **3 columns**: a insect~date and b fungal~date show the LINEAR and QUADRATIC date terms TOGETHER on one set of taxonomic-group axes (by subfamily / order+class respectively) as 4 dodged bars per group (blue/vermillion = linear later/earlier season, sky-blue/orange = quadratic dip/hump), each a full-height column; the top-n fold cutoff for a/b uses the COMBINED linear+quadratic hit count. c (fungal~PCoA1) and d (fungal~PCoA2) stack in a third, narrower column, staying single-term (factor(date)-adjusted, unchanged design from fig3) since PCoA1/PCoA2 are different predictor axes, not a linear/quadratic pair of one test | `data/presentation_items_prevalence_filtered_insect/fig4_taxonomic_breakdown.*.csv` | `figures/presentation_items_prevalence_filtered_insect/fig4_association_taxonomic_breakdown.{png,pdf}` |
+| `presentation_items_prevalence_filtered_insect/fig5_family_breakdown_by_order.R` | Lineage-B counterpart of `presentation_items/fig5_family_breakdown_by_order.R`. **3 panels**: a = family-within-order breakdown of fig4 panel a/b's fungal~date COMBINED (dodged linear+quadratic) result; b/c = family-within-order breakdown of fig4 panel c/d's fungal~PCoA1/PCoA2 (single-term, unchanged). Revised 2026-09-01 alongside fig4, dropping from 4 panels to 3 | `data/presentation_items_prevalence_filtered_insect/fig5_family_breakdown_by_order.*.csv` | `figures/presentation_items_prevalence_filtered_insect/fig5_family_breakdown_by_order.{png,pdf}` |
+| `presentation_items_prevalence_filtered_insect/fig6_responsive_taxa_abundance_and_counts_by_site.R` | Lineage-B counterpart of `presentation_items/fig6_responsive_taxa_abundance_and_counts_by_site.R` (same 2x2 layout: a/b relative sequence abundance by site, c/d ASV count by site, date- vs. insect-associated). Rebuilt on the Lineage-B matched dataset (all-families, >=5-sample prevalence-filtered insect table, same 69-sample match as fig2). "Date-associated" and "insect-associated" are each a COMBINED (union) definition instead of Lineage A's single-test one: date = q<0.10 on linear OR quadratic date term (2490/15422 taxa); insect = q<0.10 on PCoA1 OR PCoA2, factor(date)-adjusted (26/15422 taxa, no overlap between the two hit sets) | -- (reads existing CSVs) | `figures/presentation_items_prevalence_filtered_insect/fig6_responsive_taxa_abundance_and_counts_by_site.{png,pdf}` |
+| `presentation_items_prevalence_filtered_insect/fig7_association_trait_breakdown.R` | Lineage-B counterpart of `presentation_items/fig7_association_trait_breakdown.R` (FungalTraits/Polme et al. 2020 genus-join trophic-mode x growth-form breakdown). **2 columns**: a fungal trait vs. date, LINEAR+QUADRATIC combined dodged bars (top 25 trait groups + "Other" by combined hit count), faceted by growth_form, full-height; b fungal trait vs. insect PCoA1 and c vs. PCoA2 (both single-term, factor(date)-adjusted) stack in a narrower column. "Unclassified genus"/"No FungalTraits match" kept as their own pseudo-facet bars (unchanged from Lineage A) | `data/presentation_items_prevalence_filtered_insect/fig7_trait_breakdown.*.csv` | `figures/presentation_items_prevalence_filtered_insect/fig7_association_trait_breakdown.{png,pdf}` |
+| `presentation_items_prevalence_filtered_insect/fig8_association_trait_breakdown.R` | Lineage-B counterpart of `presentation_items/fig8_association_trait_breakdown.R` (same trait join, faceted by taxonomic Class instead of growth_form, `axis_id`-keyed since trait_group x Class is a genuine cross-tab, not a 1:1 nesting). **2 columns**, same layout as fig7: a fungal trait vs. date, LINEAR+QUADRATIC combined dodged bars, with the Class-facet-drop / lifestyle-within-class-cell-fold thresholds (`min_facet_hits_date`) now applied to the COMBINED hit count; b/c fungal trait vs. PCoA1/PCoA2 (single-term, factor(date)-adjusted) stack narrower. "Unclassified genus"/"No FungalTraits match" dropped entirely (unchanged from Lineage A) | `data/presentation_items_prevalence_filtered_insect/fig8_trait_breakdown.*.csv` | `figures/presentation_items_prevalence_filtered_insect/fig8_association_trait_breakdown.{png,pdf}` |
 
 ### Lineage C (full insect table, alpha-diversity-only by design -- see above)
 
@@ -160,9 +164,16 @@ As of 2026-09-01, ported to Lineage B: insect NMDS/PERMANOVA, the full CoCA
 workflow, PCoA1-3 vs. date/site/lure (incl. quadratic and factor(date)
 robustness checks), taxon-level PCoA drivers, the direct insect~date screen,
 the whole-community Procrustes, the all-against-all pairwise taxon screen
-(main + site/factor(date)-residualized), fig2 (NMDS + Procrustes), and fig3
-(volcano plots -- expanded to a linear-row / quadratic-row 2x3). **Not yet
-ported to Lineage B:**
+(main + site/factor(date)-residualized), and all 8 presentation figures
+(fig1 lineage-invariant; fig2 NMDS+Procrustes; fig3 volcano plots, linear-
+row/quadratic-row 2x3; fig4/fig5 taxonomic breakdowns and fig7/fig8 trait
+breakdowns, all four using the same combined-term design -- linear+quadratic
+date terms as dodged bars in one panel, PCoA1/PCoA2 kept as separate single-
+term panels stacked in a narrower column; fig6 responsive-taxa abundance/
+count by site, using a combined linear-or-quadratic date definition and a
+combined PCoA1-or-PCoA2 insect definition). **Lineage B port is now
+feature-complete with Lineage A** other than the items below, which are
+either deliberately out of scope or minor variants not yet rebuilt:
 
 - **Alpha diversity** -- NOT a gap: settled as Lineage A (family-filtered,
   backup) + Lineage C (full all-families table, headline), by deliberate
@@ -179,22 +190,11 @@ ported to Lineage B:**
   the insect predictor against `site + factor(date)` only *P. hopkinsi*
   retains partners (~38% of its hits). See
   `lineage_B_prevalence_filtered_insect_top_level_interpretation.md` sec. 6.
-- **`presentation_items_prevalence_filtered_insect/` fig4-fig8** --
-  directory scaffolding exists (`data/`, `figures/`, this folder, all
-  created 2026-08-28); **fig2 and fig3 are done (2026-08-31)**; fig4-fig8
-  equivalents have not been written. When these are built, keep the same
-  fig-number-to-content mapping as `presentation_items/` where the
-  underlying analysis is directly comparable, so panels can be compared side
-  by side across lineages. Note fig4-fig8 all read
-  `fungal_taxa_date_association.all_taxa.csv` (fungal~date, lineage-
-  invariant) and/or the PCoA1 CoCA-hit set -- a Lineage-B fig4/fig5 differs
-  from Lineage-A only where it uses the insect~date screen (now 153 taxa)
-  or the prevalence-filtered PCoA1 hit list. (**fig1 needs no Lineage-B
-  port** -- every panel is built from the raw trap catch / raw ASV table and
-  never touches the 52- or 153-taxon community table, so it is lineage-
-  invariant. Its panel c was changed on 2026-08-31 to show the top 10 insect
-  genera across all families rather than within Curculionidae+Latridiidae --
-  see `iterative_analysis_updates.md`.)
+- **`presentation_items_prevalence_filtered_insect/`** -- NOT a gap anymore:
+  all 8 figures are done (fig1 lineage-invariant, no port needed; fig2/fig3
+  2026-08-31; fig4-fig8 2026-09-01). fig1's panel c was changed on
+  2026-08-31 to show the top 10 insect genera across all families rather
+  than within Curculionidae+Latridiidae -- see `iterative_analysis_updates.md`.
 - **PCoA1_date_axis / PCoA3_lure_axis / compare_selection_strategies**
   variants -- not yet rebuilt for Lineage B.
 - **Direct fungal~date and fungal~lure unbiased screens**

@@ -13,5 +13,6 @@ variant, so the filename doesn't need to repeat that. Outputs go to
 `data/presentation_items_prevalence_filtered_insect/` and
 `figures/presentation_items_prevalence_filtered_insect/`.
 
-Status as of 2026-08-28: scaffolding only, no figures built yet. Nothing in
+Status as of 2026-09-01: all 8 figures are done (fig1 lineage-invariant, no
+port needed; fig2/fig3 2026-08-31; fig4-fig8 2026-09-01). Nothing in
 `presentation_items/` has been touched or overwritten.
