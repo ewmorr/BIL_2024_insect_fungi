@@ -122,12 +122,24 @@ make_volcano <- function(res, x_label, title, subtitle, tag,
     res %>% filter(sig, .t < 0) %>% arrange(.t) %>% head(n_label_per_side)
   )
 
+  # geom_text_repel only repels labels away from each other and from the
+  # x/y position of the rows it's given -- it has no awareness of the
+  # geom_point layer's marks. With many taxa tied at the same minimum
+  # q-value (n_perm=999), the labeled points often sit in a dense horizontal
+  # band of unlabeled ties, so a label can land right on top of nearby
+  # points with nothing to repel it away. Pass every significant point as a
+  # repel "obstacle" (blank label for the ones we're not annotating) so
+  # their empty boxes still occupy space and push the real labels clear.
+  label_obstacles <- res %>%
+    filter(sig) %>%
+    mutate(label = if_else(taxon %in% to_label$taxon, label, ""))
+
   ggplot(res, aes(x = .t, y = -log10(.q))) +
     geom_hline(yintercept = -log10(q_threshold), linetype = "dashed", color = "grey40") +
     geom_vline(xintercept = 0, linetype = "solid", color = "grey85") +
     geom_point(aes(color = sig), size = 1.6, alpha = 0.75) +
     ggrepel::geom_text_repel(
-      data = to_label, aes(label = label), size = 3.3, fontface = "italic",
+      data = label_obstacles, aes(label = label), size = 3.3, fontface = "italic",
       max.overlaps = Inf, segment.size = 0.25, segment.color = "grey50",
       min.segment.length = 0, box.padding = 0.5, force = 12, force_pull = 0.15,
       max.time = 3, max.iter = 20000, direction = "both",
