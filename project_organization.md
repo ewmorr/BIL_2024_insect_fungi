@@ -9,7 +9,7 @@ to find *where a script or output lives* and *which lineage it belongs to*.
 Keep both updated going forward -- this one in place (it describes current
 state, not history), the other by appending new dated sections.
 
-Last updated: 2026-08-31.
+Last updated: 2026-09-01.
 
 ## The core fact to understand before touching anything
 
@@ -142,6 +142,8 @@ obvious).
 | `compare_insect_fungi/insect_fungal_coca_factordate_check.prevalence_filtered_insect.r` | Strictest check: re-tests PCoA1 AND PCoA2 with `factor(date)` (6-level, absorbs any functional form) | same dir (`..PCoA{1,2}_plus_factordate.csv`, `date_adjustment_comparison.all_strategies.csv`) | -- |
 | `compare_insect_fungi/insect_taxa_date_association.prevalence_filtered_insect.r` | Standalone direct taxon~date screen (linear+quadratic) for all 153 insect taxa -- broken out so it doesn't require rerunning the full CoCA script | `data/compare_insects_fungi_top3axes_prevalence_filtered_insect/insect_taxa_date_association.csv` | -- |
 | `compare_insect_fungi/insect_fungal_procrustes.prevalence_filtered_insect.r` | Whole-community Procrustes (insect NMDS vs. fungal rarefied NMDS) rebuilt on the 153-taxon table; also writes the matched-69-sample insect PERMANOVA for the fig2 port. Adds the `Kingdom=="k__Fungi"` filter + graceful rarefaction-drop handling that the Lineage-A standalone `insect_fungal_procrustes.r` lacks (both already in `fig2_nmds_procrustes.R`) | `data/compare_insects_fungi_procrustes_prevalence_filtered_insect/` | `figures/compare_insects_fungi_procrustes_prevalence_filtered_insect/` |
+| `compare_insect_fungi/insect_fungal_pairwise_taxon_association.prevalence_filtered_insect.r` | All-against-all individual fungal x insect taxon screen rebuilt on the 153-taxon table (mirrors `insect_fungal_pairwise_taxon_association.r`; same vectorized-OLS trap-blocked 999-perm test, `fungal~site+lure+date+insect_taxon`, within-insect-taxon + global BH). Insect predictors: the 153-taxon table re-filtered to >=5 prevalence in the 69 matched samples (still 153); fungal side lineage-invariant (6,342). 153 x 6,342 = 970,326 pairs, ~11 min single-core | `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/` | `figures/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/` |
+| `compare_insect_fungi/insect_fungal_pairwise_taxon_association.residualized.prevalence_filtered_insect.r` | Lineage-B counterpart of `insect_fungal_pairwise_taxon_association.residualized.r`: re-runs the grid with each insect predictor residualized against `site + factor(date)` (strict, any-functional-form seasonal control), fungal-side model `site + lure + factor(date) + insect_taxon_resid`. Reads the main grid above for the side-by-side comparison; the flagged-taxon list is data-driven (top 5 insect taxa by main-grid hit count) rather than hard-coded | same dir as above (`*.date_site_residualized.csv`, `original_vs_residualized_comparison.csv`) | same dir as above (`original_vs_residualized_comparison.png`) |
 | `presentation_items_prevalence_filtered_insect/fig2_nmds_procrustes.R` | Lineage-B counterpart of `presentation_items/fig2_nmds_procrustes.R` (same 3-panel NMDS + Procrustes layout). Reads its insect PERMANOVA from the procrustes script above; reuses the shared (lineage-invariant) `data/2024_fungi/fungal_community_permanova.csv` | `data/presentation_items_prevalence_filtered_insect/` (ordination cache) | `figures/presentation_items_prevalence_filtered_insect/` |
 | `presentation_items_prevalence_filtered_insect/fig3_volcano_plots.R` | Lineage-B counterpart of `presentation_items/fig3_volcano_plots.R`, expanded from 1x3 to **2x3, rows = functional form**: row 1 = LINEAR-term date volcanoes (a insect~date, b fungal~date) + c fungal~PCoA1; row 2 = QUADRATIC-term date volcanoes (d insect~date, e fungal~date) + f fungal~PCoA2. Panels c/f use the **factor(date)-adjusted** results (`PCoA{1,2}_plus_factordate.csv`) -- the deseasonalized association, not the permissive unadjusted one; f's subtitle flags PCoA2 as unstable across date controls (6/0/9 of 200 unadjusted/quadratic/factor(date)). Panels b/e read the shared `fungal_taxa_date_association.all_taxa.csv` | -- (reads existing CSVs) | `figures/presentation_items_prevalence_filtered_insect/fig3_volcano_plots.{png,pdf}` |
 | `presentation_items_prevalence_filtered_insect/` (fig4-fig8) | **Not yet written** -- fig2 + fig3 done 2026-08-31; see "Known gaps" below. (fig1 needs no Lineage-B port -- lineage-invariant.) | `data/presentation_items_prevalence_filtered_insect/` | `figures/presentation_items_prevalence_filtered_insect/` |
@@ -154,12 +156,13 @@ obvious).
 
 ## Known gaps / open items (update as these get resolved)
 
-As of 2026-08-31, ported to Lineage B: insect NMDS/PERMANOVA, the full CoCA
+As of 2026-09-01, ported to Lineage B: insect NMDS/PERMANOVA, the full CoCA
 workflow, PCoA1-3 vs. date/site/lure (incl. quadratic and factor(date)
 robustness checks), taxon-level PCoA drivers, the direct insect~date screen,
-the whole-community Procrustes, fig2 (NMDS + Procrustes), and fig3 (volcano
-plots -- expanded to a linear-row / quadratic-row 2x3). **Not yet ported to
-Lineage B:**
+the whole-community Procrustes, the all-against-all pairwise taxon screen
+(main + site/factor(date)-residualized), fig2 (NMDS + Procrustes), and fig3
+(volcano plots -- expanded to a linear-row / quadratic-row 2x3). **Not yet
+ported to Lineage B:**
 
 - **Alpha diversity** -- NOT a gap: settled as Lineage A (family-filtered,
   backup) + Lineage C (full all-families table, headline), by deliberate
@@ -167,8 +170,15 @@ Lineage B:**
   not" below). There will not be a Lineage-B (prevalence-filtered)
   alpha-diversity variant -- don't add one without revisiting that decision
   first.
-- **All-against-all pairwise taxon screen** (`insect_fungal_pairwise_
-  taxon_association*.r`) -- not yet rebuilt.
+- **All-against-all pairwise taxon screen** -- DONE (2026-09-01):
+  `insect_fungal_pairwise_taxon_association.prevalence_filtered_insect.r` +
+  `.residualized.prevalence_filtered_insect.r`. Result tracks Lineage A
+  closely -- only ~5 of 153 insect taxa carry any q<0.10 fungal partners
+  (0 pairs survive a global BH correction), dominated by early-season
+  Scolytinae (*Pityogenes hopkinsi* alone ~1,590), and after residualizing
+  the insect predictor against `site + factor(date)` only *P. hopkinsi*
+  retains partners (~38% of its hits). See
+  `lineage_B_prevalence_filtered_insect_top_level_interpretation.md` sec. 6.
 - **`presentation_items_prevalence_filtered_insect/` fig4-fig8** --
   directory scaffolding exists (`data/`, `figures/`, this folder, all
   created 2026-08-28); **fig2 and fig3 are done (2026-08-31)**; fig4-fig8

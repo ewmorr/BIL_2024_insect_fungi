@@ -761,3 +761,64 @@ unchanged.
 
 Output: figures/presentation_items_prevalence_filtered_insect/fig3_volcano_plots.
 {png,pdf}.
+
+### #################################################################################
+### 2026-09-01 -- Lineage B port: all-against-all pairwise fungal x insect taxon
+### screen (main + site/factor(date)-residualized)
+### #################################################################################
+
+Ported the last outstanding non-figure analysis to Lineage B:
+compare_insect_fungi/insect_fungal_pairwise_taxon_association.prevalence_filtered_insect.r
+and .residualized.prevalence_filtered_insect.r, mirroring the two Lineage-A scripts
+of the same name. Method, model (fungal_clr ~ site + lure + date + insect_taxon),
+vectorized-OLS solve, 999 trap-blocked permutations, and the two-tier FDR
+(within-insect-taxon + global BH) are all unchanged -- the only swap is the insect
+table: all families + >=5-sample prevalence filter (153 taxa) instead of
+Curculionidae+Latridiidae + singleton filter (39 taxa after the parent's post-match
+re-filter). Insect predictor columns are Hellinger values computed on the full
+153-taxon community then subset, matching how insect_hel is built in the Lineage-B
+CoCA script; the post-match >=5 re-filter is kept (Lineage-A parent does the same)
+but changes nothing here -- all 153 pass, because 69 of 71 insect samples match a
+fungal sample. Fungal side is lineage-invariant: same 6,342 prevalence-filtered
+k__Fungi ASVs. Grid = 153 x 6,342 = 970,326 pairs, ~11 min single-core (main),
+~16 min (residualized). Outputs ->
+data/  and figures/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/.
+
+RESULT -- the broader table reproduces the Lineage-A story and adds nothing robust:
+
+- Main grid: 2,402 pairs at q<0.10 within-insect-taxon (vs. 1,918 for Lineage A),
+  but 0 pairs at q<0.10 global BH (min global q = 0.37), same as Lineage A.
+- Only 5 of 153 insect taxa carry ANY significant partner:
+  Pityogenes hopkinsi (1,592), Asemum striatum (266), Xyleborinus attenuatus (213),
+  Orthoperus scutellaris (198), Hylastes opacus (133). The 3 Scolytinae are exactly
+  the trio Lineage A flagged, with near-identical counts (P. hopkinsi 1,592 vs.
+  1,593 -- an abundant taxon's Hellinger column barely shifts when the community
+  basis widens). Asemum striatum (Cerambycidae) and Orthoperus scutellaris
+  (Corylophidae) are new, both from families the Lineage-A filter excluded.
+- Fungal side spread thin: 1,800 of 2,071 involved ASVs link to exactly 1 insect
+  taxon (max 4). Top fungal genera among hits are a saprotroph / plant-surface-yeast
+  cast (Aureobasidium 117, Dothiora 83, Cytospora 66, Taphrina 42) -- shared
+  seasonal bloom, not beetle-specific symbiosis.
+
+- Residualized follow-up (each insect predictor stripped of site + factor(date),
+  the strictest seasonal control 6 sampling rounds allow; fungal-side model keeps
+  site + lure + factor(date) + insect_taxon_resid): 646 pairs at q<0.10 within, and
+  ONLY Pityogenes hopkinsi retains partners (646, overlap 605 = 38% of its main-grid
+  hits survive). Asemum, Xyleborinus, Orthoperus, Hylastes all collapse to 0 --
+  their fungal "associations" were purely a shared early-season timing artifact.
+  Lineage A had the identical outcome (only P. hopkinsi survived, 717/1,593 = 45%).
+  The residualized script's flagged-taxon list is data-driven here (top 5 by
+  main-grid hit count) rather than the hard-coded 3-Scolytinae list the Lineage-A
+  parent used.
+
+Bottom line: the all-families insect table does not change the pairwise-association
+picture -- a few early-season bark beetles, above all P. hopkinsi, drive everything;
+nothing survives global correction; only P. hopkinsi's signal partially survives a
+strict seasonal control; and the two extra taxa the broader table surfaces are
+seasonal co-occurrence, not specific links. See
+lineage_B_prevalence_filtered_insect_top_level_interpretation.md sec. 6.
+
+Output: data/ and figures/compare_insects_fungi_pairwise_taxa_prevalence_filtered_
+insect/ (full grid + significant hits + per-insect / per-fungal / family summaries
+for the main run; *.date_site_residualized.csv + original_vs_residualized_
+comparison.{csv,png} for the follow-up).

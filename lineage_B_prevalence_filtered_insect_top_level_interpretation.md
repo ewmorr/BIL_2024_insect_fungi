@@ -90,11 +90,85 @@ PCoA1's pattern is stable once any non-linear flexibility is allowed (9→19→1
 
 Tympanis is null with no date control, then significant under every date-adjusted version -- the single most date-robust PCoA1 hit found under Lineage B so far. Combined with a second, different *Tympanis* ASV (ASV_5640) topping the PCoA2 factor(date)-adjusted list, and 4 different Valsaceae ASVs (2x *Cytospora*, 1x *Valsa*, 1x unresolved) also surviving that same PCoA2 test (though not ASV_1905 itself) -- **the recommended framing going forward is genus/family-level** ("Valsaceae/*Cytospora*-as-a-group" and "*Tympanis*-as-a-group" keep reappearing via different specific ASVs across axes and date-control strategies) **rather than any single ASV**, and specifically not *Cytospora prunicola* by name as a date-robust finding.
 
+## 6. All-against-all pairwise fungal x insect taxon screen (2026-09-01 port)
+
+Every prevalence-filtered fungal ASV tested against every prevalence-filtered
+insect taxon individually, one model per pair
+(`fungal_clr ~ site + lure + date + insect_taxon`), 999 trap-blocked
+permutations, vectorized-OLS. Lineage B grid is **153 insect x 6,342 fungal =
+970,326 pairs** (vs. Lineage A's 39 x 6,342 = 247,338). Fungal side is
+identical between lineages; only the insect predictor set widens.
+
+**The all-families table does not change the conclusion -- it just adds two
+taxa that then fail the robustness check.**
+
+| | Lineage A (39 insect taxa) | Lineage B (153 insect taxa) |
+|---|---|---|
+| Pairs q<0.10 within-insect-taxon | 1,918 | 2,402 |
+| Pairs q<0.10 global BH | **0** | **0** (min global q = 0.37) |
+| Insect taxa with >=1 significant partner | 3 | 5 |
+| Which taxa | *Pityogenes hopkinsi* (1,593), *Xyleborinus attenuatus* (254), *Hylastes opacus* (71) -- all early-season Scolytinae | *P. hopkinsi* (1,592), *Asemum striatum* (266), *X. attenuatus* (213), *Orthoperus scutellaris* (198), *H. opacus* (133) |
+
+- The **three Scolytinae are the same trio** Lineage A flagged, with nearly
+  identical partner counts (*P. hopkinsi* 1,592 vs. 1,593 -- its Hellinger
+  predictor column barely moves when the community basis widens, since it is
+  an abundant taxon).
+- The broader table adds **two non-Scolytine taxa**: *Asemum striatum*
+  (Cerambycidae, a longhorn beetle) and *Orthoperus scutellaris*
+  (Corylophidae, a minute fungus beetle) -- both families excluded by the
+  Lineage-A Curculionidae+Latridiidae restriction.
+- Signal is **extremely concentrated**: 5 of 153 insect taxa carry all 2,402
+  hits; on the fungal side 1,800 of the 2,071 involved ASVs link to exactly
+  one insect taxon (max 4). Top fungal genera among hits: *Aureobasidium*
+  (117), *Dothiora* (83), *Cytospora* (66), *Taphrina* (42) -- a
+  saprotroph/plant-surface-yeast cast, consistent with a shared seasonal
+  bloom rather than beetle-specific symbiosis.
+- **Not a single pair survives a global (all-970k-tests) BH correction**, same
+  as Lineage A. The "within-insect-taxon" hits are best read as "this insect
+  taxon's seasonal abundance curve happens to line up with a lot of fungal
+  taxa's curves", not as 2,402 specific associations.
+
+**Residualized follow-up** (`.residualized.prevalence_filtered_insect.r` --
+each insect predictor stripped of `site + factor(date)`, the strictest
+seasonal control the 6 sampling rounds allow; fungal-side model keeps
+`site + lure + factor(date) + insect_taxon_resid`):
+
+| Insect taxon | main-grid partners | residualized partners | survive |
+|---|---|---|---|
+| *Pityogenes hopkinsi* | 1,592 | **646** | 605 overlap (38%) |
+| *Asemum striatum* | 266 | 0 | -- |
+| *Xyleborinus attenuatus* | 213 | 0 | -- |
+| *Orthoperus scutellaris* | 198 | 0 | -- |
+| *Hylastes opacus* | 133 | 0 | -- |
+
+Identical outcome to Lineage A (there: only *P. hopkinsi* survived, 717 of
+1,593 = 45%). **Only *Pityogenes hopkinsi* retains any fungal partners once
+non-linear season is removed from its predictor**; the other four collapse to
+zero, i.e. their fungal "associations" were entirely a shared early-season
+timing artifact. The two taxa the broader table added (*Asemum*,
+*Orthoperus*) are therefore seasonal co-occurrence, not evidence of a
+specific insect-fungal link -- the all-families table adds no new robust
+pairwise association over Lineage A.
+
+*P. hopkinsi*'s surviving 646 pairs remain uncorrected-globally and are not
+pursued further here; per the parent script's note, targeted with/without
+partialling checks on that one taxon's candidates would be the follow-up if
+this thread is picked up.
+
+Files: `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/`
+-- `fungal_insect_pairwise_full_grid.csv`,
+`fungal_insect_pairwise_significant_hits.csv`,
+`fungal_partners_per_insect_taxon.csv`,
+`insect_partners_per_fungal_taxon.csv`, `fungal_family_tally.csv`, and the
+`*.date_site_residualized.csv` + `original_vs_residualized_comparison.csv`
+counterparts; figures in the matching `figures/` directory.
+
 ## Bottom line
 
 1. **Community-level structure (PERMANOVA, NMDS) is qualitatively unchanged** between lineages -- same three significant terms, same rough ranking (lure/date > site), Lineage B just has smaller effect sizes and more residual variance from the broader, noisier taxon set.
 2. **The broader taxon set reveals more seasonality, not less** -- both a higher linear hit rate (45% vs. 37%) and a higher hump/dip rate (25% vs. 17%) among insect taxa, consistent with the family filter having suppressed real signal in previously-excluded families.
 3. **A new axis (PCoA2) emerged** that has no clean Lineage-A analog -- a within-Scolytinae, lure-and-mid-season-timing axis, distinct from PCoA1's guild-level date split and PCoA3's lure split. Its fungal-association hit count is unstable across date-control strategies and should be reported as a range (0-9/200), not a single number.
 4. **The single most important correction from this line of work**: *Cytospora prunicola* (ASV_1905) -- previously the project's headline "most robust cross-cutting taxon" -- does not survive ANY date-adjusted test on any insect PCoA axis under Lineage B. *Tympanis* sp. is the new best candidate for a genuinely date-robust insect-community-linked fungal signal, and the Valsaceae/*Cytospora* and *Tympanis* genus-level groupings (not specific ASVs) are the more defensible framing overall.
+5. **The pairwise (individual taxon x taxon) screen adds nothing over Lineage A**: same picture at the broader taxon set -- a handful of early-season Scolytinae (above all *Pityogenes hopkinsi*) account for essentially all q<0.10 pairs, zero pairs survive a global correction, and only *P. hopkinsi* keeps any partners after a strict `factor(date)` control on its predictor. The two extra taxa the all-families table surfaces (*Asemum striatum*, *Orthoperus scutellaris*) both collapse entirely under that control, so they are seasonal co-occurrence, not specific associations.
 
 Underlying files referenced above: `data/insect_exploratory_prevalence_filtered_insect/insect_prevalence_filter.permanova.csv`, `insect_prevalence_filter.family_composition.csv`; `data/compare_insects_fungi_top3axes_prevalence_filtered_insect/insect_taxa_date_association.csv`, `insect_pcoa_axes.date_site_lure_association.csv`, `insect_pcoa_axes.quadratic_date_test.csv`, `insect_pcoa_axes.taxon_drivers.csv`, `date_adjustment_comparison.all_strategies.csv`, `fungal_insect_association_results.PCoA{1,2,3}_*.csv`; `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv` (shared, lineage-independent); `data/2024_insect_data/insect_taxa_date_association.csv` (Lineage A comparison).
