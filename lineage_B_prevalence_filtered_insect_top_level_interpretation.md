@@ -4,7 +4,7 @@ This file is the prevalence-filtered-lineage (Lineage B, per `project_organizati
 
 **Table construction reminder**: Lineage B = insect trap-catch table, ALL families (not just Curculionidae+Latridiidae), individual-taxon >=5-sample prevalence filter (same threshold used for fungal ASVs). 153 taxa, same 69-sample insect-fungal matched dataset as Lineage A. Everything below is this construction unless stated otherwise.
 
-**This lineage is not fully built out yet.** Ported so far: insect NMDS/PERMANOVA, the full CoCA workflow (PCoA1-3 vs. fungal taxa), PCoA1-3 vs. date/site/lure (plus quadratic and factor(date) robustness checks), per-axis taxon drivers, and the direct insect~date screen. NOT yet ported: whole-community Procrustes, the all-against-all pairwise taxon screen, and all 8 presentation figures. See `project_organization.md`'s "Known gaps" section for the current checklist.
+**This lineage is now feature-complete with Lineage A.** Ported: insect NMDS/PERMANOVA, the full CoCA workflow (PCoA1-3 vs. fungal taxa), PCoA1-3 vs. date/site/lure (plus quadratic and factor(date) robustness checks), per-axis taxon drivers, the direct insect~date screen, the whole-community Procrustes (r=0.604, p=0.001, 68 matched samples -- see `iterative_analysis_updates.md`'s 2026-08-31 entry), the all-against-all pairwise taxon screen (§6), and all 8 presentation figures (fig1 lineage-invariant; fig2/fig3 2026-08-31; fig4-fig8 2026-09-01, see §7-§8 below). Remaining gaps (deliberately out of scope or minor variants) are in `project_organization.md`'s "Known gaps" section.
 
 ---
 
@@ -163,6 +163,118 @@ Files: `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/`
 `*.date_site_residualized.csv` + `original_vs_residualized_comparison.csv`
 counterparts; figures in the matching `figures/` directory.
 
+## 7. Higher-level summaries: Order/Class and trophic mode (fig4/fig5/fig7/fig8, 2026-09-01 port)
+
+Lineage-B's fig4/fig5/fig7/fig8 differ structurally from Lineage A's in one way beyond
+just the broader taxon set: the direct insect~date and fungal~date screens now carry
+a quadratic term (§2), so these figures show the linear and quadratic terms TOGETHER
+on one set of axes as 4 dodged bars, and a group's rank (which orders/lifestyles get
+their own bar vs. fold into "Other") is by the COMBINED linear+quadratic hit count.
+insect_PCoA1 and insect_PCoA2 stay as separate single-term panels, factor(date)-
+adjusted (§5's strictest test) rather than Lineage A's permissive no-lure/no-date
+test. See `project_organization.md` and `iterative_analysis_updates.md`'s 2026-09-01
+entries for the full design rationale.
+
+### Order/Class level, date-associated hits (fig4/fig5, n=2,490 combined)
+
+2,490/6,342 fungal taxa significant in >=1 date term (2,186 linear + 707 quadratic =
+2,893 hit-instances) -- same file as Lineage A (`fungal_taxa_date_association.
+all_taxa.csv` is lineage-invariant), just with the quadratic term now counted too, so
+this is a strict superset of Lineage A's 2,116.
+
+Class-level split (fig4 facets; linear later/earlier + quadratic dip/hump
+hit-instance counts):
+
+| Class | Linear later (+) | Linear earlier (-) | Quad dip (+) | Quad hump (-) |
+|---|---|---|---|---|
+| Dothideomycetes (Mycosphaerellales/Dothideales/Capnodiales) | 401 | 96 | 74 | 138 |
+| Sordariomycetes (Diaporthales/Xylariales/Hypocreales) | 52 | 163 | 41 | 13 |
+| Agaricomycetes (Polyporales/Russulales) | 155 | 48 | 30 | 3 |
+| Tremellomycetes (Tremellales) | 123 | 4 | 1 | 74 |
+| Leotiomycetes (Helotiales) | 26 | 83 | 17 | 21 |
+| Eurotiomycetes (Chaetothyriales) | 13 | 33 | 20 | 0 |
+| Taphrinomycetes (Taphrinales) | 37 | 2 | 0 | 22 |
+| Lecanoromycetes (Lecanorales) | 7 | 37 | 12 | 1 |
+
+The same two-class opposition Lineage A found is unchanged: **Dothideomycetes skews
+later-season, Sordariomycetes skews earlier-season**. The quadratic column adds a
+genuinely new observation invisible under Lineage A's linear-only design: **Dothideomycetes'
+"later-season" signal is substantially hump-shaped, not a simple increase** (138 hump
+hit-instances vs. 74 dip, on top of the 401 linear-later reading) -- same for
+**Tremellomycetes** (74 hump vs. 1 dip, despite a strongly later-leaning linear
+reading of 123 vs. 4) and **Taphrinomycetes** (22 hump vs. 0 dip, linear 37 vs. 2).
+All three read as "peaks mid-season, not simply late" once the quadratic term is
+available -- worth flagging in any write-up that cites these classes as "later-season."
+
+### Order/Class level, insect-axis-associated hits (fig4/fig5, factor(date)-adjusted)
+
+**PCoA1: 17/200**, spread thin across 10 orders/9 classes -- no single real order
+carries more than 3 hits (Chaetothyriales: 2 earlier + 1 later; the 4-hit
+"Unclassified" bucket is unresolved-order taxa, not a real order). Direction split
+**11 PCoA1+ / 6 PCoA1-**, the reverse tilt from Lineage A's 77-hit, 62-negative/
+15-positive no-date-adjustment result (§5 already covers why direct comparison is
+risky here: the permissive PCoA1 test collapses toward 0 once ANY date control is
+added, and only a non-linear one recovers a comparable count -- 9 linear -> 19
+quadratic -> 17-18 factor(date) -- so this is a much smaller, differently-selected
+hit set, not a scaled-up version of Lineage A's).
+
+**PCoA2: 9/200** across 4 orders/4 classes, still flagged unstable (§5). Direction:
+**8 PCoA2-** (Diaporthales x4, Helotiales x3, Pleosporales x1) vs. **1 PCoA2+**
+(Microbotryomycetes_ord_Incertae_sedis). The Diaporthales+Helotiales concentration on
+the PCoA2- side is the same Valsaceae/*Cytospora* + Tympanidaceae/*Tympanis* cluster
+identified by ASV in §5.
+
+### Trophic mode / FungalTraits (fig7/fig8; "Unclassified genus"/"No FungalTraits match" excluded)
+
+Pooled across classes (fig7), the date signal is again dominated by **plant pathogen**
+(303 later + 70 dip vs. 221 earlier + 77 hump) and **wood saprotroph** (188 later + 42
+dip vs. 157 earlier + 46 hump) -- both close to even on the linear split alone, same
+as Lineage A (247/205 and 176/152 respectively). Splitting "plant pathogen" by Class
+(fig8) reproduces Lineage A's two-distinct-signals finding almost exactly:
+
+| Class | Lifestyle | Linear later (+) | Linear earlier (-) |
+|---|---|---|---|
+| Dothideomycetes | plant pathogen (*Ramularia*-dominated) | 175 | 29 |
+| Sordariomycetes | plant pathogen (*Cytospora*-dominated) | 36 | 124 |
+
+(Lineage A: 173/28 and 34/123 -- essentially the same numbers, confirming the
+broader taxon set adds volume but doesn't change this pattern.) "Wood saprotroph"
+splits similarly by Class: Agaricomycetes skews later (129 vs. 79), Sordariomycetes
+skews earlier (10 vs. 27), and Dothideomycetes' wood-saprotroph bar is itself
+hump-shaped (39 hump-hit-instances vs. 34 linear-later, 27 linear-earlier) -- another
+case where the quadratic term changes the read of a bar that looks "later-season" on
+the linear split alone.
+
+For the PCoA-axis trait breakdowns (fig7/fig8 panels b/c), both are too small (17 and
+9 total hits, 9 and 7 with a FungalTraits match) to show a clear trait-level trend the
+way Lineage A's 77-hit PCoA1 result did -- PCoA1's 9 FungalTraits-matched hits spread
+across 5 distinct lifestyle x growth-form combinations (4 lifestyles once growth-form
+is dropped, matching fig8 panel b) with no more than 2 hits in any one bucket. PCoA2's
+7 FungalTraits-matched hits are all PCoA2-: 6 "plant pathogen : filamentous mycelium"
+(Sordariomycetes x4, Leotiomycetes x2 per fig8 panel c) plus 1 "wood saprotroph :
+filamentous mycelium" (Dothideomycetes) -- the trait-level restatement of the same
+Diaporthales/Helotiales-dominated PCoA2 pattern noted above.
+
+## 8. Responsive-taxa abundance and richness by site (fig6, 2026-09-01 port)
+
+Same matched 69-sample dataset as fig2 (15,422 Kingdom==Fungi ASVs), split into
+"date-associated" (q<0.10 linear or quadratic, 2,490/15,422 = 16.2%) vs.
+"insect-associated" (q<0.10 PCoA1 or PCoA2, factor(date)-adjusted, 26/15,422 = 0.17%,
+no overlap between the two axes' hit sets) categories. Exact per-site numbers are in
+`iterative_analysis_updates.md`'s 2026-09-01 fig6 entry (added there in response to a
+request for citable exact figures); headline pattern:
+
+- **Date-associated taxa carry 81-88% of relative sequence abundance at every site**
+  (lowest at Manchester Airport, 81.4%) despite being only 16% of taxa -- the same
+  disproportionate-abundance pattern the informal `responsive_taxa_abundance_by_site.R`
+  script first surfaced, now with an exact per-site breakdown and richness counts
+  (2,126-2,401 date-associated ASVs per site) alongside the abundance figures.
+- **Insect-associated taxa are a much smaller, near-invisible slice** -- 0.005-1.03%
+  of relative abundance and 5-26 ASVs per site. Pease stands out numerically (1.03%
+  abundance, 26 ASVs, both site maxima), but all four sites carry the full
+  Ethanol/Alpha-pinene_EtOH/Ips lure set, so this isn't a lure-design artifact --
+  not investigated further.
+
 ## Bottom line
 
 1. **Community-level structure (PERMANOVA, NMDS) is qualitatively unchanged** between lineages -- same three significant terms, same rough ranking (lure/date > site), Lineage B just has smaller effect sizes and more residual variance from the broader, noisier taxon set.
@@ -170,5 +282,8 @@ counterparts; figures in the matching `figures/` directory.
 3. **A new axis (PCoA2) emerged** that has no clean Lineage-A analog -- a within-Scolytinae, lure-and-mid-season-timing axis, distinct from PCoA1's guild-level date split and PCoA3's lure split. Its fungal-association hit count is unstable across date-control strategies and should be reported as a range (0-9/200), not a single number.
 4. **The single most important correction from this line of work**: *Cytospora prunicola* (ASV_1905) -- previously the project's headline "most robust cross-cutting taxon" -- does not survive ANY date-adjusted test on any insect PCoA axis under Lineage B. *Tympanis* sp. is the new best candidate for a genuinely date-robust insect-community-linked fungal signal, and the Valsaceae/*Cytospora* and *Tympanis* genus-level groupings (not specific ASVs) are the more defensible framing overall.
 5. **The pairwise (individual taxon x taxon) screen adds nothing over Lineage A**: same picture at the broader taxon set -- a handful of early-season Scolytinae (above all *Pityogenes hopkinsi*) account for essentially all q<0.10 pairs, zero pairs survive a global correction, and only *P. hopkinsi* keeps any partners after a strict `factor(date)` control on its predictor. The two extra taxa the all-families table surfaces (*Asemum striatum*, *Orthoperus scutellaris*) both collapse entirely under that control, so they are seasonal co-occurrence, not specific associations.
+6. **Order/Class and trophic-mode date patterns are essentially unchanged from Lineage A** -- same Dothideomycetes-later/Sordariomycetes-earlier class split, same *Ramularia*-vs-*Cytospora* two-signal plant-pathogen story (fig8 numbers match Lineage A's almost exactly: 175/29 vs. 173/28, 36/124 vs. 34/123). The quadratic term adds a genuinely new observation, though: **several classes read as "later-season" only because of a strong hump shape**, not a simple increase -- Dothideomycetes, Tremellomycetes, and Taphrinomycetes all carry more hump- than dip-shaped hit-instances despite positive linear-later counts (§7).
+7. **The insect-axis (PCoA1/PCoA2) trait/taxonomic breakdowns are far thinner under the strict factor(date)-adjusted hit sets** (17 and 9 hits) than Lineage A's permissive 77-hit PCoA1 result -- no single order or lifestyle dominates PCoA1's spread-thin hits, while PCoA2's hits concentrate on "plant pathogen : filamentous mycelium" (Diaporthales/Helotiales, PCoA2- direction), the same Valsaceae/*Cytospora*+Tympanidaceae/*Tympanis* cluster §5 already flags as the most defensible finding on that axis.
+8. **Date-associated fungal taxa carry the large majority of both sequence abundance (81-88%) and richness at every site**, while insect-associated taxa are a near-invisible slice (<=1.03% abundance, <=26 ASVs) -- consistent with, and a direct site-by-site quantification of, the much stronger seasonal vs. insect-community signal established throughout this file (fig6, §8).
 
-Underlying files referenced above: `data/insect_exploratory_prevalence_filtered_insect/insect_prevalence_filter.permanova.csv`, `insect_prevalence_filter.family_composition.csv`; `data/compare_insects_fungi_top3axes_prevalence_filtered_insect/insect_taxa_date_association.csv`, `insect_pcoa_axes.date_site_lure_association.csv`, `insect_pcoa_axes.quadratic_date_test.csv`, `insect_pcoa_axes.taxon_drivers.csv`, `date_adjustment_comparison.all_strategies.csv`, `fungal_insect_association_results.PCoA{1,2,3}_*.csv`; `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv` (shared, lineage-independent); `data/2024_insect_data/insect_taxa_date_association.csv` (Lineage A comparison).
+Underlying files referenced above: `data/insect_exploratory_prevalence_filtered_insect/insect_prevalence_filter.permanova.csv`, `insect_prevalence_filter.family_composition.csv`; `data/compare_insects_fungi_top3axes_prevalence_filtered_insect/insect_taxa_date_association.csv`, `insect_pcoa_axes.date_site_lure_association.csv`, `insect_pcoa_axes.quadratic_date_test.csv`, `insect_pcoa_axes.taxon_drivers.csv`, `date_adjustment_comparison.all_strategies.csv`, `fungal_insect_association_results.PCoA{1,2,3}_*.csv`; `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv` (shared, lineage-independent); `data/2024_insect_data/insect_taxa_date_association.csv` (Lineage A comparison); `data/presentation_items_prevalence_filtered_insect/fig4_taxonomic_breakdown.*.csv`, `fig5_family_breakdown_by_order.*.csv`, `fig7_trait_breakdown.*.csv`, `fig8_trait_breakdown.*.csv` (fig4/5/7/8 source counts, §7); `compare_insects_fungi_procrustes_prevalence_filtered_insect/` (Procrustes r/p).
