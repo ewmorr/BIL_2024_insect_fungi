@@ -290,18 +290,19 @@ side, the statistical approach, or shared infrastructure:
   its own "CORRECTION:" sections for the house style on how to handle a
   finding that later turns out to be wrong -- don't silently rewrite, add a
   new entry that supersedes it).
-- `interpretation_update_08172026.md` -- a point-in-time re-derivation of
+- `lineage_A_family_filtered_insect_top_level_interepretation.md` -- a point-in-time re-derivation of
   top-level taxonomic/ecological summaries after the Kingdom==Fungi filter
   fix, explicitly noting which earlier numbers it supersedes. Not a living
-  document in the same way as the other two -- treat as a dated snapshot.
+  document in the same way as the other two -- treat as a dated snapshot
+  because this line of analysis is considered complete for now.
   Covers Lineage A (family-filtered) only.
-- `interpretation_update_prevalence_filtered_insect_08282026.md` -- the
+- `lineage_B_prevalence_filtered_insect_top_level_interpretation.md` -- the
   Lineage B (prevalence-filtered insect table) counterpart to the above:
   top-line numbers for everything ported to Lineage B so far, with explicit
-  comparison to Lineage A throughout. Same dated-snapshot status, not a
-  living document -- when more Lineage B analyses are ported (see "Known
-  gaps"), add a new dated interpretation file rather than editing this one
-  in place, matching the convention `interpretation_update_08172026.md`
-  already established. Naming pattern for any future one:
-  `interpretation_update_<lineage-suffix>_MMDDYYYY.md`, omitting the
-  lineage suffix only for Lineage A (the original/default).
+  comparison to Lineage A throughout. When more Lineage B analyses are ported 
+  (see "Known gaps"), edit this document to add new interpretation
+  and summaries, matching the convention of 
+  `lineage_A_family_filtered_insect_top_level_interepretation.md` already established. 
+  If new analyses modify previous findings update this document accordingly
+  rather than retaining outdated numbers and interpretation. We will keep this document up to date
+  with the current lineage B analyses until this analytical line is considered complete.
