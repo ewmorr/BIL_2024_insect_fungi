@@ -1086,3 +1086,78 @@ trait_breakdown.{png,pdf}, fig8_association_trait_breakdown.{png,pdf}; per-group
 counts as data/presentation_items_prevalence_filtered_insect/fig{7,8}_trait_
 breakdown.{fungal_date_combined,fungal_insectPCoA1_factordate,
 fungal_insectPCoA2_factordate}.csv.
+
+### #################################################################################
+### 2026-09-01 -- Lineage C presentation: fig9 (alpha diversity by lure) + fig10
+### (insect~fungal correlation), plus a cubic date term and a lure-interaction test
+### #################################################################################
+
+New presentation_items/fig9_alpha_diversity_by_lure.R and fig10_insect_fungal_
+alpha_diversity_correlation.R -- the first two presentation figures built for
+Lineage C (full insect table, alpha-diversity-only; see project_organization.md).
+Both live directly in presentation_items/ alongside the Lineage A fig1-fig8 (not a
+dedicated Lineage C folder) since alpha diversity has no Lineage B counterpart to
+disambiguate against.
+
+**fig9**: insect (panel a) + fungal (panel b) alpha diversity vs. collection date,
+two side-by-side facet_grid blocks (rows = Shannon/Simpson dominance/richness,
+columns = lure), points colored by site. Row (metric) strip moved to panel a's left
+side via facet_grid(switch="y") with its grey background blanked, since panel b's
+own row strip would otherwise duplicate the label. Trend lines iterated loess (span
+0.75, then widened to span 1 for a smoother curve) before being swapped to a cubic
+OLS fit (y ~ poly(date, 3)) once the underlying stats (below) confirmed a matching
+permutation-tested cubic date term, so the visual trend line and the formal test now
+agree on functional form.
+
+**Stats (compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r)**:
+the date-effect test (sec. 6) was extended from linear-only to linear+quadratic+
+cubic in ONE model (date centered, same `date_c`/`I(date_c^2)` pattern already
+established in fungal_community_seasonality.r and insect_fungal_coca_analysis.
+general_workflow.r, extended one order further here specifically because fig9's
+trend lines showed more structure -- e.g. an S-curve in insect Shannon diversity
+under Ethanol -- than a single hump/dip could capture; this cubic extension is a
+targeted addition for this alpha-diversity check, not (yet) a project-wide
+convention). `alpha_diversity_covariate_tests.csv` now carries 3 date rows
+(date_linear/date_quadratic/date_cubic) per community x metric instead of 1; new
+`alpha_diversity_date_shape.csv` classifies each community x metric's shape (cubic
+significant takes priority over quadratic, which takes priority over linear, same
+cascading rule fungal_community_seasonality.r uses one level down). Result: 4 of the
+6 community x metric date tests show a significant cubic term (insect richness;
+fungal Shannon diversity, Simpson dominance, richness) -- only insect Shannon
+diversity and Simpson dominance show no significant higher-order structure.
+
+**fig10, first pass**: built faceted by lure, mirroring fig9's metric x lure grid,
+one point per sample as insect value (x) vs. fungal value (y), colored by date. Hit
+and fixed a real ggplot2 semantics bug along the way: plain
+`facet_grid(metric ~ lure, scales="free")` ties `free_x` to COLUMN position and
+`free_y` to ROW position, NOT to an arbitrary facet variable -- verified with a
+small synthetic facet_grid test before fixing. With metric as the row variable, all
+three metrics sharing a lure column were forced onto the SAME x-range, squashing
+Shannon/Simpson diversity into a sliver next to richness's much wider scale. First
+fix was a manual 3-block `gtable::rbind` stack (one block per metric, each
+facet_grid'd by lure only); replaced afterward with `ggh4x::facet_grid2(scales=
+"free", independent="all")` (ggh4x installed for this) once available, since it
+gives every one of the 9 panels a genuinely independent x AND y range while keeping
+the normal facet_grid row/column strip layout -- shorter and no gtable workaround.
+
+**fig10, collapsed to pooled**: per user's suspicion that splitting by lure wasn't
+well-motivated, added a new sec. 5b to insect_fungal_alpha_diversity.full_insect_
+table.r testing whether lure modifies the insect~fungal relationship: `fungal ~
+site+date+insect*lure` vs. the same model without the interaction, permutation
+F-test on the interaction term (999 perms, lure shuffled among traps within site --
+same scheme test_term_lure already uses in sec. 6). NO metric showed a significant
+interaction (Shannon diversity p_perm=0.913, F=0.148; Simpson dominance p_perm=
+0.802, F=0.341; richness p_perm=0.953, F=0.017) -- so fig10 was collapsed to a
+single, non-lure-faceted row of 3 panels (one per metric, facet_wrap with per-panel
+free scales, no ggh4x needed once lure was dropped as a second facet dimension)
+showing the pooled Spearman correlation already computed in sec. 5 (`alpha_
+diversity_cross_community_correlation.csv`): Shannon diversity rho=-0.26, p=0.03
+(the only significant one); Simpson dominance rho=-0.12, p=0.33; richness rho=-0.12,
+p=0.34. The stale by-lure correlation CSV that the since-removed intermediate
+version of fig10 had written was deleted.
+
+Output: figures/presentation_items/fig9_alpha_diversity_by_lure.{png,pdf},
+fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}; data/compare_insects_
+fungi_alpha_diversity_full_insect_table/alpha_diversity_covariate_tests.csv
+(updated), alpha_diversity_date_shape.csv (new), alpha_diversity_insect_fungal_
+interaction_by_lure.csv (new).

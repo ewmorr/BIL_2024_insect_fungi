@@ -66,6 +66,29 @@ directory name kept as-is (predates the Lineage A/B/C naming introduced in
 this document) but no longer flagged as needing reconciliation with Lineage
 B; there will not be a prevalence-filtered alpha-diversity variant.
 
+As of 2026-09-01, this script also tests the date effect with linear +
+quadratic + cubic terms in one model (extending this project's linear+
+quadratic convention one order further, added specifically because fig9's
+trend lines showed more structure than a hump/dip could capture -- see
+`alpha_diversity_date_shape.csv`), and tests whether **lure modifies the
+insect~fungal correlation** (`fungal ~ site+date+insect*lure`, permutation
+F-test on the interaction term, `alpha_diversity_insect_fungal_interaction_
+by_lure.csv`) -- no metric showed a significant interaction (p_perm
+0.80-0.95), which is why fig10 below shows the pooled (lure-blind)
+correlation rather than splitting by lure.
+
+Two presentation figures cover this lineage, both living directly in
+`presentation_items/` alongside the Lineage A fig1-fig8 (not a dedicated
+Lineage C folder) since alpha diversity only has a Lineage A/C split, no
+Lineage B counterpart to disambiguate from:
+- `fig9_alpha_diversity_by_lure.R` -- insect (panel a) and fungal (panel b)
+  alpha diversity vs. collection date, faceted metric x lure, cubic OLS
+  trend lines matching the permutation-tested cubic date model above.
+- `fig10_insect_fungal_alpha_diversity_correlation.R` -- per-sample insect
+  vs. fungal alpha diversity, one panel per metric, colored by date, pooled
+  Spearman correlation annotated (an earlier lure-faceted version was
+  dropped once the interaction test above found no lure effect).
+
 ## Directory and naming conventions
 
 Two different conventions are in play, depending on whether original and
@@ -156,7 +179,9 @@ obvious).
 
 | Script | What it does | Data output | Figure output |
 |---|---|---|---|
-| `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, singleton-filter only (277 taxa, NOT the 153-taxon Lineage B table) | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
+| `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, singleton-filter only (277 taxa, NOT the 153-taxon Lineage B table). Date effects tested linear+quadratic+cubic (`alpha_diversity_date_shape.csv`); also tests an insect x lure interaction on the insect~fungal correlation (`alpha_diversity_insect_fungal_interaction_by_lure.csv`) -- not significant for any metric | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
+| `presentation_items/fig9_alpha_diversity_by_lure.R` | Presentation figure: insect (panel a) + fungal (panel b) alpha diversity vs. collection date, faceted metric x lure, cubic OLS trend lines. Lives directly in `presentation_items/` (not a dedicated Lineage C folder) since alpha diversity has no Lineage B counterpart to disambiguate from | -- (reads existing CSVs) | `figures/presentation_items/fig9_alpha_diversity_by_lure.{png,pdf}` |
+| `presentation_items/fig10_insect_fungal_alpha_diversity_correlation.R` | Presentation figure: per-sample insect vs. fungal alpha diversity, one panel per metric, colored by date, pooled Spearman correlation annotated. An earlier lure-faceted version was dropped after the interaction test above found no lure effect | -- (reads existing CSVs) | `figures/presentation_items/fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}` |
 
 ## Known gaps / open items (update as these get resolved)
 
@@ -316,3 +341,14 @@ side, the statistical approach, or shared infrastructure:
   If new analyses modify previous findings update this document accordingly
   rather than retaining outdated numbers and interpretation. We will keep this document up to date
   with the current lineage B analyses until this analytical line is considered complete.
+- `lineage_C_alpha_div_full_insect_table_top_level_interpretation.md` -- the
+  Lineage C (full insect table, alpha-diversity-only) counterpart to the
+  above two: top-line numbers for the alpha-diversity comparison (value
+  ranges, insect~fungal correlation, the lure-interaction test, within-
+  community site/lure/date effects, and the linear+quadratic+cubic date
+  shape classification), matching the same convention. Since Lineage C has
+  no ordination/CoCA/Procrustes/pairwise-screen analog (alpha-diversity-only
+  by design, see the Lineage C section above), this document only covers
+  `insect_fungal_alpha_diversity.full_insect_table.r` and its two
+  presentation figures (fig9, fig10) -- update it if that script or those
+  figures change, rather than retaining outdated numbers.

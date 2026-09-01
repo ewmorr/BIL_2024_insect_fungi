@@ -190,6 +190,51 @@ cat("\n--- Insect vs. fungal alpha diversity, per-sample Spearman correlation --
 print(cross_corr, row.names = FALSE)
 write.csv(cross_corr, file.path(out_data_dir, "alpha_diversity_cross_community_correlation.csv"), row.names = FALSE)
 
+## ---- 5b. Does lure modify the insect~fungal relationship? ------------------
+# The pooled Spearman correlation above (and fig10_insect_fungal_alpha_
+# diversity_correlation.R, which visualizes it split by lure with a purely
+# descriptive per-lure Spearman rho/p in each panel) doesn't test whether
+# lure actually changes that relationship -- splitting the data 3 ways for a
+# plot isn't the same as testing an interaction. This tests it directly:
+# fungal_y ~ site + date + insect_x * lure, i.e. does the insect_x:lure
+# interaction term explain more variance than a model with only the insect_x
+# and lure main effects (plus site/date controls, matching every other test
+# in this script)? Tested via the same trap-level permutation this project
+# uses for lure everywhere else (test_term_lure below, insect_pcoa_lure_
+# association.r): lure permuted among the traps WITHIN each site, since lure
+# is constant within trap (one trap per site x lure combination).
+n_perm_interaction <- 999
+
+test_interaction_lure <- function(fungal_y, insect_x, dat_base, trap_lure_map, n_perm = 999) {
+  dat <- dat_base
+  dat$y <- fungal_y
+  dat$x <- insect_x
+  fit_F <- function(d) {
+    anova(lm(y ~ site + date + x + lure, data = d), lm(y ~ site + date + x * lure, data = d))[2, "F"]
+  }
+  obs_F <- fit_F(dat)
+  perm_F <- replicate(n_perm, {
+    perm_map <- trap_lure_map %>% group_by(site) %>% mutate(lure = sample(lure)) %>% ungroup()
+    lure_lookup <- setNames(as.character(perm_map$lure), perm_map$trap_id)
+    d2 <- dat; d2$lure <- lure_lookup[d2$trap_id]; fit_F(d2)
+  })
+  p_perm <- (sum(perm_F >= obs_F) + 1) / (n_perm + 1)
+  c(F = unname(obs_F), p_perm = p_perm)
+}
+
+trap_lure_map_combined <- combined %>% distinct(trap_id, site, lure)
+cat("\nTesting insect_x:lure interaction on fungal diversity (", n_perm_interaction, "permutations each)...\n")
+interaction_tests <- bind_rows(lapply(metrics, function(m) {
+  r <- test_interaction_lure(combined[[paste0("fungal_", m)]], combined[[paste0("insect_", m)]],
+                              combined, trap_lure_map_combined, n_perm_interaction)
+  data.frame(metric = m, F = r["F"], p_perm = r["p_perm"], n = nrow(combined))
+}))
+rownames(interaction_tests) <- NULL
+cat("\n--- Does lure modify the insect~fungal relationship? (fungal ~ site+date+insect*lure) ---\n")
+print(interaction_tests, row.names = FALSE)
+write.csv(interaction_tests, file.path(out_data_dir, "alpha_diversity_insect_fungal_interaction_by_lure.csv"),
+          row.names = FALSE)
+
 ## ---- 6. Within-community site/lure/date effects on each metric -------------
 # Same permutation logic used throughout this project for testing trap-level
 # fixed effects, applied here to a univariate diversity metric via lm()
@@ -206,20 +251,46 @@ write.csv(cross_corr, file.path(out_data_dir, "alpha_diversity_cross_community_c
 # As with the community-level PERMANOVA tables elsewhere in this project,
 # these per-term p-values are reported without multiple-testing correction
 # (they're a small, fixed set of a priori terms, not a taxon screen).
+#
+# Date is tested with linear + quadratic + cubic terms in ONE model (date
+# centered to avoid a huge-magnitude collinear polynomial term), extending
+# this project's established linear+quadratic date pattern (fungal_
+# community_seasonality.r, insect_fungal_coca_analysis.general_workflow.r --
+# see project_organization.md's "Linear+quadratic date test pattern") one
+# order further to cubic. Added 2026-09-01 specifically for this alpha-
+# diversity check: fig9_alpha_diversity_by_lure.R's loess trend lines showed
+# several panels (e.g. insect Shannon diversity under Ethanol, several
+# fungal Simpson-dominance panels) with more structure than a single hump/
+# dip can capture, so a cubic term is tested here as a targeted follow-up --
+# this is NOT (yet) a project-wide convention the way linear+quadratic is.
 
 n_perm <- 999
 
 test_term_date <- function(y, dat_base, n_perm = 999, block_var = "trap_id") {
   dat <- dat_base; dat$y <- y
-  fit_stat <- function(d) coef(summary(lm(y ~ site + lure + date, data = d)))["date", "t value"]
-  obs_t <- fit_stat(dat)
+  fit_model <- function(d) {
+    d$date_c <- as.numeric(d$date) - mean(as.numeric(d$date))
+    lm(y ~ site + lure + date_c + I(date_c^2) + I(date_c^3), data = d)
+  }
+  fit_stats <- function(d) {
+    cs <- coef(summary(fit_model(d)))
+    c(t_linear = cs["date_c", "t value"], t_quad = cs["I(date_c^2)", "t value"],
+      t_cubic = cs["I(date_c^3)", "t value"])
+  }
+  obs <- fit_stats(dat)
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
-  perm_t <- apply(perm_ids, 1, function(idx) { d2 <- dat; d2$date <- dat$date[idx]; fit_stat(d2) })
-  p_perm <- (sum(abs(perm_t) >= abs(obs_t)) + 1) / (n_perm + 1)
-  full_aov <- anova(lm(y ~ site + lure + date, data = dat))
-  r2 <- full_aov["date", "Sum Sq"] / (full_aov["date", "Sum Sq"] + full_aov["Residuals", "Sum Sq"])
-  c(stat = unname(obs_t), r2 = unname(r2), p_perm = p_perm)
+  perm_stats <- t(apply(perm_ids, 1, function(idx) { d2 <- dat; d2$date <- dat$date[idx]; fit_stats(d2) }))
+  p_linear <- (sum(abs(perm_stats[, "t_linear"]) >= abs(obs["t_linear"])) + 1) / (n_perm + 1)
+  p_quad   <- (sum(abs(perm_stats[, "t_quad"]) >= abs(obs["t_quad"])) + 1) / (n_perm + 1)
+  p_cubic  <- (sum(abs(perm_stats[, "t_cubic"]) >= abs(obs["t_cubic"])) + 1) / (n_perm + 1)
+
+  full_aov <- anova(fit_model(dat))
+  r2_of <- function(term) full_aov[term, "Sum Sq"] / (full_aov[term, "Sum Sq"] + full_aov["Residuals", "Sum Sq"])
+
+  c(t_linear = unname(obs["t_linear"]), r2_linear = unname(r2_of("date_c")), p_linear = p_linear,
+    t_quad = unname(obs["t_quad"]), r2_quad = unname(r2_of("I(date_c^2)")), p_quad = p_quad,
+    t_cubic = unname(obs["t_cubic"]), r2_cubic = unname(r2_of("I(date_c^3)")), p_cubic = p_cubic)
 }
 
 test_term_lure <- function(y, dat_base, trap_lure_map, n_perm = 999) {
@@ -265,8 +336,12 @@ covariate_tests <- bind_rows(lapply(names(communities), function(comm_name) {
     r_lure <- test_term_lure(y, dat_base, trap_lure_map, n_perm)
     r_site <- test_term_site(y, dat_base, trap_site_map, n_perm)
     bind_rows(
-      data.frame(community = comm_name, metric = m, term = "date", stat_type = "t",
-                 stat = r_date["stat"], r2 = r_date["r2"], p_perm = r_date["p_perm"]),
+      data.frame(community = comm_name, metric = m, term = "date_linear", stat_type = "t",
+                 stat = r_date["t_linear"], r2 = r_date["r2_linear"], p_perm = r_date["p_linear"]),
+      data.frame(community = comm_name, metric = m, term = "date_quadratic", stat_type = "t",
+                 stat = r_date["t_quad"], r2 = r_date["r2_quad"], p_perm = r_date["p_quad"]),
+      data.frame(community = comm_name, metric = m, term = "date_cubic", stat_type = "t",
+                 stat = r_date["t_cubic"], r2 = r_date["r2_cubic"], p_perm = r_date["p_cubic"]),
       data.frame(community = comm_name, metric = m, term = "lure", stat_type = "F",
                  stat = r_lure["stat"], r2 = r_lure["r2"], p_perm = r_lure["p_perm"]),
       data.frame(community = comm_name, metric = m, term = "site", stat_type = "F",
@@ -278,6 +353,30 @@ rownames(covariate_tests) <- NULL
 cat("\n--- Site/lure/date effects on alpha diversity (each community's own table) ---\n")
 print(covariate_tests, row.names = FALSE)
 write.csv(covariate_tests, file.path(out_data_dir, "alpha_diversity_covariate_tests.csv"), row.names = FALSE)
+
+# Shape classification per community x metric, same cascading logic as
+# fungal_community_seasonality.r's quadratic-takes-priority-over-linear rule
+# (see project_organization.md), extended one level further: a significant
+# cubic term takes priority over quadratic, which takes priority over linear.
+# p_perm (uncorrected) is used directly, same as the rest of this covariate
+# table -- these are 2 communities x 3 metrics = 6 date tests total, the
+# same kind of small fixed a priori set as the site/lure/date PERMANOVA
+# terms elsewhere in this project, not a taxon screen needing BH-FDR.
+date_shape <- covariate_tests %>%
+  filter(term %in% c("date_linear", "date_quadratic", "date_cubic")) %>%
+  select(community, metric, term, stat, p_perm) %>%
+  pivot_wider(names_from = term, values_from = c(stat, p_perm)) %>%
+  mutate(shape = case_when(
+    p_perm_date_cubic < 0.10 ~ "complex (significant cubic term)",
+    p_perm_date_quadratic < 0.10 & stat_date_quadratic < 0 ~ "hump (peaks mid-season)",
+    p_perm_date_quadratic < 0.10 & stat_date_quadratic > 0 ~ "dip (troughs mid-season)",
+    p_perm_date_linear < 0.10 & stat_date_linear > 0 ~ "linear increase (late-season)",
+    p_perm_date_linear < 0.10 & stat_date_linear < 0 ~ "linear decrease (early-season)",
+    TRUE ~ "no significant date pattern"
+  ))
+cat("\n--- Date shape classification (linear/quadratic/cubic, cubic takes priority) ---\n")
+print(date_shape, row.names = FALSE)
+write.csv(date_shape, file.path(out_data_dir, "alpha_diversity_date_shape.csv"), row.names = FALSE)
 
 ## ---- 7. Figures --------------------------------------------------------------
 
