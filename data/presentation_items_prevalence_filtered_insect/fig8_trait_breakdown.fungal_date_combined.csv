@@ -1,164 +1,140 @@
 "Class","lifestyle","cat","n"
-"Dothideomycetes","plant pathogen","Later season (linear, t>0)",175
-"Agaricomycetes","wood saprotroph","Later season (linear, t>0)",129
-"Sordariomycetes","plant pathogen","Earlier season (linear, t<0)",124
-"Agaricomycetes","wood saprotroph","Earlier season (linear, t<0)",79
-"Dothideomycetes","litter saprotroph (+plant pathogen)","Later season (linear, t>0)",72
-"Agaricomycetes","wood saprotroph (+plant pathogen)","Later season (linear, t>0)",49
-"Dothideomycetes","sooty mold","Later season (linear, t>0)",48
-"Tremellomycetes","soil saprotroph","Later season (linear, t>0)",39
-"Dothideomycetes","sooty mold","Hump (quadratic, t<0)",39
-"Tremellomycetes","unspecified saprotroph","Hump (quadratic, t<0)",39
-"Dothideomycetes","wood saprotroph","Hump (quadratic, t<0)",39
-"Taphrinomycetes","plant pathogen","Later season (linear, t>0)",37
-"Sordariomycetes","plant pathogen","Later season (linear, t>0)",36
-"Leotiomycetes","plant pathogen","Earlier season (linear, t<0)",34
-"Dothideomycetes","wood saprotroph","Later season (linear, t>0)",34
-"Tremellomycetes","soil saprotroph","Hump (quadratic, t<0)",30
-"Dothideomycetes","plant pathogen","Earlier season (linear, t<0)",29
-"Sordariomycetes","plant pathogen","Dip (quadratic, t>0)",29
-"Eurotiomycetes","plant pathogen","Earlier season (linear, t<0)",27
-"Agaricomycetes","wood saprotroph","Dip (quadratic, t>0)",27
-"Dothideomycetes","wood saprotroph","Earlier season (linear, t<0)",27
-"Sordariomycetes","wood saprotroph","Earlier season (linear, t<0)",27
-"Dothideomycetes","plant pathogen","Hump (quadratic, t<0)",26
-"Exobasidiomycetes","plant pathogen","Later season (linear, t>0)",26
-"Cystobasidiomycetes","mycoparasite","Later season (linear, t>0)",25
-"Tremellomycetes","unspecified saprotroph","Later season (linear, t>0)",25
-"Lecanoromycetes","lichenized","Earlier season (linear, t<0)",24
-"Tremellomycetes","mycoparasite","Later season (linear, t>0)",24
-"Saccharomycetes","nectar/tap saprotroph","Earlier season (linear, t<0)",24
-"Taphrinomycetes","plant pathogen","Hump (quadratic, t<0)",22
-"Cystobasidiomycetes","epiphyte","Later season (linear, t>0)",21
-"Dothideomycetes","plant pathogen","Dip (quadratic, t>0)",20
-"Leotiomycetes","wood saprotroph","Earlier season (linear, t<0)",16
-"Microbotryomycetes","mycoparasite","Later season (linear, t>0)",15
-"Tremellomycetes","litter saprotroph","Later season (linear, t>0)",14
-"Microbotryomycetes","unspecified saprotroph","Later season (linear, t>0)",14
-"Lecanoromycetes","lichen parasite","Earlier season (linear, t<0)",13
-"Dothideomycetes","litter saprotroph (+plant pathogen)","Dip (quadratic, t>0)",13
-"Agaricomycetes","plant pathogen","Later season (linear, t>0)",13
-"Tremellomycetes","mycoparasite","Hump (quadratic, t<0)",12
-"Eurotiomycetes","plant pathogen","Dip (quadratic, t>0)",12
-"Lecanoromycetes","lichenized","Dip (quadratic, t>0)",11
-"Leotiomycetes","plant pathogen","Hump (quadratic, t<0)",11
-"Dothideomycetes","unspecified saprotroph","Earlier season (linear, t<0)",10
-"Eurotiomycetes","unspecified saprotroph","Earlier season (linear, t<0)",10
-"Sordariomycetes","unspecified saprotroph","Earlier season (linear, t<0)",10
-"Dacrymycetes","wood saprotroph","Later season (linear, t>0)",10
-"Sordariomycetes","wood saprotroph","Later season (linear, t>0)",10
-"Tremellomycetes","animal parasite","Later season (linear, t>0)",9
-"Leotiomycetes","foliar endophyte","Later season (linear, t>0)",9
-"Tremellomycetes","litter saprotroph","Hump (quadratic, t<0)",9
-"Exobasidiomycetes","plant pathogen","Hump (quadratic, t<0)",9
-"Sordariomycetes","plant pathogen","Hump (quadratic, t<0)",9
-"Dothideomycetes","unspecified saprotroph","Later season (linear, t>0)",9
-"Sordariomycetes","Other","Later season (linear, t>0)",8
-"Dothideomycetes","animal parasite","Later season (linear, t>0)",8
-"Leotiomycetes","litter saprotroph","Earlier season (linear, t<0)",8
-"Microbotryomycetes","soil saprotroph","Later season (linear, t>0)",8
-"Agaricostilbomycetes","Other","Later season (linear, t>0)",7
-"Sordariomycetes","animal parasite","Earlier season (linear, t<0)",7
-"Lecanoromycetes","lichenized","Later season (linear, t>0)",7
-"Agaricomycetes","litter saprotroph","Earlier season (linear, t<0)",7
-"Agaricomycetes","litter saprotroph","Later season (linear, t>0)",7
-"Leotiomycetes","litter saprotroph (+plant pathogen)","Earlier season (linear, t<0)",7
-"Microbotryomycetes","wood saprotroph","Hump (quadratic, t<0)",7
-"Eurotiomycetes","Other","Later season (linear, t>0)",6
-"Leotiomycetes","Other","Earlier season (linear, t<0)",6
-"Dothideomycetes","litter saprotroph","Later season (linear, t>0)",6
-"Saccharomycetes","litter saprotroph","Earlier season (linear, t<0)",6
-"Saccharomycetes","nectar/tap saprotroph","Later season (linear, t>0)",6
-"Agaricomycetes","plant pathogen","Dip (quadratic, t>0)",6
-"Agaricomycetes","plant pathogen","Earlier season (linear, t<0)",6
-"Leotiomycetes","plant pathogen","Later season (linear, t>0)",6
-"Leotiomycetes","unspecified","Earlier season (linear, t<0)",6
-"Orbiliomycetes","wood saprotroph","Earlier season (linear, t<0)",6
-"Eurotiomycetes","animal parasite","Earlier season (linear, t<0)",5
-"Lecanoromycetes","lichen parasite","Dip (quadratic, t>0)",5
-"Dothideomycetes","litter saprotroph","Earlier season (linear, t<0)",5
-"Leotiomycetes","litter saprotroph","Later season (linear, t>0)",5
-"Eurotiomycetes","soil saprotroph","Earlier season (linear, t<0)",5
-"Eurotiomycetes","unspecified saprotroph","Dip (quadratic, t>0)",5
-"Dothideomycetes","Other","Dip (quadratic, t>0)",4
-"Dothideomycetes","Other","Later season (linear, t>0)",4
-"Dothideomycetes","animal parasite","Dip (quadratic, t>0)",4
-"Sordariomycetes","animal parasite","Dip (quadratic, t>0)",4
-"Dothideomycetes","litter saprotroph (+plant pathogen)","Hump (quadratic, t<0)",4
-"Tremellomycetes","mycoparasite","Earlier season (linear, t<0)",4
-"Eurotiomycetes","plant pathogen","Later season (linear, t>0)",4
-"Agaricomycetes","soil saprotroph","Earlier season (linear, t<0)",4
-"Agaricomycetes","soil saprotroph","Later season (linear, t>0)",4
-"Agaricomycetes","wood saprotroph","Hump (quadratic, t<0)",4
-"Dothideomycetes","wood saprotroph","Dip (quadratic, t>0)",4
-"Leotiomycetes","wood saprotroph","Dip (quadratic, t>0)",4
-"Sordariomycetes","wood saprotroph","Dip (quadratic, t>0)",4
-"Agaricomycetes","wood saprotroph (+plant pathogen)","Earlier season (linear, t<0)",4
-"Eurotiomycetes","Other","Dip (quadratic, t>0)",3
-"Sordariomycetes","Other","Dip (quadratic, t>0)",3
-"Sordariomycetes","Other","Earlier season (linear, t<0)",3
-"Sordariomycetes","animal parasite","Later season (linear, t>0)",3
-"Dothideomycetes","litter saprotroph","Dip (quadratic, t>0)",3
-"Leotiomycetes","litter saprotroph","Hump (quadratic, t<0)",3
-"Leotiomycetes","litter saprotroph (+plant pathogen)","Hump (quadratic, t<0)",3
-"Leotiomycetes","litter saprotroph (+plant pathogen)","Later season (linear, t>0)",3
-"Saccharomycetes","nectar/tap saprotroph","Dip (quadratic, t>0)",3
-"Leotiomycetes","soil saprotroph","Earlier season (linear, t<0)",3
-"Eurotiomycetes","unspecified saprotroph","Later season (linear, t>0)",3
-"Microbotryomycetes","unspecified saprotroph","Hump (quadratic, t<0)",3
-"Microbotryomycetes","wood saprotroph","Later season (linear, t>0)",3
-"Orbiliomycetes","wood saprotroph","Dip (quadratic, t>0)",3
-"Agaricomycetes","Other","Earlier season (linear, t<0)",2
-"Dothideomycetes","Other","Earlier season (linear, t<0)",2
-"Dothideomycetes","Other","Hump (quadratic, t<0)",2
-"Lecanoromycetes","Other","Earlier season (linear, t<0)",2
-"Microbotryomycetes","Other","Later season (linear, t>0)",2
-"Orbiliomycetes","Other","Earlier season (linear, t<0)",2
-"Tremellomycetes","Other","Later season (linear, t>0)",2
-"Eurotiomycetes","animal parasite","Dip (quadratic, t>0)",2
-"Agaricomycetes","litter saprotroph","Hump (quadratic, t<0)",2
-"Dothideomycetes","litter saprotroph","Hump (quadratic, t<0)",2
-"Leotiomycetes","litter saprotroph","Dip (quadratic, t>0)",2
-"Leotiomycetes","plant pathogen","Dip (quadratic, t>0)",2
-"Agaricomycetes","soil saprotroph","Dip (quadratic, t>0)",2
-"Leotiomycetes","soil saprotroph","Dip (quadratic, t>0)",2
-"Leotiomycetes","unspecified","Dip (quadratic, t>0)",2
-"Sordariomycetes","unspecified saprotroph","Later season (linear, t>0)",2
-"Sordariomycetes","wood saprotroph","Hump (quadratic, t<0)",2
-"Agaricomycetes","Other","Dip (quadratic, t>0)",1
-"Agaricomycetes","Other","Later season (linear, t>0)",1
-"Cystobasidiomycetes","Other","Later season (linear, t>0)",1
-"Lecanoromycetes","Other","Hump (quadratic, t<0)",1
-"Leotiomycetes","Other","Dip (quadratic, t>0)",1
-"Microbotryomycetes","Other","Dip (quadratic, t>0)",1
-"Orbiliomycetes","Other","Dip (quadratic, t>0)",1
-"Dothideomycetes","animal parasite","Earlier season (linear, t<0)",1
-"Cystobasidiomycetes","epiphyte","Earlier season (linear, t<0)",1
-"Leotiomycetes","foliar endophyte","Earlier season (linear, t<0)",1
-"Lecanoromycetes","lichen parasite","Later season (linear, t>0)",1
-"Lecanoromycetes","lichenized","Hump (quadratic, t<0)",1
-"Agaricomycetes","litter saprotroph","Dip (quadratic, t>0)",1
-"Dothideomycetes","litter saprotroph (+plant pathogen)","Earlier season (linear, t<0)",1
-"Leotiomycetes","litter saprotroph (+plant pathogen)","Dip (quadratic, t>0)",1
-"Cystobasidiomycetes","mycoparasite","Dip (quadratic, t>0)",1
-"Microbotryomycetes","mycoparasite","Dip (quadratic, t>0)",1
-"Microbotryomycetes","mycoparasite","Earlier season (linear, t<0)",1
-"Saccharomycetes","nectar/tap saprotroph","Hump (quadratic, t<0)",1
-"Exobasidiomycetes","plant pathogen","Dip (quadratic, t>0)",1
-"Taphrinomycetes","plant pathogen","Earlier season (linear, t<0)",1
-"Agaricomycetes","soil saprotroph","Hump (quadratic, t<0)",1
-"Eurotiomycetes","soil saprotroph","Dip (quadratic, t>0)",1
-"Eurotiomycetes","soil saprotroph","Later season (linear, t>0)",1
-"Leotiomycetes","soil saprotroph","Later season (linear, t>0)",1
-"Microbotryomycetes","soil saprotroph","Earlier season (linear, t<0)",1
-"Microbotryomycetes","soil saprotroph","Hump (quadratic, t<0)",1
-"Tremellomycetes","soil saprotroph","Earlier season (linear, t<0)",1
-"Dothideomycetes","sooty mold","Earlier season (linear, t<0)",1
-"Leotiomycetes","unspecified","Later season (linear, t>0)",1
-"Dothideomycetes","unspecified saprotroph","Dip (quadratic, t>0)",1
-"Sordariomycetes","unspecified saprotroph","Dip (quadratic, t>0)",1
-"Sordariomycetes","unspecified saprotroph","Hump (quadratic, t<0)",1
-"Leotiomycetes","wood saprotroph","Hump (quadratic, t<0)",1
-"Leotiomycetes","wood saprotroph","Later season (linear, t>0)",1
-"Agaricomycetes","wood saprotroph (+plant pathogen)","Dip (quadratic, t>0)",1
-"Agaricomycetes","wood saprotroph (+plant pathogen)","Hump (quadratic, t<0)",1
+"Dothideomycetes","plant pathogen","Peaks late season",175
+"Agaricomycetes","wood saprotroph","Peaks late season",129
+"Sordariomycetes","plant pathogen","Peaks early season",124
+"Agaricomycetes","wood saprotroph","Peaks early season",79
+"Dothideomycetes","litter saprotroph (+plant pathogen)","Peaks late season",72
+"Agaricomycetes","wood saprotroph (+plant pathogen)","Peaks late season",49
+"Dothideomycetes","sooty mold","Peaks late season",48
+"Tremellomycetes","soil saprotroph","Peaks late season",39
+"Taphrinomycetes","plant pathogen","Peaks late season",37
+"Sordariomycetes","plant pathogen","Peaks late season",36
+"Leotiomycetes","plant pathogen","Peaks early season",34
+"Dothideomycetes","wood saprotroph","Peaks late season",34
+"Dothideomycetes","plant pathogen","Peaks early season",29
+"Tremellomycetes","unspecified saprotroph","Peaks mid-season",29
+"Eurotiomycetes","plant pathogen","Peaks early season",27
+"Dothideomycetes","wood saprotroph","Peaks early season",27
+"Sordariomycetes","wood saprotroph","Peaks early season",27
+"Exobasidiomycetes","plant pathogen","Peaks late season",26
+"Cystobasidiomycetes","mycoparasite","Peaks late season",25
+"Tremellomycetes","unspecified saprotroph","Peaks late season",25
+"Lecanoromycetes","lichenized","Peaks early season",24
+"Tremellomycetes","mycoparasite","Peaks late season",24
+"Saccharomycetes","nectar/tap saprotroph","Peaks early season",24
+"Dothideomycetes","wood saprotroph","Peaks mid-season",22
+"Cystobasidiomycetes","epiphyte","Peaks late season",21
+"Tremellomycetes","soil saprotroph","Peaks mid-season",16
+"Leotiomycetes","wood saprotroph","Peaks early season",16
+"Microbotryomycetes","mycoparasite","Peaks late season",15
+"Tremellomycetes","litter saprotroph","Peaks late season",14
+"Taphrinomycetes","plant pathogen","Peaks mid-season",14
+"Microbotryomycetes","unspecified saprotroph","Peaks late season",14
+"Lecanoromycetes","lichen parasite","Peaks early season",13
+"Agaricomycetes","plant pathogen","Peaks late season",13
+"Dothideomycetes","plant pathogen","Peaks mid-season",12
+"Dothideomycetes","unspecified saprotroph","Peaks early season",10
+"Eurotiomycetes","unspecified saprotroph","Peaks early season",10
+"Sordariomycetes","unspecified saprotroph","Peaks early season",10
+"Dacrymycetes","wood saprotroph","Peaks late season",10
+"Sordariomycetes","wood saprotroph","Peaks late season",10
+"Tremellomycetes","animal parasite","Peaks late season",9
+"Leotiomycetes","foliar endophyte","Peaks late season",9
+"Leotiomycetes","plant pathogen","Peaks mid-season",9
+"Dothideomycetes","unspecified saprotroph","Peaks late season",9
+"Sordariomycetes","Other","Peaks late season",8
+"Dothideomycetes","animal parasite","Peaks late season",8
+"Leotiomycetes","litter saprotroph","Peaks early season",8
+"Microbotryomycetes","soil saprotroph","Peaks late season",8
+"Agaricostilbomycetes","Other","Peaks late season",7
+"Sordariomycetes","animal parasite","Peaks early season",7
+"Lecanoromycetes","lichenized","Peaks late season",7
+"Agaricomycetes","litter saprotroph","Peaks early season",7
+"Agaricomycetes","litter saprotroph","Peaks late season",7
+"Leotiomycetes","litter saprotroph (+plant pathogen)","Peaks early season",7
+"Tremellomycetes","mycoparasite","Peaks mid-season",7
+"Eurotiomycetes","Other","Peaks late season",6
+"Leotiomycetes","Other","Peaks early season",6
+"Dothideomycetes","litter saprotroph","Peaks late season",6
+"Saccharomycetes","litter saprotroph","Peaks early season",6
+"Saccharomycetes","nectar/tap saprotroph","Peaks late season",6
+"Agaricomycetes","plant pathogen","Peaks early season",6
+"Leotiomycetes","plant pathogen","Peaks late season",6
+"Leotiomycetes","unspecified","Peaks early season",6
+"Orbiliomycetes","wood saprotroph","Peaks early season",6
+"Eurotiomycetes","Other","Peaks early season",5
+"Dothideomycetes","litter saprotroph","Peaks early season",5
+"Leotiomycetes","litter saprotroph","Peaks late season",5
+"Tremellomycetes","litter saprotroph","Peaks mid-season",5
+"Dothideomycetes","plant pathogen","Bimodal (early + late)",5
+"Eurotiomycetes","plant pathogen","Bimodal (early + late)",5
+"Exobasidiomycetes","plant pathogen","Peaks mid-season",5
+"Sordariomycetes","plant pathogen","Peaks mid-season",5
+"Eurotiomycetes","soil saprotroph","Peaks early season",5
+"Dothideomycetes","sooty mold","Peaks mid-season",5
+"Microbotryomycetes","wood saprotroph","Peaks mid-season",5
+"Dothideomycetes","Other","Bimodal (early + late)",4
+"Dothideomycetes","Other","Peaks late season",4
+"Tremellomycetes","mycoparasite","Peaks early season",4
+"Eurotiomycetes","plant pathogen","Peaks late season",4
+"Agaricomycetes","soil saprotroph","Peaks early season",4
+"Agaricomycetes","soil saprotroph","Peaks late season",4
+"Agaricomycetes","wood saprotroph","Peaks mid-season",4
+"Agaricomycetes","wood saprotroph (+plant pathogen)","Peaks early season",4
+"Eurotiomycetes","Other","Bimodal (early + late)",3
+"Sordariomycetes","Other","Peaks early season",3
+"Sordariomycetes","animal parasite","Peaks late season",3
+"Lecanoromycetes","lichenized","Bimodal (early + late)",3
+"Dothideomycetes","litter saprotroph","Bimodal (early + late)",3
+"Leotiomycetes","litter saprotroph (+plant pathogen)","Peaks late season",3
+"Leotiomycetes","litter saprotroph (+plant pathogen)","Peaks mid-season",3
+"Leotiomycetes","soil saprotroph","Peaks early season",3
+"Eurotiomycetes","unspecified saprotroph","Bimodal (early + late)",3
+"Eurotiomycetes","unspecified saprotroph","Peaks late season",3
+"Microbotryomycetes","wood saprotroph","Peaks late season",3
+"Agaricomycetes","Other","Peaks early season",2
+"Dothideomycetes","Other","Peaks early season",2
+"Dothideomycetes","Other","Peaks mid-season",2
+"Lecanoromycetes","Other","Peaks early season",2
+"Microbotryomycetes","Other","Peaks late season",2
+"Orbiliomycetes","Other","Peaks early season",2
+"Sordariomycetes","Other","Bimodal (early + late)",2
+"Tremellomycetes","Other","Peaks late season",2
+"Dothideomycetes","animal parasite","Bimodal (early + late)",2
+"Sordariomycetes","animal parasite","Bimodal (early + late)",2
+"Saccharomycetes","nectar/tap saprotroph","Bimodal (early + late)",2
+"Agaricomycetes","soil saprotroph","Bimodal (early + late)",2
+"Leotiomycetes","soil saprotroph","Bimodal (early + late)",2
+"Sordariomycetes","unspecified saprotroph","Peaks late season",2
+"Agaricomycetes","wood saprotroph","Bimodal (early + late)",2
+"Dothideomycetes","wood saprotroph","Bimodal (early + late)",2
+"Sordariomycetes","wood saprotroph","Peaks mid-season",2
+"Agaricomycetes","Other","Peaks late season",1
+"Cystobasidiomycetes","Other","Peaks late season",1
+"Leotiomycetes","Other","Bimodal (early + late)",1
+"Microbotryomycetes","Other","Bimodal (early + late)",1
+"Dothideomycetes","animal parasite","Peaks early season",1
+"Cystobasidiomycetes","epiphyte","Peaks early season",1
+"Leotiomycetes","foliar endophyte","Peaks early season",1
+"Lecanoromycetes","lichen parasite","Peaks late season",1
+"Lecanoromycetes","lichenized","Peaks mid-season",1
+"Agaricomycetes","litter saprotroph","Peaks mid-season",1
+"Dothideomycetes","litter saprotroph","Peaks mid-season",1
+"Leotiomycetes","litter saprotroph","Peaks mid-season",1
+"Dothideomycetes","litter saprotroph (+plant pathogen)","Bimodal (early + late)",1
+"Dothideomycetes","litter saprotroph (+plant pathogen)","Peaks early season",1
+"Microbotryomycetes","mycoparasite","Peaks early season",1
+"Saccharomycetes","nectar/tap saprotroph","Peaks mid-season",1
+"Agaricomycetes","plant pathogen","Bimodal (early + late)",1
+"Sordariomycetes","plant pathogen","Bimodal (early + late)",1
+"Taphrinomycetes","plant pathogen","Peaks early season",1
+"Eurotiomycetes","soil saprotroph","Peaks late season",1
+"Leotiomycetes","soil saprotroph","Peaks late season",1
+"Microbotryomycetes","soil saprotroph","Peaks early season",1
+"Tremellomycetes","soil saprotroph","Peaks early season",1
+"Dothideomycetes","sooty mold","Peaks early season",1
+"Leotiomycetes","unspecified","Peaks late season",1
+"Microbotryomycetes","unspecified saprotroph","Peaks mid-season",1
+"Leotiomycetes","wood saprotroph","Peaks late season",1
+"Leotiomycetes","wood saprotroph","Peaks mid-season",1
+"Agaricomycetes","wood saprotroph (+plant pathogen)","Peaks mid-season",1

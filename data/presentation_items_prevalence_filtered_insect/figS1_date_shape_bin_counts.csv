@@ -1,0 +1,10 @@
+"bin","label","n_taxa"
+"late_only","Later season only (linear t>0, quad n.s.)",1035
+"early_only","Earlier season only (linear t<0, quad n.s.)",748
+"late_and_hump","Later season + hump (linear t>0, quad hump)",143
+"late_and_dip","Later season + dip (linear t>0, quad dip)",94
+"early_and_hump","Earlier season + hump (linear t<0, quad hump)",19
+"early_and_dip","Earlier season + dip (linear t<0, quad dip)",147
+"hump_only","Hump only, no linear trend (linear n.s., quad hump)",215
+"dip_only","Dip only, no linear trend (linear n.s., quad dip)",89
+"no_significant_pattern","No significant linear or quadratic term",3852

@@ -1,63 +1,57 @@
 "Class","group","cat","n"
-"Other","Other","Later season (linear, t>0)",322
-"Other","Other","Earlier season (linear, t<0)",279
-"Dothideomycetes","Mycosphaerellales","Later season (linear, t>0)",174
-"Unclassified","Unclassified","Earlier season (linear, t<0)",169
-"Unclassified","Unclassified","Later season (linear, t>0)",136
-"Tremellomycetes","Tremellales","Later season (linear, t>0)",123
-"Dothideomycetes","Dothideales","Hump (quadratic, t<0)",118
-"Dothideomycetes","Dothideales","Later season (linear, t>0)",117
-"Agaricomycetes","Polyporales","Later season (linear, t>0)",99
-"Sordariomycetes","Diaporthales","Earlier season (linear, t<0)",89
-"Leotiomycetes","Helotiales","Earlier season (linear, t<0)",83
-"Tremellomycetes","Tremellales","Hump (quadratic, t<0)",74
-"Dothideomycetes","Pleosporales","Earlier season (linear, t<0)",71
-"Unclassified","Unclassified","Dip (quadratic, t>0)",68
-"Other","Other","Dip (quadratic, t>0)",67
-"Dothideomycetes","Pleosporales","Later season (linear, t>0)",65
-"Other","Other","Hump (quadratic, t<0)",61
-"Agaricomycetes","Russulales","Later season (linear, t>0)",56
-"Dothideomycetes","Capnodiales","Later season (linear, t>0)",45
-"Unclassified","Unclassified","Hump (quadratic, t<0)",44
-"Sordariomycetes","Xylariales","Earlier season (linear, t<0)",44
-"Agaricomycetes","Polyporales","Earlier season (linear, t<0)",43
-"Lecanoromycetes","Lecanorales","Earlier season (linear, t<0)",37
-"Dothideomycetes","Pleosporales","Dip (quadratic, t>0)",37
-"Taphrinomycetes","Taphrinales","Later season (linear, t>0)",37
-"Eurotiomycetes","Chaetothyriales","Earlier season (linear, t<0)",33
-"Sordariomycetes","Hypocreales","Earlier season (linear, t<0)",30
-"Agaricomycetes","Polyporales","Dip (quadratic, t>0)",28
-"Sordariomycetes","Diaporthales","Dip (quadratic, t>0)",27
-"Leotiomycetes","Helotiales","Later season (linear, t>0)",26
-"Sordariomycetes","Xylariales","Later season (linear, t>0)",23
-"Taphrinomycetes","Taphrinales","Hump (quadratic, t<0)",22
-"Leotiomycetes","Helotiales","Hump (quadratic, t<0)",21
-"Eurotiomycetes","Chaetothyriales","Dip (quadratic, t>0)",20
-"Dothideomycetes","Capnodiales","Dip (quadratic, t>0)",18
-"Dothideomycetes","Mycosphaerellales","Dip (quadratic, t>0)",18
-"Leotiomycetes","Helotiales","Dip (quadratic, t>0)",17
-"Sordariomycetes","Hypocreales","Later season (linear, t>0)",15
-"Sordariomycetes","Diaporthales","Later season (linear, t>0)",14
-"Eurotiomycetes","Chaetothyriales","Later season (linear, t>0)",13
-"Lecanoromycetes","Lecanorales","Dip (quadratic, t>0)",12
-"Dothideomycetes","Mycosphaerellales","Earlier season (linear, t<0)",12
-"Dothideomycetes","Capnodiales","Hump (quadratic, t<0)",8
-"Dothideomycetes","Dothideales","Earlier season (linear, t<0)",8
-"Sordariomycetes","Hypocreales","Dip (quadratic, t>0)",8
-"Dothideomycetes","Mycosphaerellales","Hump (quadratic, t<0)",8
-"Lecanoromycetes","Lecanorales","Later season (linear, t>0)",7
-"Sordariomycetes","Diaporthales","Hump (quadratic, t<0)",6
-"Sordariomycetes","Xylariales","Dip (quadratic, t>0)",6
-"Dothideomycetes","Capnodiales","Earlier season (linear, t<0)",5
-"Agaricomycetes","Russulales","Earlier season (linear, t<0)",5
-"Sordariomycetes","Xylariales","Hump (quadratic, t<0)",5
-"Dothideomycetes","Pleosporales","Hump (quadratic, t<0)",4
-"Tremellomycetes","Tremellales","Earlier season (linear, t<0)",4
-"Sordariomycetes","Hypocreales","Hump (quadratic, t<0)",2
-"Agaricomycetes","Polyporales","Hump (quadratic, t<0)",2
-"Agaricomycetes","Russulales","Dip (quadratic, t>0)",2
-"Taphrinomycetes","Taphrinales","Earlier season (linear, t<0)",2
-"Dothideomycetes","Dothideales","Dip (quadratic, t>0)",1
-"Lecanoromycetes","Lecanorales","Hump (quadratic, t<0)",1
-"Agaricomycetes","Russulales","Hump (quadratic, t<0)",1
-"Tremellomycetes","Tremellales","Dip (quadratic, t>0)",1
+"Other","Other","Peaks late season",299
+"Other","Other","Peaks early season",295
+"Dothideomycetes","Mycosphaerellales","Peaks late season",174
+"Unclassified","Unclassified","Peaks early season",169
+"Unclassified","Unclassified","Peaks late season",136
+"Tremellomycetes","Tremellales","Peaks late season",123
+"Dothideomycetes","Dothideales","Peaks late season",117
+"Agaricomycetes","Polyporales","Peaks late season",99
+"Sordariomycetes","Diaporthales","Peaks early season",89
+"Leotiomycetes","Helotiales","Peaks early season",83
+"Dothideomycetes","Pleosporales","Peaks early season",71
+"Dothideomycetes","Pleosporales","Peaks late season",65
+"Agaricomycetes","Russulales","Peaks late season",56
+"Dothideomycetes","Capnodiales","Peaks late season",45
+"Other","Other","Peaks mid-season",44
+"Tremellomycetes","Tremellales","Peaks mid-season",44
+"Sordariomycetes","Xylariales","Peaks early season",44
+"Dothideomycetes","Dothideales","Peaks mid-season",43
+"Agaricomycetes","Polyporales","Peaks early season",43
+"Taphrinomycetes","Taphrinales","Peaks late season",37
+"Eurotiomycetes","Chaetothyriales","Peaks early season",33
+"Unclassified","Unclassified","Peaks mid-season",32
+"Agaricomycetes","Hymenochaetales","Peaks late season",30
+"Sordariomycetes","Hypocreales","Peaks early season",30
+"Other","Other","Bimodal (early + late)",27
+"Leotiomycetes","Helotiales","Peaks late season",26
+"Sordariomycetes","Xylariales","Peaks late season",23
+"Agaricomycetes","Hymenochaetales","Peaks early season",21
+"Unclassified","Unclassified","Bimodal (early + late)",17
+"Leotiomycetes","Helotiales","Peaks mid-season",15
+"Sordariomycetes","Hypocreales","Peaks late season",15
+"Dothideomycetes","Pleosporales","Bimodal (early + late)",15
+"Sordariomycetes","Diaporthales","Peaks late season",14
+"Taphrinomycetes","Taphrinales","Peaks mid-season",14
+"Eurotiomycetes","Chaetothyriales","Peaks late season",13
+"Dothideomycetes","Mycosphaerellales","Peaks early season",12
+"Dothideomycetes","Capnodiales","Peaks mid-season",8
+"Dothideomycetes","Dothideales","Peaks early season",8
+"Eurotiomycetes","Chaetothyriales","Bimodal (early + late)",7
+"Dothideomycetes","Mycosphaerellales","Bimodal (early + late)",7
+"Dothideomycetes","Capnodiales","Bimodal (early + late)",6
+"Sordariomycetes","Diaporthales","Peaks mid-season",6
+"Dothideomycetes","Capnodiales","Peaks early season",5
+"Agaricomycetes","Russulales","Peaks early season",5
+"Leotiomycetes","Helotiales","Bimodal (early + late)",4
+"Sordariomycetes","Hypocreales","Bimodal (early + late)",4
+"Tremellomycetes","Tremellales","Peaks early season",4
+"Dothideomycetes","Pleosporales","Peaks mid-season",3
+"Dothideomycetes","Mycosphaerellales","Peaks mid-season",2
+"Taphrinomycetes","Taphrinales","Peaks early season",2
+"Agaricomycetes","Hymenochaetales","Bimodal (early + late)",1
+"Sordariomycetes","Hypocreales","Peaks mid-season",1
+"Agaricomycetes","Polyporales","Peaks mid-season",1
+"Agaricomycetes","Russulales","Bimodal (early + late)",1
+"Agaricomycetes","Russulales","Peaks mid-season",1
+"Sordariomycetes","Xylariales","Peaks mid-season",1

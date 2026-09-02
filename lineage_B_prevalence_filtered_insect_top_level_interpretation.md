@@ -163,48 +163,55 @@ Files: `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/`
 `*.date_site_residualized.csv` + `original_vs_residualized_comparison.csv`
 counterparts; figures in the matching `figures/` directory.
 
-## 7. Higher-level summaries: Order/Class and trophic mode (fig4/fig5/fig7/fig8, 2026-09-01 port)
+## 7. Higher-level summaries: Order/Class and trophic mode (fig4/fig5/fig7/fig8, 2026-09-01 port; all four revised 2026-09-02)
 
 Lineage-B's fig4/fig5/fig7/fig8 differ structurally from Lineage A's in one way beyond
 just the broader taxon set: the direct insect~date and fungal~date screens now carry
-a quadratic term (§2), so these figures show the linear and quadratic terms TOGETHER
-on one set of axes as 4 dodged bars, and a group's rank (which orders/lifestyles get
-their own bar vs. fold into "Other") is by the COMBINED linear+quadratic hit count.
-insect_PCoA1 and insect_PCoA2 stay as separate single-term panels, factor(date)-
-adjusted (§5's strictest test) rather than Lineage A's permissive no-lure/no-date
-test. See `project_organization.md` and `iterative_analysis_updates.md`'s 2026-09-01
-entries for the full design rationale.
+a quadratic term (§2). insect_PCoA1 and insect_PCoA2 stay as separate single-term
+panels, factor(date)-adjusted (§5's strictest test) rather than Lineage A's permissive
+no-lure/no-date test. See `project_organization.md` and `iterative_analysis_updates.md`'s
+2026-09-01 entries for the full design rationale.
 
-### Order/Class level, date-associated hits (fig4/fig5, n=2,490 combined)
+**2026-09-02 revision (all four figures):** fig4/fig5/fig7/fig8 now read the linear
+and quadratic terms with the linear term taking PRIORITY whenever it's significant,
+giving each taxon exactly ONE "peak timing" category (late / early / mid-season /
+bimodal), not up to 2 independent hit-instances as in the first port -- see `project_
+organization.md`'s "Peak-timing convention". All numbers below (both the Order/Class
+section and the trophic-mode section) now use this reading; the two sections are
+directly comparable to each other again.
 
-2,490/6,342 fungal taxa significant in >=1 date term (2,186 linear + 707 quadratic =
-2,893 hit-instances) -- same file as Lineage A (`fungal_taxa_date_association.
-all_taxa.csv` is lineage-invariant), just with the quadratic term now counted too, so
-this is a strict superset of Lineage A's 2,116.
+### Order/Class level, date-associated hits (fig4/fig5, n=2,490)
 
-Class-level split (fig4 facets; linear later/earlier + quadratic dip/hump
-hit-instance counts):
+2,490/6,342 fungal taxa have a significant peak-timing call -- same file as Lineage A
+(`fungal_taxa_date_association.all_taxa.csv` is lineage-invariant); this total is
+unchanged from the pre-revision "linear OR quadratic significant" count, only how
+those 2,490 taxa split into categories changed. Split: **1,272 peak late, 914 peak
+early, 215 peak mid-season, 89 bimodal (early+late)**.
 
-| Class | Linear later (+) | Linear earlier (-) | Quad dip (+) | Quad hump (-) |
+Class-level split (fig4 facets; mutually-exclusive peak-timing taxon counts):
+
+| Class | Peaks late | Peaks early | Peaks mid-season | Bimodal |
 |---|---|---|---|---|
-| Dothideomycetes (Mycosphaerellales/Dothideales/Capnodiales) | 401 | 96 | 74 | 138 |
-| Sordariomycetes (Diaporthales/Xylariales/Hypocreales) | 52 | 163 | 41 | 13 |
-| Agaricomycetes (Polyporales/Russulales) | 155 | 48 | 30 | 3 |
-| Tremellomycetes (Tremellales) | 123 | 4 | 1 | 74 |
-| Leotiomycetes (Helotiales) | 26 | 83 | 17 | 21 |
-| Eurotiomycetes (Chaetothyriales) | 13 | 33 | 20 | 0 |
-| Taphrinomycetes (Taphrinales) | 37 | 2 | 0 | 22 |
-| Lecanoromycetes (Lecanorales) | 7 | 37 | 12 | 1 |
+| Dothideomycetes (Mycosphaerellales/Dothideales/Capnodiales) | 436 | 127 | 62 | 34 |
+| Agaricomycetes (Polyporales/Russulales) | 222 | 111 | 6 | 5 |
+| Sordariomycetes (Diaporthales/Xylariales/Hypocreales) | 70 | 203 | 8 | 6 |
+| Tremellomycetes (Tremellales) | 132 | 5 | 70 | 0 |
+| Leotiomycetes (Helotiales) | 46 | 110 | 20 | 5 |
+| Eurotiomycetes (Chaetothyriales) | 22 | 88 | 0 | 12 |
+| Taphrinomycetes (Taphrinales) | 37 | 2 | 14 | 0 |
+| Lecanoromycetes (Lecanorales) | 23 | 61 | 1 | 7 |
 
 The same two-class opposition Lineage A found is unchanged: **Dothideomycetes skews
-later-season, Sordariomycetes skews earlier-season**. The quadratic column adds a
-genuinely new observation invisible under Lineage A's linear-only design: **Dothideomycetes'
-"later-season" signal is substantially hump-shaped, not a simple increase** (138 hump
-hit-instances vs. 74 dip, on top of the 401 linear-later reading) -- same for
-**Tremellomycetes** (74 hump vs. 1 dip, despite a strongly later-leaning linear
-reading of 123 vs. 4) and **Taphrinomycetes** (22 hump vs. 0 dip, linear 37 vs. 2).
-All three read as "peaks mid-season, not simply late" once the quadratic term is
-available -- worth flagging in any write-up that cites these classes as "later-season."
+later-season, Sordariomycetes skews earlier-season**. Under the linear-priority
+reading, a meaningful minority of each class's signal is now cleanly separated out as
+NOT actually early/late-trending at all, but genuinely peaking mid-season with no
+significant linear direction: **Tremellomycetes** is the clearest case -- 70 of its
+207 significant taxa (34%) are "peaks mid-season," nearly matching its 132 "peaks
+late" -- a taxon-by-taxon split the old hit-instance table (74 hump vs. 123 later,
+allowed to overlap) couldn't show directly. **Dothideomycetes** (62/659, 9%) and
+**Taphrinomycetes** (14/53, 26%) show the same pattern at smaller scale. These
+mid-season taxa should be described as peaking mid-season, not lumped in with the
+"later-season" majority of their class.
 
 ### Order/Class level, insect-axis-associated hits (fig4/fig5, factor(date)-adjusted)
 
@@ -227,23 +234,33 @@ identified by ASV in §5.
 ### Trophic mode / FungalTraits (fig7/fig8; "Unclassified genus"/"No FungalTraits match" excluded)
 
 Pooled across classes (fig7), the date signal is again dominated by **plant pathogen**
-(303 later + 70 dip vs. 221 earlier + 77 hump) and **wood saprotroph** (188 later + 42
-dip vs. 157 earlier + 46 hump) -- both close to even on the linear split alone, same
-as Lineage A (247/205 and 176/152 respectively). Splitting "plant pathogen" by Class
-(fig8) reproduces Lineage A's two-distinct-signals finding almost exactly:
+(303 peak late + 221 peak early + 45 peak mid-season + 12 bimodal) and **wood
+saprotroph** (188 peak late + 157 peak early + 29 peak mid-season + 4 bimodal) --
+both close to even on the late/early split alone, same as Lineage A's linear-only
+read (247/205 and 176/152 respectively). Splitting "plant pathogen" by Class (fig8)
+reproduces Lineage A's two-distinct-signals finding almost exactly:
 
-| Class | Lifestyle | Linear later (+) | Linear earlier (-) |
-|---|---|---|---|
-| Dothideomycetes | plant pathogen (*Ramularia*-dominated) | 175 | 29 |
-| Sordariomycetes | plant pathogen (*Cytospora*-dominated) | 36 | 124 |
+| Class | Lifestyle | Peaks late | Peaks early | Peaks mid-season | Bimodal |
+|---|---|---|---|---|---|
+| Dothideomycetes | plant pathogen (*Ramularia*-dominated) | 175 | 29 | 12 | 5 |
+| Sordariomycetes | plant pathogen (*Cytospora*-dominated) | 36 | 124 | 5 | 1 |
 
-(Lineage A: 173/28 and 34/123 -- essentially the same numbers, confirming the
-broader taxon set adds volume but doesn't change this pattern.) "Wood saprotroph"
-splits similarly by Class: Agaricomycetes skews later (129 vs. 79), Sordariomycetes
-skews earlier (10 vs. 27), and Dothideomycetes' wood-saprotroph bar is itself
-hump-shaped (39 hump-hit-instances vs. 34 linear-later, 27 linear-earlier) -- another
-case where the quadratic term changes the read of a bar that looks "later-season" on
-the linear split alone.
+(Lineage A's linear-only read: 173/28 and 34/123 -- essentially the same late/early
+numbers, confirming the broader taxon set adds volume but doesn't change this
+pattern; the mid-season/bimodal columns are new information Lineage A's linear-only
+test can't produce.) "Wood saprotroph" splits similarly by Class:
+
+| Class | Peaks late | Peaks early | Peaks mid-season | Bimodal |
+|---|---|---|---|---|
+| Agaricomycetes | 129 | 79 | 4 | 2 |
+| Sordariomycetes | 10 | 27 | 2 | 0 |
+| Dothideomycetes | 34 | 27 | 22 | 2 |
+
+Agaricomycetes skews late, Sordariomycetes skews early, and **Dothideomycetes' wood-
+saprotroph signal is substantially mid-season** (22 of 85 significant taxa, 26% --
+nearly as many as its "peaks late" bar) -- the same mid-season-peaking pattern §7's
+Order/Class section already flags for Dothideomycetes overall, now visible within
+this one lifestyle specifically.
 
 For the PCoA-axis trait breakdowns (fig7/fig8 panels b/c), both are too small (17 and
 9 total hits, 9 and 7 with a FungalTraits match) to show a clear trait-level trend the
@@ -282,7 +299,7 @@ request for citable exact figures); headline pattern:
 3. **A new axis (PCoA2) emerged** that has no clean Lineage-A analog -- a within-Scolytinae, lure-and-mid-season-timing axis, distinct from PCoA1's guild-level date split and PCoA3's lure split. Its fungal-association hit count is unstable across date-control strategies and should be reported as a range (0-9/200), not a single number.
 4. **The single most important correction from this line of work**: *Cytospora prunicola* (ASV_1905) -- previously the project's headline "most robust cross-cutting taxon" -- does not survive ANY date-adjusted test on any insect PCoA axis under Lineage B. *Tympanis* sp. is the new best candidate for a genuinely date-robust insect-community-linked fungal signal, and the Valsaceae/*Cytospora* and *Tympanis* genus-level groupings (not specific ASVs) are the more defensible framing overall.
 5. **The pairwise (individual taxon x taxon) screen adds nothing over Lineage A**: same picture at the broader taxon set -- a handful of early-season Scolytinae (above all *Pityogenes hopkinsi*) account for essentially all q<0.10 pairs, zero pairs survive a global correction, and only *P. hopkinsi* keeps any partners after a strict `factor(date)` control on its predictor. The two extra taxa the all-families table surfaces (*Asemum striatum*, *Orthoperus scutellaris*) both collapse entirely under that control, so they are seasonal co-occurrence, not specific associations.
-6. **Order/Class and trophic-mode date patterns are essentially unchanged from Lineage A** -- same Dothideomycetes-later/Sordariomycetes-earlier class split, same *Ramularia*-vs-*Cytospora* two-signal plant-pathogen story (fig8 numbers match Lineage A's almost exactly: 175/29 vs. 173/28, 36/124 vs. 34/123). The quadratic term adds a genuinely new observation, though: **several classes read as "later-season" only because of a strong hump shape**, not a simple increase -- Dothideomycetes, Tremellomycetes, and Taphrinomycetes all carry more hump- than dip-shaped hit-instances despite positive linear-later counts (§7).
+6. **Order/Class and trophic-mode date patterns are essentially unchanged from Lineage A** -- same Dothideomycetes-later/Sordariomycetes-earlier class split, same *Ramularia*-vs-*Cytospora* two-signal plant-pathogen story (fig8 numbers match Lineage A's linear-only read almost exactly: 175/29 vs. 173/28, 36/124 vs. 34/123). Under fig4/fig5/fig7/fig8's linear-priority peak-timing reading (§7, all four figures revised 2026-09-02), a genuinely new observation stands out: **some of what reads as "later-season" is really mid-season peaking with no significant linear trend at all** -- 34% of Tremellomycetes' significant taxa (70/207), 26% of Taphrinomycetes' (14/53), and 9% of Dothideomycetes' (62/659) are "peaks mid-season," not early or late (§7); the same pattern shows up within a single lifestyle too -- 26% of Dothideomycetes' significant wood-saprotroph taxa (22/85) peak mid-season rather than late (§7 trophic-mode subsection).
 7. **The insect-axis (PCoA1/PCoA2) trait/taxonomic breakdowns are far thinner under the strict factor(date)-adjusted hit sets** (17 and 9 hits) than Lineage A's permissive 77-hit PCoA1 result -- no single order or lifestyle dominates PCoA1's spread-thin hits, while PCoA2's hits concentrate on "plant pathogen : filamentous mycelium" (Diaporthales/Helotiales, PCoA2- direction), the same Valsaceae/*Cytospora*+Tympanidaceae/*Tympanis* cluster §5 already flags as the most defensible finding on that axis.
 8. **Date-associated fungal taxa carry the large majority of both sequence abundance (81-88%) and richness at every site**, while insect-associated taxa are a near-invisible slice (<=1.03% abundance, <=26 ASVs) -- consistent with, and a direct site-by-site quantification of, the much stronger seasonal vs. insect-community signal established throughout this file (fig6, §8).
 

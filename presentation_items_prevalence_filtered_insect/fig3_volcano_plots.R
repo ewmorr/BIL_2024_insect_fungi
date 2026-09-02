@@ -51,6 +51,34 @@
 # significant taxa per side (by |t-statistic| of that term) are labeled -- by
 # Genus/species (or Family) from ASVs_taxonomy.tsv for the fungal panels
 # (b/c/e/f), or the already-resolved insect Genus/species name for a/d.
+#
+# REVISION (2026-09-02): after examining example taxa in each linear x
+# quadratic combination (figS1_date_shape_bin_examples.R/figS1_date_shape_
+# bin_counts.csv), the non-linearity itself wasn't judged particularly
+# surprising -- what matters for interpretation is WHEN a taxon peaks: early
+# season, late season, mid-season (hump with no significant linear trend),
+# or bimodal/early+late (dip with no significant linear trend). This adopts
+# a "linear term takes priority" reading (the opposite priority from the
+# `shape` column fungal_community_seasonality.r writes, which gives the
+# quadratic term priority when both are significant) -- a significant linear
+# trend is read as early/late-season regardless of whether the quadratic
+# term is ALSO significant, and the quadratic term only gets its own
+# "mid-season"/"bimodal" interpretation for taxa with NO significant linear
+# trend. Two changes follow for this figure specifically (fig4/fig5/fig7/fig8
+# are NOT yet updated to match -- to be revisited):
+#   - Panels a/b (linear-term volcanoes): point color no longer marks linear
+#     significance (that's what the dashed horizontal line already shows) --
+#     it now marks whether the SAME taxon also carries a significant
+#     quadratic term, so a reader can see at a glance how much of the
+#     linear-significant set (above the dashed line) is "pure" linear vs.
+#     linear+quadratic, and how many quadratic-significant taxa sit below
+#     the line (linear n.s. -- these are the taxa row 2 focuses on).
+#   - Panels d/e (quadratic-term volcanoes): now EXCLUDE any taxon with a
+#     significant linear term before plotting -- under the priority rule
+#     above, a taxon with a significant linear trend is classified by that
+#     trend regardless of its quadratic term, so it no longer belongs in the
+#     "hump = mid-season / dip = bimodal" reading these panels are making.
+#     Panels d/e are therefore a smaller, cleaner subset than before.
 ##############################################################################
 
 library(dplyr)
@@ -69,6 +97,14 @@ q_threshold <- 0.10
 n_label_per_side <- 4   # top labeled hits per direction
 
 sig_colors <- c("TRUE" = "#0072B2", "FALSE" = "grey70")   # Okabe-Ito blue vs. neutral grey
+
+# 4-way combo palette for panels a/b (linear x quadratic significance,
+# Okabe-Ito): grey = neither term significant, blue = linear-only (matches
+# sig_colors' "significant" blue for visual continuity with the other
+# panels), orange = quadratic-only, reddish purple = both.
+combo_colors <- c("Not significant" = "grey70", "Linear only" = "#0072B2",
+                   "Quadratic only" = "#E69F00", "Both significant" = "#CC79A7")
+combo_levels <- names(combo_colors)
 
 ## ---- Taxonomy lookup for labeling -------------------------------------------
 
@@ -104,9 +140,42 @@ volcano_theme <- theme_bw() +
   )
 
 make_volcano <- function(res, x_label, title, subtitle, tag,
-                         t_col = "t_stat", q_col = "q_value") {
+                         t_col = "t_stat", q_col = "q_value",
+                         color_col = q_col, color_legend_title = NULL,
+                         color_labels = c("FALSE" = "Not significant",
+                                          "TRUE" = paste0("Significant (q<", q_threshold, ")")),
+                         combo_color = FALSE) {
   res <- res %>%
-    mutate(.t = .data[[t_col]], .q = .data[[q_col]], sig = .q < q_threshold)
+    mutate(.t = .data[[t_col]], .q = .data[[q_col]], sig = .q < q_threshold,
+           .color_sig = .data[[color_col]] < q_threshold)
+
+  # combo_color (panels a/b): 4-way category crossing the plotted term's own
+  # significance (`sig`, linear here) with the OTHER term's significance
+  # (`.color_sig`, quadratic here) -- see combo_colors above. Non-combo
+  # panels (c/d/e/f) keep the original binary TRUE/FALSE coloring on
+  # whichever single term color_col points at (defaults to q_col, the term
+  # being plotted).
+  if (combo_color) {
+    res <- res %>% mutate(.plot_color = factor(case_when(
+      sig & .color_sig   ~ "Both significant",
+      sig & !.color_sig  ~ "Linear only",
+      !sig & .color_sig  ~ "Quadratic only",
+      TRUE ~ "Not significant"
+    ), levels = combo_levels))
+  } else {
+    res$.plot_color <- res$.color_sig
+  }
+
+  # geom_point draws in row order, so the (huge) "Not significant"/FALSE
+  # majority can visually bury the sparser significant categories wherever
+  # they happen to interleave in the source CSV's row order -- panel b's
+  # orange ("Quadratic only") points were invisible under the grey cloud
+  # before this fix. Sort so grey is always drawn first (bottom layer) and
+  # every significant category draws on top of it, in combo_levels' order
+  # (Not significant < Linear only < Quadratic only < Both significant) --
+  # the exact level order doesn't matter much among the significant
+  # categories, only that none of them sort before "Not significant."
+  res <- res %>% arrange(if (combo_color) as.integer(.plot_color) else .plot_color)
 
   if (!"label" %in% names(res)) {
     # Fungal panels: taxon is an ASV ID -> resolve to a readable name.
@@ -116,7 +185,10 @@ make_volcano <- function(res, x_label, title, subtitle, tag,
 
   # Rank labeled hits by |t| of the plotted term rather than q-value -- with
   # n_perm=999 many taxa tie at the minimum achievable q, which would pick an
-  # arbitrary/overlapping cluster of "top" hits.
+  # arbitrary/overlapping cluster of "top" hits. Labeling is still keyed off
+  # `sig` (significance of the term being volcano-plotted, t_col/q_col) even
+  # when the point COLOR (color_col) marks something else (panels a/b) --
+  # this figure still highlights the top |t| hits on the plotted axis.
   to_label <- bind_rows(
     res %>% filter(sig, .t > 0) %>% arrange(desc(.t)) %>% head(n_label_per_side),
     res %>% filter(sig, .t < 0) %>% arrange(.t) %>% head(n_label_per_side)
@@ -134,10 +206,10 @@ make_volcano <- function(res, x_label, title, subtitle, tag,
     filter(sig) %>%
     mutate(label = if_else(taxon %in% to_label$taxon, label, ""))
 
-  ggplot(res, aes(x = .t, y = -log10(.q))) +
+  p <- ggplot(res, aes(x = .t, y = -log10(.q))) +
     geom_hline(yintercept = -log10(q_threshold), linetype = "dashed", color = "grey40") +
     geom_vline(xintercept = 0, linetype = "solid", color = "grey85") +
-    geom_point(aes(color = sig), size = 1.6, alpha = 0.75) +
+    geom_point(aes(color = .plot_color), size = 1.6, alpha = 0.75) +
     ggrepel::geom_text_repel(
       data = label_obstacles, aes(label = label), size = 3.3, fontface = "italic",
       max.overlaps = Inf, segment.size = 0.25, segment.color = "grey50",
@@ -145,31 +217,68 @@ make_volcano <- function(res, x_label, title, subtitle, tag,
       max.time = 3, max.iter = 20000, direction = "both",
       nudge_y = 0.2
     ) +
-    scale_color_manual(values = sig_colors) +
+    { if (combo_color) scale_color_manual(values = combo_colors, name = color_legend_title, drop = FALSE)
+      else scale_color_manual(values = sig_colors, name = color_legend_title, labels = color_labels) } +
     scale_x_continuous(expand = expansion(mult = c(0.14, 0.14))) +
     scale_y_continuous(expand = expansion(mult = c(0.02, 0.3))) +
     labs(x = x_label, y = expression(-log[10](italic(q)*"-value")),
          title = title, subtitle = subtitle, tag = tag) +
     volcano_theme
+
+  if (is.null(color_legend_title)) {
+    p <- p + guides(color = "none")
+  } else {
+    p <- p + theme(legend.position = "bottom", legend.title = element_text(size = 9, face = "bold"),
+                    legend.text = element_text(size = 8)) +
+      guides(color = guide_legend(nrow = 1))
+  }
+  p
 }
 
 ## ---- Row 1, panel a: insect ~ date, LINEAR term (153 taxa, unbiased) -----
+# Color is now the 4-way linear x quadratic combo (combo_color = TRUE): grey
+# = neither term significant, blue = linear only, orange = quadratic only,
+# purple = both. The dashed horizontal line still shows linear significance
+# via y-position -- points below it colored "Quadratic only" are exactly the
+# taxa row 2 (panels d/e) focuses on; under the priority rule (see header) a
+# taxon's peak-timing call is "early/late season" whenever linear is
+# significant, quadratic or not, so "Linear only" and "Both significant"
+# get the SAME peak-timing reading despite the different color.
 
 res_ad <- read.csv(file.path(lb_dir, "insect_taxa_date_association.csv")) %>%
   mutate(label = taxon)   # resolved Genus/species names already
 
-subtitle_a <- paste0("n=", nrow(res_ad), " taxa (unbiased), ",
-                     sum(res_ad$q_value < q_threshold), " significant (q<0.10)")
+a_combo_n <- c(
+  neither = sum(res_ad$q_value >= q_threshold & res_ad$q_value_quad >= q_threshold),
+  lin_only = sum(res_ad$q_value < q_threshold & res_ad$q_value_quad >= q_threshold),
+  quad_only = sum(res_ad$q_value >= q_threshold & res_ad$q_value_quad < q_threshold),
+  both = sum(res_ad$q_value < q_threshold & res_ad$q_value_quad < q_threshold)
+)
+subtitle_a <- paste0("n=", nrow(res_ad), " taxa (unbiased): ", a_combo_n["neither"], " neither, ",
+                     a_combo_n["lin_only"], " linear only, ", a_combo_n["quad_only"], " quadratic only,\n",
+                     a_combo_n["both"], " both (q<0.10)")
 panel_a <- make_volcano(res_ad, "t-statistic (insect ~ collection date, linear term)",
-                        "Insect taxa vs. date (linear)", subtitle_a, "a")
+                        "Insect taxa vs. date (linear)", subtitle_a, "a",
+                        color_col = "q_value_quad", color_legend_title = "Term significance",
+                        combo_color = TRUE)
 
 ## ---- Row 1, panel b: fungal ~ date, LINEAR term (all taxa; lineage-invariant) ----
+# Same 4-way combo coloring as panel a, but no legend of its own -- panel a's
+# single-row legend (same categories/colors, shared color scale) covers both.
 
 res_be <- read.csv("data/2024_fungi/fungal_taxa_date_association.all_taxa.csv")
-subtitle_b <- paste0("n=", nrow(res_be), " prevalence-filtered taxa (unbiased), ",
-                     sum(res_be$q_value < q_threshold), " significant (q<0.10)")
+b_combo_n <- c(
+  neither = sum(res_be$q_value >= q_threshold & res_be$q_value_quad >= q_threshold),
+  lin_only = sum(res_be$q_value < q_threshold & res_be$q_value_quad >= q_threshold),
+  quad_only = sum(res_be$q_value >= q_threshold & res_be$q_value_quad < q_threshold),
+  both = sum(res_be$q_value < q_threshold & res_be$q_value_quad < q_threshold)
+)
+subtitle_b <- paste0("n=", nrow(res_be), " prevalence-filtered taxa (unbiased): ", b_combo_n["neither"],
+                     " neither, ", b_combo_n["lin_only"], " linear only, ", b_combo_n["quad_only"],
+                     " quadratic only,\n", b_combo_n["both"], " both (q<0.10)")
 panel_b <- make_volcano(res_be, "t-statistic (fungal ~ collection date, linear term)",
-                        "Fungal taxa vs. date (linear)", subtitle_b, "b")
+                        "Fungal taxa vs. date (linear)", subtitle_b, "b",
+                        color_col = "q_value_quad", combo_color = TRUE)
 
 ## ---- Row 1, panel c: fungal ~ insect_PCoA1, factor(date)-adjusted (CoCA candidates) ----
 
@@ -180,21 +289,32 @@ subtitle_c <- paste0("n=", nrow(res_c), " CoCA candidates, ",
 panel_c <- make_volcano(res_c, "t-statistic (fungal ~ insect PCoA1 | factor(date))",
                         "Fungal taxa vs. insect community (PCoA1)", subtitle_c, "c")
 
-## ---- Row 2, panel d: insect ~ date, QUADRATIC term ----------------------
+## ---- Row 2, panel d: insect ~ date, QUADRATIC term, non-linear-trending taxa only ----
+# Under the linear-priority peak-timing rule (see header), a taxon with a
+# significant linear term is called early/late-season regardless of its
+# quadratic term, so it's excluded here -- hump = mid-season peak / dip =
+# bimodal (early+late) peak is only the right reading for taxa with no
+# significant linear trend in the first place.
 
-subtitle_d <- paste0("n=", nrow(res_ad), " taxa, ",
-                     sum(res_ad$q_value_quad < q_threshold), " significant (q<0.10) -- hump/dip shape")
-quad_x_label <- "quadratic-term t-statistic   (t < 0: hump,  t > 0: dip)"
-panel_d <- make_volcano(res_ad, quad_x_label,
-                        "Insect taxa vs. date (quadratic)", subtitle_d, "d",
+res_d <- res_ad %>% filter(q_value >= q_threshold)
+subtitle_d <- paste0("n=", nrow(res_d), " taxa with NO significant linear term (of ", nrow(res_ad),
+                     " total, ", nrow(res_ad) - nrow(res_d), " excluded),\n",
+                     sum(res_d$q_value_quad < q_threshold),
+                     " significant (q<0.10) -- mid-season peak (hump) or bimodal (dip)")
+quad_x_label <- "quadratic-term t-statistic   (t < 0: hump = mid-season peak,  t > 0: dip = bimodal)"
+panel_d <- make_volcano(res_d, quad_x_label,
+                        "Insect taxa vs. date (quadratic, non-linear-trending taxa)", subtitle_d, "d",
                         t_col = "t_stat_quad", q_col = "q_value_quad")
 
-## ---- Row 2, panel e: fungal ~ date, QUADRATIC term ---------------------
+## ---- Row 2, panel e: fungal ~ date, QUADRATIC term, non-linear-trending taxa only ----
 
-subtitle_e <- paste0("n=", nrow(res_be), " taxa, ",
-                     sum(res_be$q_value_quad < q_threshold), " significant (q<0.10) -- hump/dip shape")
-panel_e <- make_volcano(res_be, quad_x_label,
-                        "Fungal taxa vs. date (quadratic)", subtitle_e, "e",
+res_e <- res_be %>% filter(q_value >= q_threshold)
+subtitle_e <- paste0("n=", nrow(res_e), " taxa with NO significant linear term (of ", nrow(res_be),
+                     " total, ", nrow(res_be) - nrow(res_e), " excluded),\n",
+                     sum(res_e$q_value_quad < q_threshold),
+                     " significant (q<0.10) -- mid-season peak (hump) or bimodal (dip)")
+panel_e <- make_volcano(res_e, quad_x_label,
+                        "Fungal taxa vs. date (quadratic, non-linear-trending taxa)", subtitle_e, "e",
                         t_col = "t_stat_quad", q_col = "q_value_quad")
 
 ## ---- Row 2, panel f: fungal ~ insect_PCoA2, factor(date)-adjusted (CoCA candidates) ----

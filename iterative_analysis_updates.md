@@ -1161,3 +1161,69 @@ fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}; data/compare_insects_
 fungi_alpha_diversity_full_insect_table/alpha_diversity_covariate_tests.csv
 (updated), alpha_diversity_date_shape.csv (new), alpha_diversity_insect_fungal_
 interaction_by_lure.csv (new).
+
+### #################################################################################
+### 2026-09-02 -- "Peak timing" convention adopted for fig3, then ported to
+### fig4/fig5/fig7/fig8: linear term takes priority over quadratic
+### #################################################################################
+
+After examining example taxa from each linear x quadratic significance combination
+(new supplemental script `figS1_date_shape_bin_examples.R`, prompted by a question
+about whether fig4's panel-b hit-instance counts were double-countable -- they are:
+a taxon significant in both the linear and quadratic date terms contributed to 2
+separate bars under the original combined-dodge design), the non-linearity itself
+wasn't judged particularly interesting on its own. What matters for interpretation
+is WHEN a taxon peaks. Adopted reading (see `project_organization.md`'s "Peak-timing
+convention"): **the linear term takes priority over the quadratic term** whenever
+the linear term is significant -- the OPPOSITE priority from the `shape` column
+`fungal_community_seasonality.r`/`insect_taxa_date_association.prevalence_filtered_
+insect.r` write (which gives the quadratic term priority). A taxon now gets exactly
+ONE of 4 mutually-exclusive categories: peaks early (significant negative linear,
+regardless of quadratic), peaks late (significant positive linear, regardless of
+quadratic), peaks mid-season (no significant linear, significant quadratic hump),
+bimodal/early+late (no significant linear, significant quadratic dip).
+
+- **fig3** (`fig3_volcano_plots.R`, first to adopt this): panels a/b (linear-term
+  volcanoes) now color points by whether the SAME taxon also carries a significant
+  quadratic term (4-way combo: grey neither / blue linear-only / orange quadratic-
+  only / purple both), replacing the old linear-significance-only coloring. Panels
+  d/e (quadratic-term volcanoes) now EXCLUDE any taxon with a significant linear
+  term first, since under the priority rule those taxa are already classified by
+  their linear direction. Point z-order fixed at the same time so the sparser
+  colored categories always draw on top of the grey majority (they were being
+  buried by row order before).
+- **fig4/fig5**: each taxon's up-to-2 hit-instances collapsed to exactly 1 dodged
+  bar (Peaks late / Peaks early / Peaks mid-season / Bimodal), group/family ranking
+  for the top-n fold switched from hit-instance sums to plain taxon counts. Per user
+  request, the 4 bars were then changed to all run the same direction (0 -> positive
+  -- a diverging left/right layout doesn't map onto 4 unordered categories the way
+  it did onto a signed t-statistic), ordered top-to-bottom within each group as
+  early / bimodal / mid-season / late.
+- **fig7/fig8**: same design ported over, including the same-direction/early-
+  bimodal-mid-late bar layout from the start (no separate diverging-bars pass).
+  fig8's two `min_facet_hits_date` fold thresholds (drop a sparse Class facet; fold
+  a sparse lifestyle-within-Class cell into "Other") switched from hit-instance sums
+  to plain taxon counts, same as fig4/fig5's top-n fold.
+
+**CORRECTION -- a real bug, caught before either affected figure was reported as
+final**: implementing fig4's bar-reorder (early/bimodal/mid-season/late) required
+reordering `cat_levels`, and the `case_when()` blocks that assign each taxon's
+category referenced `cat_levels[1]`/`[2]`/`[3]`/`[4]` by POSITION rather than by
+name. Reordering `cat_levels` silently swapped the "Peaks early season" and "Peaks
+mid-season" labels in fig4 and fig5's generated figures/CSVs (Diaporthales, e.g.,
+briefly showed 89 taxa as "mid-season" that are actually early-season -- caught
+because that reading didn't match Diaporthales/*Cytospora*'s well-established early-
+season profile from earlier in this file). Fixed by switching every `case_when()` in
+fig4/fig5/fig7/fig8 to assign literal category strings ("Peaks late season", etc.)
+instead of indexing into `cat_levels` -- makes the category assignment immune to
+`cat_levels`' display-order changes by construction, rather than relying on the two
+staying manually in sync. Caught and fixed within the same session before any
+downstream interpretation-doc numbers were drawn from the buggy output (§7 of
+`lineage_B_prevalence_filtered_insect_top_level_interpretation.md` was computed
+independently from a correct one-off script, not from the buggy plot code, so it
+did not need correcting).
+
+Output: figures/presentation_items_prevalence_filtered_insect/fig{3,4,5,7,8}_*.
+{png,pdf}, figS1_date_shape_bin_examples.{png,pdf}; data/presentation_items_
+prevalence_filtered_insect/fig{4,5,7,8}_*.csv (all regenerated), figS1_date_shape_
+bin_counts.csv (new).

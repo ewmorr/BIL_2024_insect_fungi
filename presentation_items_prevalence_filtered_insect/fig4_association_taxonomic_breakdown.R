@@ -35,6 +35,25 @@
 # both terms counts twice toward its group's total), not ranked separately
 # per term the way the two-panel version implicitly did.
 #
+# REVISION (2026-09-02, third pass): adopts the linear-term-takes-priority
+# "peak timing" reading introduced in fig3_volcano_plots.R's 2026-09-02
+# revision (see project_organization.md's "Peak-timing convention"). A taxon
+# now gets exactly ONE of 4 mutually-exclusive categories instead of up to 2
+# independent hit-instances:
+#   - Peaks late season    -- significant linear term, t>0 (quadratic or not)
+#   - Peaks early season   -- significant linear term, t<0 (quadratic or not)
+#   - Peaks mid-season     -- NO significant linear term, significant
+#                              quadratic hump (t_quad<0)
+#   - Bimodal (early+late) -- NO significant linear term, significant
+#                              quadratic dip (t_quad>0)
+# Panels a/b's dodged bars, colors, and top-n fold ranking all switch to this
+# scheme (a taxon now contributes to exactly one bar, so group totals are
+# plain non-overlapping taxon counts, not hit-instance counts). Panels c/d
+# (PCoA1/PCoA2, single-term) are unaffected -- different predictor axes, not
+# part of this reading. fig5 (family-within-order breakdown of panel b) is
+# revised the same way in the same pass; fig7/fig8 (trait breakdowns) are
+# NOT yet revised -- still pending.
+#
 # Data sources unchanged from the first pass: insect_taxa_date_association.csv
 # (153 taxa, Family/Subfamily/Order baked in), fungal_taxa_date_association.
 # all_taxa.csv (lineage-invariant), fungal_insect_association_results.
@@ -63,18 +82,28 @@ q_threshold <- 0.10
 n_top_fungal_date_orders <- 15        # matches Lineage A's fig4 panel b threshold
 n_top_insect_date_subfamilies <- 15   # + "Other"; new for Lineage B -- Lineage A never needed folding here (only 4 subfamilies)
 
-# Linear term keeps the original "significant" blue/vermillion pair; the
-# quadratic term gets its own Okabe-Ito pair (sky blue / orange) so all 4
-# dodged bars stay colorblind-distinguishable within one row.
-lin_pos_color <- "#0072B2"    # Later season (linear, t>0)
-lin_neg_color <- "#D55E00"    # Earlier season (linear, t<0)
-quad_pos_color <- "#56B4E9"   # Dip (quadratic, t>0)
-quad_neg_color <- "#E69F00"   # Hump (quadratic, t<0)
+# Peak-timing colors (2026-09-02 revision): a taxon now gets exactly ONE of
+# these 4 categories (linear term takes priority whenever it's significant --
+# see header and project_organization.md's "Peak-timing convention"), not up
+# to 2 independent hit-instances as in the first two passes. Colors carried
+# over unchanged from the old linear/quadratic pairs for visual continuity.
+lin_pos_color <- "#0072B2"    # Peaks late season (significant linear, t>0)
+lin_neg_color <- "#D55E00"    # Peaks early season (significant linear, t<0)
+quad_pos_color <- "#56B4E9"   # Bimodal, early+late (no sig linear; quadratic dip, t_quad>0)
+quad_neg_color <- "#E69F00"   # Peaks mid-season (no sig linear; quadratic hump, t_quad<0)
 
-cat_levels <- c("Later season (linear, t>0)", "Earlier season (linear, t<0)",
-                 "Dip (quadratic, t>0)", "Hump (quadratic, t<0)")
-pos_cats <- cat_levels[c(1, 3)]
-cat_colors <- setNames(c(lin_pos_color, lin_neg_color, quad_pos_color, quad_neg_color), cat_levels)
+# REVISION (2026-09-02, fourth pass): with 4 mutually-exclusive categories
+# (not a signed t-statistic), a diverging left/right layout no longer maps
+# to anything -- all 4 bars now run the same direction (0 -> positive).
+# cat_levels controls the within-group dodge order; empirically, position_
+# dodge2 + coord_flip renders the FIRST level at the BOTTOM of each group's
+# band and the LAST level at the TOP (i.e. top-to-bottom is the REVERSE of
+# this vector) -- so cat_levels is written back-to-front here to get the
+# requested top-to-bottom reading order: early, bimodal, mid-season, late.
+cat_levels <- c("Peaks late season", "Peaks mid-season",
+                 "Bimodal (early + late)", "Peaks early season")
+cat_colors <- c("Peaks late season" = lin_pos_color, "Peaks early season" = lin_neg_color,
+                 "Bimodal (early + late)" = quad_pos_color, "Peaks mid-season" = quad_neg_color)[cat_levels]
 
 panel_theme <- theme_bw() +
   theme(
@@ -95,25 +124,36 @@ panel_theme <- theme_bw() +
     panel.spacing.y = unit(0.15, "lines")
   )
 
-## ---- Panel builder: COMBINED linear+quadratic, dodged bars -------------------
+## ---- Panel builder: peak-timing categories, dodged bars -----------------------
 # res needs columns `group`, `t_stat`, `q_value`, `t_stat_quad`, `q_value_quad`,
-# plus `Class` when facet_by_class = TRUE. A taxon can contribute up to 2
-# "hit-instances" (one per significant term); group ranking for the top-n
-# fold uses the COMBINED count. Every kept group gets all 4 cat levels
-# (dodge slots) even when some are zero, via tidyr::complete(), so dodge
-# geometry stays aligned across rows/facets regardless of which categories a
-# given group actually has hits in. Returns list(plot, counts).
+# plus `Class` when facet_by_class = TRUE. REVISED 2026-09-02: a taxon now
+# gets exactly ONE of the 4 cat_levels (linear term takes priority whenever
+# it's significant -- see header), not up to 2 independent hit-instances as
+# in the first two passes, so group ranking for the top-n fold and the bar
+# counts are now plain non-overlapping taxon counts. Every kept group still
+# gets all 4 cat levels (dodge slots) even when some are zero, via
+# tidyr::complete(), so dodge geometry stays aligned across rows/facets.
+# Returns list(plot, counts).
 
 make_combined_breakdown <- function(res, n_top, x_label, title, subtitle, tag, facet_by_class = FALSE) {
   res <- res %>%
     mutate(group = ifelse(is.na(group) | group == "", "Unclassified", group),
-           sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold) %>%
-    filter(sig_lin | sig_quad)
+           sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold,
+           # Literal strings, NOT cat_levels[i] -- indexing into cat_levels
+           # by position is fragile against reordering it for display (bit
+           # us once already: the fourth-pass reorder below silently swapped
+           # early/mid-season here until this fix).
+           cat = case_when(
+             sig_lin & t_stat > 0                  ~ "Peaks late season",
+             sig_lin & t_stat < 0                  ~ "Peaks early season",
+             !sig_lin & sig_quad & t_stat_quad > 0 ~ "Bimodal (early + late)",
+             !sig_lin & sig_quad & t_stat_quad < 0 ~ "Peaks mid-season",
+             TRUE ~ NA_character_
+           )) %>%
+    filter(!is.na(cat))
   if (facet_by_class) res <- res %>% mutate(Class = ifelse(is.na(Class) | Class == "", "Unclassified", Class))
 
-  group_rank <- res %>% group_by(group) %>%
-    summarise(total = sum(sig_lin) + sum(sig_quad), .groups = "drop") %>%
-    arrange(desc(total))
+  group_rank <- res %>% count(group, name = "total") %>% arrange(desc(total))
 
   if (nrow(group_rank) > n_top) {
     top_groups <- head(group_rank$group, n_top)
@@ -127,7 +167,7 @@ make_combined_breakdown <- function(res, n_top, x_label, title, subtitle, tag, f
     group_class <- res %>% distinct(group, Class) %>%
       mutate(Class = case_when(group == "Other" ~ "Other", group == "Unclassified" ~ "Unclassified", TRUE ~ Class)) %>%
       distinct(group, Class)
-    group_totals <- res %>% group_by(group) %>% summarise(total = sum(sig_lin) + sum(sig_quad), .groups = "drop")
+    group_totals <- res %>% count(group, name = "total")
 
     facet_rank <- group_class %>% left_join(group_totals, by = "group") %>%
       group_by(Class) %>% summarise(total = sum(total), .groups = "drop") %>% arrange(desc(total))
@@ -139,12 +179,7 @@ make_combined_breakdown <- function(res, n_top, x_label, title, subtitle, tag, f
     group_levels <- group_order$group
   }
 
-  bars <- bind_rows(
-    res %>% filter(sig_lin) %>% transmute(group, cat = ifelse(t_stat > 0, cat_levels[1], cat_levels[2])),
-    res %>% filter(sig_quad) %>% transmute(group, cat = ifelse(t_stat_quad > 0, cat_levels[3], cat_levels[4]))
-  )
-
-  counts <- bars %>% count(group, cat, name = "n") %>%
+  counts <- res %>% count(group, cat, name = "n") %>%
     complete(group = group_levels, cat = cat_levels, fill = list(n = 0))
   # left_join must happen BEFORE `group` becomes a factor -- dplyr::left_join
   # silently coerces a factor join column back to character (dropping its
@@ -155,22 +190,24 @@ make_combined_breakdown <- function(res, n_top, x_label, title, subtitle, tag, f
   counts <- counts %>%
     mutate(
       group = factor(group, levels = rev(group_levels)),
-      cat = factor(cat, levels = cat_levels),
-      signed_n = ifelse(cat %in% pos_cats, n, -n)
+      cat = factor(cat, levels = cat_levels)
     )
 
   group_labels <- setNames(sub("^.*_ord_Incertae_sedis$", "Incertae_sedis", levels(counts$group)), levels(counts$group))
 
-  p <- ggplot(counts, aes(x = group, y = signed_n, fill = cat)) +
+  # All 4 bars now run the same direction (0 -> positive) -- no more signed_n
+  # diverging layout, since the 4 peak-timing categories aren't a signed
+  # t-statistic (see cat_levels comment above).
+  p <- ggplot(counts, aes(x = group, y = n, fill = cat)) +
     geom_col(color = "white", linewidth = 0.15, width = 0.8,
              position = position_dodge2(width = 0.8, padding = 0.1)) +
-    geom_text(aes(label = ifelse(n == 0, "", n), hjust = ifelse(signed_n >= 0, -0.3, 1.3)),
+    geom_text(aes(label = ifelse(n == 0, "", n)), hjust = -0.3,
               position = position_dodge2(width = 0.8, padding = 0.1), size = 2.2) +
     geom_hline(yintercept = 0, color = "grey30", linewidth = 0.3) +
     coord_flip(clip = "off") +
     scale_x_discrete(labels = group_labels) +
-    scale_y_continuous(labels = abs, expand = expansion(mult = c(0.12, 0.12))) +
-    scale_fill_manual(values = cat_colors, name = "Term / direction", drop = FALSE) +
+    scale_y_continuous(expand = expansion(mult = c(0.02, 0.12))) +
+    scale_fill_manual(values = cat_colors, name = "Peak timing", drop = FALSE) +
     guides(fill = guide_legend(nrow = 2)) +
     labs(x = NULL, y = x_label, title = title, subtitle = subtitle, tag = tag) +
     panel_theme
@@ -278,13 +315,21 @@ res_insect <- read.csv(file.path(lb_dir, "insect_taxa_date_association.csv")) %>
   )
 
 res_a <- res_insect %>%
-  mutate(sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold) %>%
-  filter(sig_lin | sig_quad)
-n_a_lin <- sum(res_a$sig_lin); n_a_quad <- sum(res_a$sig_quad)
+  mutate(sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold,
+         peak = case_when(
+           sig_lin & t_stat > 0                  ~ "late",
+           sig_lin & t_stat < 0                  ~ "early",
+           !sig_lin & sig_quad & t_stat_quad > 0 ~ "bimodal",
+           !sig_lin & sig_quad & t_stat_quad < 0 ~ "mid",
+           TRUE ~ NA_character_
+         )) %>%
+  filter(!is.na(peak))
+n_a_late <- sum(res_a$peak == "late"); n_a_early <- sum(res_a$peak == "early")
+n_a_mid <- sum(res_a$peak == "mid"); n_a_bimodal <- sum(res_a$peak == "bimodal")
 n_a_groups <- n_distinct(ifelse(is.na(res_a$group) | res_a$group == "", "Unclassified", res_a$group))
-subtitle_a <- paste0(nrow(res_a), " taxa significant in >=1 term (", n_a_lin, " linear + ", n_a_quad,
-                      " quadratic = ", n_a_lin + n_a_quad, " hit-instances) across ", n_a_groups,
-                      " subfamilies (top ", n_top_insect_date_subfamilies, " shown)")
+subtitle_a <- paste0(nrow(res_a), " taxa with a significant peak-timing call (", n_a_late, " late + ",
+                      n_a_early, " early + ", n_a_mid, " mid-season + ", n_a_bimodal, " bimodal) across ",
+                      n_a_groups, " subfamilies (top ", n_top_insect_date_subfamilies, " shown)")
 out_a <- make_combined_breakdown(
   res_a, n_top = n_top_insect_date_subfamilies, x_label = "Number of significant taxa",
   title = "Insect taxa vs. date", subtitle = subtitle_a, tag = "a"
@@ -298,13 +343,21 @@ res_fungal_date <- read.csv("data/2024_fungi/fungal_taxa_date_association.all_ta
   mutate(group = Order)
 
 res_b <- res_fungal_date %>%
-  mutate(sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold) %>%
-  filter(sig_lin | sig_quad)
-n_b_lin <- sum(res_b$sig_lin); n_b_quad <- sum(res_b$sig_quad)
+  mutate(sig_lin = q_value < q_threshold, sig_quad = q_value_quad < q_threshold,
+         peak = case_when(
+           sig_lin & t_stat > 0                  ~ "late",
+           sig_lin & t_stat < 0                  ~ "early",
+           !sig_lin & sig_quad & t_stat_quad > 0 ~ "bimodal",
+           !sig_lin & sig_quad & t_stat_quad < 0 ~ "mid",
+           TRUE ~ NA_character_
+         )) %>%
+  filter(!is.na(peak))
+n_b_late <- sum(res_b$peak == "late"); n_b_early <- sum(res_b$peak == "early")
+n_b_mid <- sum(res_b$peak == "mid"); n_b_bimodal <- sum(res_b$peak == "bimodal")
 n_b_groups <- n_distinct(ifelse(is.na(res_b$group) | res_b$group == "", "Unclassified", res_b$group))
-subtitle_b <- paste0(nrow(res_b), " taxa significant in >=1 term (", n_b_lin, " linear + ", n_b_quad,
-                      " quadratic = ", n_b_lin + n_b_quad, " hit-instances) across ", n_b_groups,
-                      " orders (top ", n_top_fungal_date_orders, " shown)")
+subtitle_b <- paste0(nrow(res_b), " taxa with a significant peak-timing call (", n_b_late, " late + ",
+                      n_b_early, " early + ", n_b_mid, " mid-season + ", n_b_bimodal, " bimodal) across ",
+                      n_b_groups, " orders (top ", n_top_fungal_date_orders, " shown)")
 out_b <- make_combined_breakdown(
   res_b, n_top = n_top_fungal_date_orders, x_label = "Number of significant taxa",
   title = "Fungal taxa vs. date", subtitle = subtitle_b, tag = "b", facet_by_class = TRUE

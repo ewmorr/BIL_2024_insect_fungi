@@ -1,38 +1,31 @@
 "group","cat","n"
-"Other","Later season (linear, t>0)",23
-"Other","Hump (quadratic, t<0)",10
-"Scolytinae","Earlier season (linear, t<0)",10
-"Other","Earlier season (linear, t<0)",9
-"Alleculinae","Later season (linear, t>0)",4
-"Other","Dip (quadratic, t>0)",4
-"Elaterinae","Hump (quadratic, t<0)",3
-"Elaterinae","Later season (linear, t>0)",3
-"Melasinae","Later season (linear, t>0)",3
-"Scolytinae","Dip (quadratic, t>0)",3
-"Scolytinae","Hump (quadratic, t<0)",3
-"Ciinae","Hump (quadratic, t<0)",2
-"Cossoninae","Later season (linear, t>0)",2
-"Cryptarchinae","Earlier season (linear, t<0)",2
-"Dendrometrinae","Later season (linear, t>0)",2
-"Melasinae","Dip (quadratic, t>0)",2
-"Scolytinae","Later season (linear, t>0)",2
-"Alleculinae","Dip (quadratic, t>0)",1
-"Ceryloninae","Hump (quadratic, t<0)",1
-"Ceryloninae","Later season (linear, t>0)",1
-"Ciinae","Earlier season (linear, t<0)",1
-"Corticariinae","Hump (quadratic, t<0)",1
-"Corticariinae","Later season (linear, t>0)",1
-"Cossoninae","Dip (quadratic, t>0)",1
-"Dendrometrinae","Dip (quadratic, t>0)",1
-"Dendrometrinae","Hump (quadratic, t<0)",1
-"Dorcatominae","Dip (quadratic, t>0)",1
-"Dorcatominae","Later season (linear, t>0)",1
-"Dryophthorinae","Dip (quadratic, t>0)",1
-"Dryophthorinae","Later season (linear, t>0)",1
-"Elaterinae","Earlier season (linear, t<0)",1
-"Melandryinae","Hump (quadratic, t<0)",1
-"Melandryinae","Later season (linear, t>0)",1
-"Microphysinae","Dip (quadratic, t>0)",1
-"Microphysinae","Later season (linear, t>0)",1
-"Molytinae","Earlier season (linear, t<0)",1
-"Molytinae","Hump (quadratic, t<0)",1
+"Other","Peaks late season",23
+"Scolytinae","Peaks early season",10
+"Other","Peaks early season",8
+"Other","Peaks mid-season",8
+"Alleculinae","Peaks late season",4
+"Elaterinae","Peaks late season",3
+"Elaterinae","Peaks mid-season",3
+"Melasinae","Peaks late season",3
+"Scolytinae","Peaks mid-season",3
+"Ciinae","Peaks mid-season",2
+"Cossoninae","Peaks late season",2
+"Cryptarchinae","Peaks early season",2
+"Dendrometrinae","Peaks late season",2
+"Scolytinae","Peaks late season",2
+"Staphylininae","Peaks late season",2
+"Agrypninae","Peaks mid-season",1
+"Ceryloninae","Peaks late season",1
+"Ceryloninae","Peaks mid-season",1
+"Ciinae","Peaks early season",1
+"Dendrometrinae","Peaks mid-season",1
+"Elaterinae","Peaks early season",1
+"Melandryinae","Peaks late season",1
+"Melandryinae","Peaks mid-season",1
+"Molytinae","Peaks early season",1
+"Molytinae","Peaks mid-season",1
+"Other","Bimodal (early + late)",1
+"Spondylidinae","Peaks late season",1
+"Spondylidinae","Peaks mid-season",1
+"Unclassified","Peaks early season",1
+"Unclassified","Peaks late season",1
