@@ -1227,3 +1227,183 @@ Output: figures/presentation_items_prevalence_filtered_insect/fig{3,4,5,7,8}_*.
 {png,pdf}, figS1_date_shape_bin_examples.{png,pdf}; data/presentation_items_
 prevalence_filtered_insect/fig{4,5,7,8}_*.csv (all regenerated), figS1_date_shape_
 bin_counts.csv (new).
+
+### #################################################################################
+### 2026-09-08 -- New analysis: asymptotic (Chao-extrapolated) richness via iNEXT,
+### on the Lineage C full insect table; fed into the same cross-community
+### correlation/covariate pipeline as insect_fungal_alpha_diversity.full_insect_table.r
+### #################################################################################
+
+New script `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.
+full_insect_table.r`, per user request to estimate extrapolated species richness
+with the `iNEXT` package, using the same full (all-families, singleton-filtered
+only, no prevalence filter) insect table as Lineage C -- asymptotic estimation is
+itself an alpha-diversity method (estimating how many taxa exist, same quantity
+richness/Shannon/Simpson summarize), so the existing "don't prevalence-filter for
+alpha-diversity" rule applies.
+
+Per-sample granularity (user's choice, offered against site/site-x-lure/whole-
+dataset pooling alternatives): iNEXT's Chao-type estimators run on each of the 69
+matched insect/fungal samples individually, same unit as the existing observed-
+richness pipeline.
+
+Two methodological departures from insect_fungal_alpha_diversity.full_insect_
+table.r, both explained in the new script's header:
+- **Fungal table left unrarefied** (raw Kingdom==Fungi-filtered ASV counts, no
+  rarefy-and-average). Rarefying first would throw away exactly the deep-sample
+  information the Chao estimator needs to extrapolate the rare tail, and would
+  artificially cap "observed" richness at the rarefaction depth -- asymptotic
+  estimation already IS the principled correction for uneven sequencing depth that
+  rarefaction exists to provide elsewhere in this project.
+- **`ChaoRichness()`/`ChaoShannon()`/`ChaoSimpson()` used instead of `iNEXT()`**.
+  `iNEXT()`'s full sample-size-based rarefaction/extrapolation curve computation
+  (default 40 knots + bootstrap) did not finish in 120s on even a single large
+  fungal sample (~800k reads); the lighter Chao*() point/SE/CI estimators (same
+  underlying formulas, verified to reproduce `iNEXT()`'s `$AsyEst` point estimates
+  exactly on a test subset) run in ~1-2s each, making all ~140 samples (69 insect +
+  69 fungal) tractable (~80s total runtime). Two `iNEXT` package quirks worked
+  around: `ChaoShannon()`/`ChaoSimpson()` need `transform = TRUE` to return Hill-
+  number ("effective species count") form rather than raw entropy/Gini-Simpson
+  index; `ChaoShannon()`'s SE column is named `"Est_s.e"` (no period) vs. the other
+  two functions' `"Est_s.e."` (with period) -- extracted by column position, not
+  name, to avoid a silent NA.
+
+Naming note: "simpson" in this script's output is Hill number q=2 (inverse Simpson
+DIVERSITY, higher = more even), the OPPOSITE direction from "simpson_dominance"
+(higher = more dominated) used in `insect_fungal_alpha_diversity*.r` elsewhere in
+this project -- don't compare the two scripts' "simpson" columns directly.
+
+Per user follow-up request ("feed these estimates into the same type of
+statistical analysis pipeline as the raw estimates to look for correlations
+between insect and fungal richness"), the script mirrors insect_fungal_alpha_
+diversity.full_insect_table.r's sections 5/5b/6: cross-community Spearman
+correlation (reported for BOTH observed and asymptotic values side by side, so
+the effect of extrapolation on the conclusion is visible directly), the lure-
+modifies-the-relationship interaction test, and the site/lure/date permutation
+covariate tests + linear/quadratic/cubic date-shape classification -- the latter
+two run on the asymptotic values only (the new content this script adds; observed-
+value covariate significance already exists under different metric definitions in
+the original script, so wasn't re-derived a second time here).
+
+Results (69 matched samples): median sample coverage (fraction of the true
+community captured, per `iNEXT::DataInfo()`) was 0.809 for insect trap catches vs.
+0.995 for fungal ASVs -- insect sampling is far from its asymptote (trap catches
+median ~93 individuals across up to dozens of taxa per sample) while fungal
+amplicon sequencing is close to saturated per sample, consistent with the very
+different sampling mechanisms. Cross-community correlation on ASYMPTOTIC values:
+richness rho=0.008, p=0.95 (no relationship, same conclusion as observed:
+rho=0.076, p=0.53); Shannon rho=-0.251, p=0.038 (weak negative, same conclusion as
+observed: rho=-0.253, p=0.036); Simpson rho=-0.075, p=0.54 (n.s., same as observed:
+rho=-0.116, p=0.34) -- extrapolating to the asymptote did not change any of the
+three conclusions. Lure does not modify the insect~fungal relationship for any
+asymptotic metric (all p_perm >= 0.075). Within-community covariate tests on
+asymptotic values: insect richness shows a significant quadratic (hump, mid-season
+peak) date term (p=0.003); insect Shannon and fungal richness each show a
+significant site effect (p=0.022, p=0.015); fungal Shannon and Simpson both show
+significant linear (early-season) + quadratic + (Shannon only) cubic date terms,
+classified "complex" under the cubic-takes-priority shape rule.
+
+Output: data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/
+insect_asymptotic_diversity.csv, fungal_asymptotic_diversity.csv,
+asymptotic_diversity_cross_community_correlation.csv,
+asymptotic_diversity_insect_fungal_interaction_by_lure.csv,
+asymptotic_diversity_covariate_tests.csv, asymptotic_diversity_date_shape.csv (all
+new); figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/
+asymptotic_diversity_by_community.png, asymptotic_richness_observed_vs_
+extrapolated.png, asymptotic_diversity_by_site_lure.png, asymptotic_diversity_by_
+date.png, asymptotic_diversity_cross_community_correlation.png (all new).
+
+### #################################################################################
+### 2026-09-08 (same day) -- fig9/fig10 reproduced as fig11/fig12 on the
+### asymptotic (iNEXT) diversity estimates
+### #################################################################################
+
+Per user request, `presentation_items/fig9_alpha_diversity_by_lure.R` and
+`fig10_insect_fungal_alpha_diversity_correlation.R` reproduced one-for-one as
+`fig11_asymptotic_diversity_by_lure.R` and `fig12_insect_fungal_asymptotic_
+diversity_correlation.R`, reading the asymptotic-diversity CSVs from the new
+iNEXT script above instead of the observed-diversity CSVs fig9/fig10 read. Same
+panel layout, trend lines, and color scheme in both cases -- no new design, just
+the metric swapped (and metric labels updated: "Asymptotic species richness",
+"Shannon/Simpson diversity (Hill q=1/q=2)" in place of "Richness (observed
+taxa)"/"Shannon diversity"/"Simpson dominance"; fig11/fig12's "Simpson" is Hill
+q=2 diversity, opposite direction from fig9/fig10's Simpson dominance).
+
+One fix needed: fig11's row-strip metric labels (switch="y", rotated text along
+the left edge of panel a) clipped with the full "Asymptotic Shannon diversity
+(Hill q=1)"-style wording fig12 uses without issue (fig12's strip labels are
+horizontal top strips, unconstrained) -- shortened to "Shannon div. (q=1)",
+"Simpson div. (q=2)", "Asymptotic richness" for fig11 only; fig12 kept the full
+wording.
+
+fig12's in-panel Spearman labels match the iNEXT script's asymptotic-value
+correlation numbers already reported above (richness rho=0.01 p=0.95, Shannon
+rho=-0.25 p=0.038, Simpson rho=-0.08 p=0.54) -- read directly from `asymptotic_
+diversity_cross_community_correlation.csv`'s `value_type == "asymptotic"` rows,
+not recomputed.
+
+Output: figures/presentation_items/fig11_asymptotic_diversity_by_lure.{png,pdf},
+fig12_insect_fungal_asymptotic_diversity_correlation.{png,pdf} (both new).
+
+**Follow-up, same day**: per user request, fig12 now also shapes each point by
+lure (filled circle = Ethanol, filled triangle = Alpha-pinene_EtOH, filled square
+= Ips -- shapes 21/24/22, chosen so fill continues to carry the date gradient
+alongside shape) in addition to the existing date-fill coloring; fig12 still pools
+across lure for the trend line/Spearman annotation (unchanged rationale -- no
+lure interaction, see above), the shape is descriptive only. fig9/fig11 already
+facet by lure so were not touched.
+
+Output: figures/presentation_items/fig12_insect_fungal_asymptotic_diversity_
+correlation.{png,pdf} (updated).
+
+**Follow-up, same day**: same shape-by-lure change ported back to fig10
+(`fig10_insect_fungal_alpha_diversity_correlation.R`) for consistency between
+the observed- and asymptotic-diversity versions of this figure -- identical
+shapes/legend (circle=Ethanol, triangle=Alpha-pinene_EtOH, square=Ips), same
+pooled-trend-line/Spearman-annotation rationale unchanged.
+
+Output: figures/presentation_items/fig10_insect_fungal_alpha_diversity_
+correlation.{png,pdf} (updated).
+
+### #################################################################################
+### 2026-09-08 (same day) -- Asymptotic-diversity summary added to lineage_C_
+### alpha_div_full_insect_table_top_level_interpretation.md (§7-12)
+### #################################################################################
+
+Per user request, extended `lineage_C_alpha_div_full_insect_table_top_level_
+interpretation.md` -- previously scoped to only `insect_fungal_alpha_diversity.
+full_insect_table.r` and fig9/fig10 (observed diversity) -- with 6 new sections
+(§7-12) covering the asymptotic-diversity work above: value ranges + sample
+coverage (§7), observed-vs-asymptotic cross-community correlation (§8, unchanged
+conclusion for all 3 metrics), the lure-interaction test (§9), within-community
+covariate tests (§10), date-shape classification (§11), and fig11/fig12 (§12).
+Bottom-line list extended from 6 to 10 points.
+
+Two things worth surfacing here since they're genuine findings, not just
+restated numbers already reported above:
+- **§9/bottom-line point 10**: the asymptotic Shannon lure-interaction test
+  (F=0.657, p_perm=0.075) crosses this project's uncorrected p<0.10 convention
+  for small fixed covariate/interaction test sets -- unlike every other lure-
+  interaction test in the document (observed-value §3: all p>=0.80; asymptotic
+  richness/Simpson: p=0.888/0.697). Flagged explicitly as a single borderline
+  result worth watching, not treated as a settled finding -- fig12 still shows
+  the pooled (non-lure-split) relationship.
+- **§10/bottom-line point 9**: insect richness is the one metric where "observed"
+  is identical between the two scripts (same raw table, no transform), giving a
+  clean before/after-extrapolation comparison. The strong lure effect (F=14.66,
+  p=0.003) and cubic date shape (p=0.001) found on observed richness (§4)
+  attenuate to no significant lure effect (p=0.447) and a plain quadratic hump
+  once extrapolated (§10-11) -- suggesting part of the observed lure-richness
+  effect may reflect unequal sampling completeness across lures rather than a
+  genuinely different taxon pool per lure. Shannon/Simpson comparisons between
+  the two scripts are explicitly flagged as NOT clean (different metric
+  definitions -- Hill number vs. raw entropy/dominance, unrarefied vs. rarefied
+  fungal table) to avoid over-reading superficially similar/different p-values.
+
+Also updated project_organization.md's `lineage_C_alpha_div_full_insect_table_
+top_level_interpretation.md` bullet to describe the doc's now-6-script/4-figure
+scope (was 1 script/2 figures).
+
+Output: lineage_C_alpha_div_full_insect_table_top_level_interpretation.md
+(extended, not regenerated -- no new data/figures, all numbers pulled from
+already-existing CSVs); project_organization.md (updated).

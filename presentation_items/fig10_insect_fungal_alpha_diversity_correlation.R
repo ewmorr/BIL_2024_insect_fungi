@@ -17,7 +17,10 @@
 # cutting n roughly into thirds. Collapsed back to the pooled relationship.
 #
 # One point per sample plotted as insect value (x) vs. fungal value (y),
-# colored by collection date (continuous gradient). facet_wrap(scales=
+# colored by collection date (continuous gradient) and shaped by lure (the
+# trap-type variable -- Ethanol, Alpha-pinene_EtOH, Ips -- constant within a
+# trap; descriptive only, the trend line/Spearman annotation still pools
+# across lure per the null interaction result above). facet_wrap(scales=
 # "free") gives each metric panel its own independent x AND y range (Shannon
 # ~0-5, Simpson dominance ~0-0.7, richness insect ~4-70 vs. fungal
 # ~270-950) -- facet_wrap's free scales are already per-panel, unlike
@@ -50,13 +53,16 @@ metrics <- c("shannon", "simpson_dominance", "richness")
 metric_labels <- c(shannon = "Shannon diversity", simpson_dominance = "Simpson dominance",
                     richness = "Richness (observed taxa)")
 
+lure_levels <- c("Ethanol", "Alpha-pinene_EtOH", "Ips")
+lure_shapes <- c(Ethanol = 21, `Alpha-pinene_EtOH` = 24, Ips = 22)  # filled circle/triangle/square
+
 insect_alpha <- read.csv(file.path(alpha_data_dir, "insect_alpha_diversity.csv")) %>%
-  mutate(date = as.Date(date))
+  mutate(date = as.Date(date), lure = factor(lure, levels = lure_levels))
 fungal_alpha <- read.csv(file.path(alpha_data_dir, "fungal_alpha_diversity.csv")) %>%
   mutate(date = as.Date(date))
 
 combined <- insect_alpha %>%
-  select(sample_id, date, insect_shannon = shannon,
+  select(sample_id, date, lure, insect_shannon = shannon,
          insect_simpson_dominance = simpson_dominance, insect_richness = richness) %>%
   inner_join(
     fungal_alpha %>% select(sample_id, fungal_shannon = shannon,
@@ -66,7 +72,7 @@ combined <- insect_alpha %>%
 cat(nrow(combined), "samples with both insect and fungal alpha diversity.\n")
 
 combined_long <- bind_rows(lapply(metrics, function(m) {
-  combined %>% transmute(sample_id, date, metric = metric_labels[m],
+  combined %>% transmute(sample_id, date, lure, metric = metric_labels[m],
                           insect_value = .data[[paste0("insect_", m)]],
                           fungal_value = .data[[paste0("fungal_", m)]])
 })) %>% mutate(metric = factor(metric, levels = metric_labels))
@@ -99,7 +105,7 @@ panel_theme <- theme_bw() +
 date_range_num <- range(as.numeric(combined_long$date))
 
 fig10 <- ggplot(combined_long, aes(x = insect_value, y = fungal_value)) +
-  geom_point(aes(fill = as.numeric(date)), shape = 21, size = 2.4, color = "black", stroke = 0.3) +
+  geom_point(aes(fill = as.numeric(date), shape = lure), size = 2.4, color = "black", stroke = 0.3) +
   geom_smooth(method = "lm", se = FALSE, color = "grey30", linewidth = 0.6) +
   geom_text(data = corr_labels, aes(x = Inf, y = Inf, label = label), inherit.aes = FALSE,
             hjust = 1.1, vjust = 1.3, size = 3, lineheight = 0.9) +
@@ -108,6 +114,8 @@ fig10 <- ggplot(combined_long, aes(x = insect_value, y = fungal_value)) +
                         midpoint = mean(date_range_num), limits = date_range_num,
                         breaks = date_range_num, labels = format(range(combined_long$date), "%b %d"),
                         name = "Date") +
+  scale_shape_manual(values = lure_shapes, name = "Lure") +
+  guides(fill = guide_colorbar(order = 1), shape = guide_legend(order = 2, override.aes = list(fill = "grey50"))) +
   labs(x = "Insect alpha diversity", y = "Fungal alpha diversity") +
   panel_theme
 

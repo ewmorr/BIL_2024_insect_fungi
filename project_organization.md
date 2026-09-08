@@ -9,7 +9,7 @@ to find *where a script or output lives* and *which lineage it belongs to*.
 Keep both updated going forward -- this one in place (it describes current
 state, not history), the other by appending new dated sections.
 
-Last updated: 2026-09-02.
+Last updated: 2026-09-08.
 
 ## The core fact to understand before touching anything
 
@@ -77,7 +77,7 @@ by_lure.csv`) -- no metric showed a significant interaction (p_perm
 0.80-0.95), which is why fig10 below shows the pooled (lure-blind)
 correlation rather than splitting by lure.
 
-Two presentation figures cover this lineage, both living directly in
+Four presentation figures cover this lineage, all living directly in
 `presentation_items/` alongside the Lineage A fig1-fig8 (not a dedicated
 Lineage C folder) since alpha diversity only has a Lineage A/C split, no
 Lineage B counterpart to disambiguate from:
@@ -88,6 +88,15 @@ Lineage B counterpart to disambiguate from:
   vs. fungal alpha diversity, one panel per metric, colored by date, pooled
   Spearman correlation annotated (an earlier lure-faceted version was
   dropped once the interaction test above found no lure effect).
+- `fig11_asymptotic_diversity_by_lure.R` / `fig12_insect_fungal_asymptotic_
+  diversity_correlation.R` (added 2026-09-08) -- fig9/fig10 reproduced
+  one-for-one on the ASYMPTOTIC (Chao-extrapolated, via `iNEXT`) diversity
+  estimates from `insect_fungal_asymptotic_richness_iNEXT.full_insect_
+  table.r` instead of observed diversity; see that script's entry below and
+  its header for why the fungal side is left unrarefied there (unlike fig9/
+  fig10's rarefied-and-averaged fungal table) and why "Simpson" in fig11/
+  fig12 is Hill number q=2 diversity (higher = more even), the OPPOSITE
+  direction from fig9/fig10's Simpson dominance.
 
 ## Directory and naming conventions
 
@@ -216,8 +225,11 @@ never `cat_levels[i]`).
 | Script | What it does | Data output | Figure output |
 |---|---|---|---|
 | `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, singleton-filter only (277 taxa, NOT the 153-taxon Lineage B table). Date effects tested linear+quadratic+cubic (`alpha_diversity_date_shape.csv`); also tests an insect x lure interaction on the insect~fungal correlation (`alpha_diversity_insect_fungal_interaction_by_lure.csv`) -- not significant for any metric | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
+| `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` | Asymptotic (Chao-extrapolated) richness/Shannon(Hill q=1)/Simpson(Hill q=2) diversity via `iNEXT::ChaoRichness()`/`ChaoShannon()`/`ChaoSimpson()` (NOT `iNEXT()` itself -- its curve machinery didn't finish in 120s on the largest fungal sample; the point/SE/CI-only Chao*() functions reproduce its `$AsyEst` estimates and run in ~1-2s each), same 277-taxon full insect table as the alpha-diversity script above but fungal side left UNRAREFIED (raw Kingdom==Fungi counts -- extrapolation itself corrects for uneven sequencing depth, so pre-rarefying would discard the rare-tail information the estimator needs). Per-sample granularity (user's choice). Mirrors the alpha-diversity script's cross-community correlation (both observed and asymptotic reported side by side), lure-interaction test, and site/lure/date covariate tests + date-shape classification, the latter two run on asymptotic values only. "simpson" here = Hill q=2 diversity (higher=more even), opposite direction from "simpson_dominance" in the alpha-diversity script -- don't compare directly. See `iterative_analysis_updates.md`'s 2026-09-08 entry for results | `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` | `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` |
 | `presentation_items/fig9_alpha_diversity_by_lure.R` | Presentation figure: insect (panel a) + fungal (panel b) alpha diversity vs. collection date, faceted metric x lure, cubic OLS trend lines. Lives directly in `presentation_items/` (not a dedicated Lineage C folder) since alpha diversity has no Lineage B counterpart to disambiguate from | -- (reads existing CSVs) | `figures/presentation_items/fig9_alpha_diversity_by_lure.{png,pdf}` |
 | `presentation_items/fig10_insect_fungal_alpha_diversity_correlation.R` | Presentation figure: per-sample insect vs. fungal alpha diversity, one panel per metric, colored by date, pooled Spearman correlation annotated. An earlier lure-faceted version was dropped after the interaction test above found no lure effect | -- (reads existing CSVs) | `figures/presentation_items/fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}` |
+| `presentation_items/fig11_asymptotic_diversity_by_lure.R` | Fig9's counterpart for ASYMPTOTIC (Chao-extrapolated, `insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r`) diversity -- same panel a/b (insect/fungal) x metric-row x lure-column layout, cubic OLS trend line. Row-strip metric labels shortened ("Shannon div. (q=1)" etc.) vs. fig9's, since the longer "Asymptotic Shannon diversity (Hill q=1)" wording clipped in the rotated switch="y" strip | -- (reads existing CSVs) | `figures/presentation_items/fig11_asymptotic_diversity_by_lure.{png,pdf}` |
+| `presentation_items/fig12_insect_fungal_asymptotic_diversity_correlation.R` | Fig10's counterpart for asymptotic diversity -- same one-panel-per-metric layout, pooled (lure-blind) Spearman correlation annotated, reading the `value_type == "asymptotic"` rows of `asymptotic_diversity_cross_community_correlation.csv` | -- (reads existing CSVs) | `figures/presentation_items/fig12_insect_fungal_asymptotic_diversity_correlation.{png,pdf}` |
 
 ## Known gaps / open items (update as these get resolved)
 
@@ -382,9 +394,13 @@ side, the statistical approach, or shared infrastructure:
   above two: top-line numbers for the alpha-diversity comparison (value
   ranges, insect~fungal correlation, the lure-interaction test, within-
   community site/lure/date effects, and the linear+quadratic+cubic date
-  shape classification), matching the same convention. Since Lineage C has
-  no ordination/CoCA/Procrustes/pairwise-screen analog (alpha-diversity-only
-  by design, see the Lineage C section above), this document only covers
+  shape classification), matching the same convention. §1-6 cover
   `insect_fungal_alpha_diversity.full_insect_table.r` and its two
-  presentation figures (fig9, fig10) -- update it if that script or those
-  figures change, rather than retaining outdated numbers.
+  presentation figures (fig9, fig10); §7-12 (added 2026-09-08) extend this
+  to the ASYMPTOTIC (Chao-extrapolated, `iNEXT`) diversity variant --
+  `insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` and fig11/
+  fig12 -- with explicit observed-vs-asymptotic comparison throughout. Since
+  Lineage C has no ordination/CoCA/Procrustes/pairwise-screen analog
+  (alpha-diversity-only by design, see the Lineage C section above), this
+  document's scope is these two scripts and their four figures -- update it
+  if any of them change, rather than retaining outdated numbers.
