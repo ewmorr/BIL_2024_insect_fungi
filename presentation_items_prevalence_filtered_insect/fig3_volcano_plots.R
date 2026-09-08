@@ -30,7 +30,8 @@
 #
 #   Row 2 (QUADRATIC term / non-monotonic seasonality):
 #     d  insect ~ collection date, QUADRATIC term. x-axis sign maps to shape:
-#        negative t = concave-down = hump (mid-season peak); positive = dip.
+#        negative beta_std_quad = concave-down = hump (mid-season peak);
+#        positive = dip.
 #     e  fungal ~ collection date, QUADRATIC term, same convention.
 #     f  fungal abundance ~ insect_PCoA2, top-200 CoCA candidates,
 #        **factor(date)-adjusted** (PCoA2_plus_factordate.csv). insect_PCoA2
@@ -47,10 +48,11 @@
 #        ASV -- and specifically not Cytospora prunicola / ASV_1905 by name.
 #
 # Points are colored by FDR significance on the term being plotted (q<0.10 on
-# q_value; for row 2 panels d/e that is q_value_quad). The few most
-# significant taxa per side (by |t-statistic| of that term) are labeled -- by
-# Genus/species (or Family) from ASVs_taxonomy.tsv for the fungal panels
-# (b/c/e/f), or the already-resolved insect Genus/species name for a/d.
+# q_value; for row 2 panels d/e that is q_value_quad). The few taxa with the
+# largest |beta_std| per side (standardized slope of that term -- see the
+# 2026-09-08 note below) are labeled -- by Genus/species (or Family) from
+# ASVs_taxonomy.tsv for the fungal panels (b/c/e/f), or the already-resolved
+# insect Genus/species name for a/d.
 #
 # REVISION (2026-09-02): after examining example taxa in each linear x
 # quadratic combination (figS1_date_shape_bin_examples.R/figS1_date_shape_
@@ -126,8 +128,20 @@ build_taxon_label <- function(genus, species, family) {
 taxonomy$label <- build_taxon_label(taxonomy$Genus, taxonomy$Species, taxonomy$Family)
 
 ## ---- Shared plotting logic ------------------------------------------------
-# t_col / q_col let the same builder draw the linear-term volcano (t_stat,
-# q_value) and the quadratic-term volcano (t_stat_quad, q_value_quad).
+# x_col / q_col let the same builder draw the linear-term volcano (beta_std,
+# q_value) and the quadratic-term volcano (beta_std_quad, q_value_quad).
+#
+# The volcano x-axis is a fully-standardized partial slope ("beta weight",
+# beta_std = b * sd(x) / sd(y); the QuantPsyc::lm.beta /
+# effectsize::standardize_parameters(method = "basic") convention), NOT the
+# raw permutation t-statistic -- it is a deterministic property of the
+# observed OLS fit, added to the screen CSVs without rerunning the
+# permutation tests (the p/q-values are unchanged). Chosen over t or a
+# t-derived Cohen's d because the predictor (collection date / insect PCoA
+# axis) is continuous, so a standardized regression slope is the meaningful
+# effect size, not a two-group standardized mean difference. sign(beta_std)
+# == sign(t_stat) throughout, so every direction/shape reading below is
+# unchanged.
 
 volcano_theme <- theme_bw() +
   theme(
@@ -140,13 +154,13 @@ volcano_theme <- theme_bw() +
   )
 
 make_volcano <- function(res, x_label, title, subtitle, tag,
-                         t_col = "t_stat", q_col = "q_value",
+                         x_col = "beta_std", q_col = "q_value",
                          color_col = q_col, color_legend_title = NULL,
                          color_labels = c("FALSE" = "Not significant",
                                           "TRUE" = paste0("Significant (q<", q_threshold, ")")),
                          combo_color = FALSE) {
   res <- res %>%
-    mutate(.t = .data[[t_col]], .q = .data[[q_col]], sig = .q < q_threshold,
+    mutate(.t = .data[[x_col]], .q = .data[[q_col]], sig = .q < q_threshold,
            .color_sig = .data[[color_col]] < q_threshold)
 
   # combo_color (panels a/b): 4-way category crossing the plotted term's own
@@ -183,12 +197,13 @@ make_volcano <- function(res, x_label, title, subtitle, tag,
   }
   # Insect panels set label = taxon directly (already a resolved name).
 
-  # Rank labeled hits by |t| of the plotted term rather than q-value -- with
-  # n_perm=999 many taxa tie at the minimum achievable q, which would pick an
-  # arbitrary/overlapping cluster of "top" hits. Labeling is still keyed off
-  # `sig` (significance of the term being volcano-plotted, t_col/q_col) even
-  # when the point COLOR (color_col) marks something else (panels a/b) --
-  # this figure still highlights the top |t| hits on the plotted axis.
+  # Rank labeled hits by |beta_std| of the plotted term rather than q-value --
+  # with n_perm=999 many taxa tie at the minimum achievable q, which would
+  # pick an arbitrary/overlapping cluster of "top" hits. Labeling is still
+  # keyed off `sig` (significance of the term being volcano-plotted,
+  # x_col/q_col) even when the point COLOR (color_col) marks something else
+  # (panels a/b) -- this figure still highlights the top |beta_std| hits on
+  # the plotted axis.
   to_label <- bind_rows(
     res %>% filter(sig, .t > 0) %>% arrange(desc(.t)) %>% head(n_label_per_side),
     res %>% filter(sig, .t < 0) %>% arrange(.t) %>% head(n_label_per_side)
@@ -257,7 +272,8 @@ a_combo_n <- c(
 subtitle_a <- paste0("n=", nrow(res_ad), " taxa (unbiased): ", a_combo_n["neither"], " neither, ",
                      a_combo_n["lin_only"], " linear only, ", a_combo_n["quad_only"], " quadratic only,\n",
                      a_combo_n["both"], " both (q<0.10)")
-panel_a <- make_volcano(res_ad, "t-statistic (insect ~ collection date, linear term)",
+panel_a <- make_volcano(res_ad,
+                        expression(paste("standardized slope (", beta, ", insect ~ collection date, linear term)")),
                         "Insect taxa vs. date (linear)", subtitle_a, "a",
                         color_col = "q_value_quad", color_legend_title = "Term significance",
                         combo_color = TRUE)
@@ -276,7 +292,8 @@ b_combo_n <- c(
 subtitle_b <- paste0("n=", nrow(res_be), " prevalence-filtered taxa (unbiased): ", b_combo_n["neither"],
                      " neither, ", b_combo_n["lin_only"], " linear only, ", b_combo_n["quad_only"],
                      " quadratic only,\n", b_combo_n["both"], " both (q<0.10)")
-panel_b <- make_volcano(res_be, "t-statistic (fungal ~ collection date, linear term)",
+panel_b <- make_volcano(res_be,
+                        expression(paste("standardized slope (", beta, ", fungal ~ collection date, linear term)")),
                         "Fungal taxa vs. date (linear)", subtitle_b, "b",
                         color_col = "q_value_quad", combo_color = TRUE)
 
@@ -286,7 +303,8 @@ res_c <- read.csv(file.path(lb_dir, "fungal_insect_association_results.PCoA1_plu
 subtitle_c <- paste0("n=", nrow(res_c), " CoCA candidates, ",
                      sum(res_c$q_value < q_threshold),
                      " sig (q<0.10), factor(date)-adjusted")
-panel_c <- make_volcano(res_c, "t-statistic (fungal ~ insect PCoA1 | factor(date))",
+panel_c <- make_volcano(res_c,
+                        expression(paste("standardized slope (", beta, ", fungal ~ insect PCoA1 | factor(date))")),
                         "Fungal taxa vs. insect community (PCoA1)", subtitle_c, "c")
 
 ## ---- Row 2, panel d: insect ~ date, QUADRATIC term, non-linear-trending taxa only ----
@@ -301,10 +319,12 @@ subtitle_d <- paste0("n=", nrow(res_d), " taxa with NO significant linear term (
                      " total, ", nrow(res_ad) - nrow(res_d), " excluded),\n",
                      sum(res_d$q_value_quad < q_threshold),
                      " significant (q<0.10) -- mid-season peak (hump) or bimodal (dip)")
-quad_x_label <- "quadratic-term t-statistic   (t < 0: hump = mid-season peak,  t > 0: dip = bimodal)"
+quad_x_label <- expression(paste("quadratic-term standardized slope ", beta,
+                                 "   (", beta, " < 0: hump = mid-season peak,  ",
+                                 beta, " > 0: dip = bimodal)"))
 panel_d <- make_volcano(res_d, quad_x_label,
                         "Insect taxa vs. date (quadratic, non-linear-trending taxa)", subtitle_d, "d",
-                        t_col = "t_stat_quad", q_col = "q_value_quad")
+                        x_col = "beta_std_quad", q_col = "q_value_quad")
 
 ## ---- Row 2, panel e: fungal ~ date, QUADRATIC term, non-linear-trending taxa only ----
 
@@ -315,7 +335,7 @@ subtitle_e <- paste0("n=", nrow(res_e), " taxa with NO significant linear term (
                      " significant (q<0.10) -- mid-season peak (hump) or bimodal (dip)")
 panel_e <- make_volcano(res_e, quad_x_label,
                         "Fungal taxa vs. date (quadratic, non-linear-trending taxa)", subtitle_e, "e",
-                        t_col = "t_stat_quad", q_col = "q_value_quad")
+                        x_col = "beta_std_quad", q_col = "q_value_quad")
 
 ## ---- Row 2, panel f: fungal ~ insect_PCoA2, factor(date)-adjusted (CoCA candidates) ----
 # Headline count is the factor(date)-adjusted one, matching panel c. But PCoA2
@@ -332,7 +352,8 @@ subtitle_f <- paste0(
   " sig (q<0.10), factor(date)-adjusted -- but UNSTABLE across date controls:\n",
   n_f_unadj, "/", nrow(res_f), " unadjusted, ", n_f_quad, "/", nrow(res_f),
   " quadratic-date; small-sample-sensitive, see text")
-panel_f <- make_volcano(res_f, "t-statistic (fungal ~ insect PCoA2 | factor(date))",
+panel_f <- make_volcano(res_f,
+                        expression(paste("standardized slope (", beta, ", fungal ~ insect PCoA2 | factor(date))")),
                         "Fungal taxa vs. insect community (PCoA2)", subtitle_f, "f")
 
 ## ---- Combine + save -----------------------------------------------------

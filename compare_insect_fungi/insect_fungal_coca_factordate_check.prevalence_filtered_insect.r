@@ -117,10 +117,21 @@ test_one_taxon_factordate <- function(taxon_abund, dat_base, n_perm, test_axis, 
 
   fit_stat <- function(d) {
     m <- lm(model_formula, data = d)
-    coef(summary(m))[test_axis, "t value"]
+    cs <- coef(summary(m))
+    c(t = cs[test_axis, "t value"], b = cs[test_axis, "Estimate"])
   }
 
-  obs_t <- fit_stat(dat)
+  obs <- fit_stat(dat)
+  obs_t <- unname(obs["t"])
+
+  # Fully-standardized ("beta weight") partial slope of the axis under test,
+  # from the OBSERVED fit only: b * sd(x) / sd(y) -- the QuantPsyc::lm.beta /
+  # effectsize::standardize_parameters(method = "basic") convention. Used as
+  # the fig3 volcano x-axis instead of the raw t-statistic. The permutation
+  # null (p_perm / q_value) is UNCHANGED and still built from the
+  # t-statistic; sd(x) is invariant under the within-trap axis permutation
+  # and y is never permuted.
+  beta_std <- unname(obs["b"]) * sd(dat[[test_axis]]) / sd(dat$y)
 
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
@@ -128,11 +139,11 @@ test_one_taxon_factordate <- function(taxon_abund, dat_base, n_perm, test_axis, 
   perm_t <- apply(perm_ids, 1, function(idx) {
     d2 <- dat
     d2[[test_axis]] <- dat[[test_axis]][idx]
-    fit_stat(d2)
+    unname(fit_stat(d2)["t"])
   })
 
   p_perm <- (sum(abs(perm_t) >= abs(obs_t)) + 1) / (n_perm + 1)
-  c(t_stat = obs_t, p_perm = p_perm)
+  c(t_stat = obs_t, p_perm = p_perm, beta_std = beta_std)
 }
 
 run_factordate_test <- function(axis_name, candidate_source_file) {
@@ -143,7 +154,7 @@ run_factordate_test <- function(axis_name, candidate_source_file) {
 
   res <- bind_rows(lapply(candidate_taxa, function(tax) {
     r <- test_one_taxon_factordate(fungal_clr[, tax], dat_base, n_perm, test_axis = axis_name)
-    data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"])
+    data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"], beta_std = r["beta_std"])
   }))
   res$q_value <- p.adjust(res$p_perm, method = "BH")
   res <- res %>%

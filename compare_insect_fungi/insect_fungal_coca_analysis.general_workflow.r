@@ -259,10 +259,21 @@ test_one_taxon <- function(taxon_abund, dat_base, n_perm, test_axis, include_dat
 
   fit_stat <- function(d) {
     m <- lm(model_formula, data = d)
-    coef(summary(m))[test_axis, "t value"]
+    cs <- coef(summary(m))
+    c(t = cs[test_axis, "t value"], b = cs[test_axis, "Estimate"])
   }
 
-  obs_t <- fit_stat(dat)
+  obs <- fit_stat(dat)
+  obs_t <- unname(obs["t"])
+
+  # Fully-standardized ("beta weight") partial slope of the axis under test,
+  # from the OBSERVED fit only: b * sd(x) / sd(y) -- the QuantPsyc::lm.beta /
+  # effectsize::standardize_parameters(method = "basic") convention. Used as
+  # the fig3 volcano x-axis instead of the raw t-statistic. The permutation
+  # null (p_perm / q_value) is UNCHANGED and still built from the
+  # t-statistic; sd(x) is invariant under the within-trap axis permutation
+  # (same values, reordered) and y is never permuted.
+  beta_std <- unname(obs["b"]) * sd(dat[[test_axis]]) / sd(dat$y)
 
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
@@ -272,18 +283,18 @@ test_one_taxon <- function(taxon_abund, dat_base, n_perm, test_axis, include_dat
   perm_t <- apply(perm_ids, 1, function(idx) {
     d2 <- dat
     d2[[test_axis]] <- dat[[test_axis]][idx]
-    fit_stat(d2)
+    unname(fit_stat(d2)["t"])
   })
 
   p_perm <- (sum(abs(perm_t) >= abs(obs_t)) + 1) / (n_perm + 1)
-  c(t_stat = obs_t, p_perm = p_perm)
+  c(t_stat = obs_t, p_perm = p_perm, beta_std = beta_std)
 }
 
 run_pcoa_association_test <- function(test_axis, include_date, include_lure = TRUE) {
   res <- bind_rows(lapply(candidate_taxa, function(tax) {
     r <- test_one_taxon(fungal_clr[, tax], dat_base, n_perm, test_axis = test_axis,
                          include_date = include_date, include_lure = include_lure)
-    data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"])
+    data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"], beta_std = r["beta_std"])
   }))
   res$q_value <- p.adjust(res$p_perm, method = "BH")
   res %>%
@@ -435,10 +446,27 @@ test_date_taxon <- function(taxon_abund, dat_base, n_perm, block_var = "trap_id"
     d$date_c <- as.numeric(d$date) - mean(as.numeric(d$date))
     m <- lm(y ~ site + lure + date_c + I(date_c^2), data = d)
     cs <- coef(summary(m))
-    c(t_linear = cs["date_c", "t value"], t_quad = cs["I(date_c^2)", "t value"])
+    c(t_linear = cs["date_c", "t value"], t_quad = cs["I(date_c^2)", "t value"],
+      b_linear = cs["date_c", "Estimate"], b_quad = cs["I(date_c^2)", "Estimate"])
   }
 
   obs <- fit_stats(dat)
+
+  # Fully-standardized ("beta weight") partial slopes from the OBSERVED fit
+  # only: b * sd(x) / sd(y) -- the QuantPsyc::lm.beta /
+  # effectsize::standardize_parameters(method = "basic") convention. Reported
+  # as an effect-size companion to the t-statistic (used as the fig3 volcano
+  # x-axis instead of the raw t-statistic); the permutation null below
+  # (p_perm / q_value) is UNCHANGED and still built from the t-statistic.
+  # sd(x) is invariant under the within-trap date permutation (same values,
+  # reordered) and y is never permuted, so the observed-fit value is the
+  # correct one. For the quadratic term x = date_c^2, so beta_std_quad is
+  # "per SD of date_c^2": its SIGN is concavity (hump < 0 / dip > 0, same as
+  # t_stat_quad), its magnitude is not on the same scale as beta_std.
+  date_c_obs <- as.numeric(dat$date) - mean(as.numeric(dat$date))
+  sd_y <- sd(dat$y)
+  beta_std      <- unname(obs["b_linear"]) * sd(date_c_obs)   / sd_y
+  beta_std_quad <- unname(obs["b_quad"])   * sd(date_c_obs^2) / sd_y
 
   ctrl <- how(within = Within(type = "free"), blocks = dat[[block_var]], nperm = n_perm)
   perm_ids <- shuffleSet(nrow(dat), control = ctrl)
@@ -453,7 +481,8 @@ test_date_taxon <- function(taxon_abund, dat_base, n_perm, block_var = "trap_id"
   p_quad <- (sum(abs(perm_stats[, "t_quad"]) >= abs(obs["t_quad"])) + 1) / (n_perm + 1)
 
   c(t_stat = unname(obs["t_linear"]), p_perm = p_linear,
-    t_stat_quad = unname(obs["t_quad"]), p_perm_quad = p_quad)
+    t_stat_quad = unname(obs["t_quad"]), p_perm_quad = p_quad,
+    beta_std = beta_std, beta_std_quad = beta_std_quad)
 }
 
 classify_shape <- function(df) {
@@ -476,7 +505,8 @@ cat("\nTesting", ncol(insect_hel_df), "insect taxa for direct association with c
 insect_date_results <- bind_rows(lapply(colnames(insect_hel_df), function(tax) {
   r <- test_date_taxon(insect_hel_df[[tax]], meta, n_perm)
   data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"],
-             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"])
+             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"],
+             beta_std = r["beta_std"], beta_std_quad = r["beta_std_quad"])
 }))
 insect_date_results$q_value <- p.adjust(insect_date_results$p_perm, method = "BH")
 insect_date_results$q_value_quad <- p.adjust(insect_date_results$p_perm_quad, method = "BH")
@@ -503,7 +533,8 @@ cat("\nTesting top", length(fungal_date_candidates), "of", ncol(fungal_clr),
 fungal_date_results <- bind_rows(lapply(fungal_date_candidates, function(tax) {
   r <- test_date_taxon(fungal_clr[, tax], dat_base, n_perm)
   data.frame(taxon = tax, t_stat = r["t_stat"], p_perm = r["p_perm"],
-             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"])
+             t_stat_quad = r["t_stat_quad"], p_perm_quad = r["p_perm_quad"],
+             beta_std = r["beta_std"], beta_std_quad = r["beta_std_quad"])
 }))
 fungal_date_results$q_value <- p.adjust(fungal_date_results$p_perm, method = "BH")
 fungal_date_results$q_value_quad <- p.adjust(fungal_date_results$p_perm_quad, method = "BH")

@@ -25,10 +25,22 @@
 #          see interpretation.md -- so this is the more permissive test;
 #          the date-adjusted version collapses to 0/200 significant).
 #
-# Points are colored by FDR significance (q<0.10); the several
-# most-significant taxa on each side (positive/negative t-statistic) are
-# labeled -- by Genus/species (or Family, if unclassified at genus level)
-# from ASVs_taxonomy.tsv for the fungal panels (b/c), or directly by the
+# The volcano x-axis is a fully-standardized partial slope ("beta weight",
+# beta_std = b * sd(x) / sd(y); the QuantPsyc::lm.beta /
+# effectsize::standardize_parameters(method = "basic") convention), NOT the
+# raw permutation t-statistic. It is a deterministic property of the observed
+# OLS fit and was added to the screen CSVs without rerunning the permutation
+# tests (compare_insect_fungi/add_standardized_slope_to_fig3_screens.R for
+# panels b/c and the general_workflow.r insect~date screen; the permutation
+# p/q-values are unchanged). Chosen over t or a t-derived Cohen's d because
+# the predictor here (collection date / insect PCoA1) is continuous, so a
+# standardized regression slope is the meaningful effect size rather than a
+# two-group standardized mean difference.
+#
+# Points are colored by FDR significance (q<0.10); the several taxa with the
+# largest |beta_std| on each side (positive/negative slope) are labeled --
+# by Genus/species (or Family, if unclassified at genus level) from
+# ASVs_taxonomy.tsv for the fungal panels (b/c), or directly by the
 # already-resolved insect Genus/species name for panel a.
 ##############################################################################
 
@@ -87,15 +99,15 @@ make_volcano <- function(res, x_label, title, subtitle, tag) {
   # Insect panels: taxon is already a resolved Genus/species name (see
   # panel a below, which sets label = taxon directly, no join needed).
 
-  # Rank labeled hits by |t-statistic| (effect size) rather than q-value --
-  # with n_perm=999 many taxa tie at the minimum achievable q-value, which
-  # would otherwise pick an arbitrary/overlapping cluster of "top" hits.
+  # Rank labeled hits by |beta_std| (effect size) rather than q-value -- with
+  # n_perm=999 many taxa tie at the minimum achievable q-value, which would
+  # otherwise pick an arbitrary/overlapping cluster of "top" hits.
   to_label <- bind_rows(
-    res %>% filter(sig, t_stat > 0) %>% arrange(desc(t_stat)) %>% head(n_label_per_side),
-    res %>% filter(sig, t_stat < 0) %>% arrange(t_stat) %>% head(n_label_per_side)
+    res %>% filter(sig, beta_std > 0) %>% arrange(desc(beta_std)) %>% head(n_label_per_side),
+    res %>% filter(sig, beta_std < 0) %>% arrange(beta_std) %>% head(n_label_per_side)
   )
 
-  ggplot(res, aes(x = t_stat, y = -log10(q_value))) +
+  ggplot(res, aes(x = beta_std, y = -log10(q_value))) +
     geom_hline(yintercept = -log10(q_threshold), linetype = "dashed", color = "grey40") +
     geom_vline(xintercept = 0, linetype = "solid", color = "grey85") +
     geom_point(aes(color = sig), size = 1.6, alpha = 0.75) +
@@ -120,7 +132,8 @@ res_a <- read.csv("data/2024_insect_data/insect_taxa_date_association.csv") %>%
   mutate(label = taxon)   # already a resolved Genus/species name, no taxonomy join needed
 subtitle_a <- paste0("n=", nrow(res_a), " taxa (unbiased), ",
                       sum(res_a$q_value < q_threshold), " significant (q<0.10)")
-panel_a <- make_volcano(res_a, "t-statistic (insect abundance ~ collection date)",
+panel_a <- make_volcano(res_a,
+                         expression(paste("standardized slope (", beta, ", insect abundance ~ collection date)")),
                          "Insect taxa vs. collection date", subtitle_a, "a")
 
 ## ---- Panel b: fungal ~ collection date (all prevalence-filtered taxa) ------------
@@ -128,7 +141,8 @@ panel_a <- make_volcano(res_a, "t-statistic (insect abundance ~ collection date)
 res_b <- read.csv("data/2024_fungi/fungal_taxa_date_association.all_taxa.csv")
 subtitle_b <- paste0("n=", nrow(res_b), " prevalence-filtered taxa (unbiased), ",
                       sum(res_b$q_value < q_threshold), " significant (q<0.10)")
-panel_b <- make_volcano(res_b, "t-statistic (fungal abundance ~ collection date)",
+panel_b <- make_volcano(res_b,
+                         expression(paste("standardized slope (", beta, ", fungal abundance ~ collection date)")),
                          "Fungal taxa vs. collection date", subtitle_b, "b")
 
 ## ---- Panel c: fungal ~ insect PCoA1 (no lure, no date; CoCA-selected candidates) ----
@@ -136,7 +150,8 @@ panel_b <- make_volcano(res_b, "t-statistic (fungal abundance ~ collection date)
 res_c <- read.csv("data/compare_insects_fungi_top3axes/fungal_insect_association_results.PCoA1_only.no_lure.csv")
 subtitle_c <- paste0("n=", nrow(res_c), " CoCA-selected candidates, ",
                       sum(res_c$q_value < q_threshold), " significant (q<0.10)")
-panel_c <- make_volcano(res_c, "t-statistic (fungal abundance ~ insect PCoA1)",
+panel_c <- make_volcano(res_c,
+                         expression(paste("standardized slope (", beta, ", fungal abundance ~ insect PCoA1)")),
                          "Fungal taxa vs. insect community", subtitle_c, "c")
 
 ## ---- Combine + save -----------------------------------------------------------

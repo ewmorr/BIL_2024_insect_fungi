@@ -1407,3 +1407,108 @@ scope (was 1 script/2 figures).
 Output: lineage_C_alpha_div_full_insect_table_top_level_interpretation.md
 (extended, not regenerated -- no new data/figures, all numbers pulled from
 already-existing CSVs); project_organization.md (updated).
+
+### #################################################################################
+### 2026-09-08 (same day) -- fig3 volcano x-axis: t-statistic -> standardized
+### partial slope (beta weight), both lineages
+### #################################################################################
+
+Per user request, the fig3 volcano plots in BOTH lineages
+(`presentation_items/fig3_volcano_plots.R`,
+`presentation_items_prevalence_filtered_insect/fig3_volcano_plots.R`) now put a
+**fully-standardized partial regression slope** on the x-axis instead of the raw
+permutation t-statistic:
+
+    beta_std = b * sd(x) / sd(y)
+
+(the QuantPsyc::lm.beta / effectsize::standardize_parameters(method = "basic")
+convention), with a separate `beta_std_quad` for the quadratic date term.
+
+**Why not "Cohen's d".** The user first asked for Cohen's d. Every fig3 panel
+tests a CONTINUOUS predictor (collection date, or an insect PCoA axis), so there
+is no two-group mean difference for a d to standardize -- any d would be a t (or
+partial-r) rescaled into two-group units via an identity that only strictly holds
+for a balanced 2-level factor. The three options weighed were: (1) d = 2t/sqrt(df)
+(Rosenthal / effectsize::t_to_d -- a pure per-panel linear rescale of t, keeps
+the volcano geometry identical, but is the two-group fiction); (2) partial-r ->
+d = 2r/sqrt(1-r^2) (distorts the tails, still the fiction); (3) the standardized
+slope above -- the purpose-built effect size for a continuous predictor, no
+two-group framing, at the cost of not being derivable from the existing CSVs
+(needs the raw coefficient + sd(x), sd(y) from the observed fit). User chose (3).
+
+**No permutation reruns for the effect size itself.** beta_std is a deterministic
+property of the OBSERVED OLS fit -- it involves no permutation. sd(x) is invariant
+under the within-trap permutation (same values, reordered) and y is never
+permuted, so the observed-fit value is exactly what any future full rerun would
+produce. Implementation:
+
+  - Edited the per-taxon test functions in all four source scripts
+    (`insect_fungal_coca_analysis.general_workflow.r` -- both `test_date_taxon`
+    and `test_one_taxon`; `fungal_community_seasonality.r`;
+    `insect_taxa_date_association.prevalence_filtered_insect.r`;
+    `insect_fungal_coca_factordate_check.prevalence_filtered_insect.r`) to pull
+    the coefficient Estimate alongside the t value and emit `beta_std`
+    (+ `beta_std_quad` for the date screens) as new trailing-ish columns. The
+    permutation null (p_perm/q_value) is untouched.
+  - RE-RAN the two seeded, single-threaded, fast prevalence-filtered scripts
+    (`insect_taxa_date_association.prevalence_filtered_insect.r` ~1 min;
+    `insect_fungal_coca_factordate_check.prevalence_filtered_insect.r` ~4 min).
+    Verified every pre-existing column is byte-identical to the prior CSV
+    (max|diff| = 0), only beta columns added.
+  - Did NOT rerun `insect_fungal_coca_analysis.general_workflow.r` (long) or
+    `fungal_community_seasonality.r` (uses `mclapply` with `mc.set.seed = TRUE`
+    -> a rerun would jitter the permutation q-values by Monte-Carlo error, and
+    `fungal_taxa_date_association.all_taxa.csv` feeds fig4-fig8, figS1,
+    responsive_taxa and two interpretation docs). Instead wrote
+    `compare_insect_fungi/add_standardized_slope_to_fig3_screens.R`, a
+    deterministic retrofit that rebuilds the exact matched dataset + models and
+    merges `beta_std`(`_quad`) into the three affected CSVs in place
+    (`data/2024_insect_data/insect_taxa_date_association.csv`,
+    `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv`,
+    `data/compare_insects_fungi_top3axes/fungal_insect_association_results.
+    PCoA1_only.no_lure.csv`). Verified byte-identical pre-existing columns.
+
+**Effect on the figures.** sign(beta_std) == sign(t_stat) everywhere (checked:
+0 mismatches across all 5 CSVs), so the Lineage-B panel a/b combo coloring and
+the panel d/e "exclude significant-linear taxa" rule are unaffected, and every
+early/late/hump/dip reading still holds. What changes: the x-axis is now a real
+effect-size scale (insect~date beta roughly +/-0.7; fungal~date +/-1.0;
+fungal~PCoA1 -0.7..+0.5), and because beta is not a strictly monotone rescale of
+t (residual scatter differs per taxon) the significant points re-space slightly
+and the labeled "top hits per side" -- now ranked by |beta_std| -- shift a little
+(e.g. Lineage-A panel b now labels Cytospora beilinensis where it labeled
+Sclerotiniaceae before). df per panel (unused now, but for reference): a/b/d/e
+= 61, Lineage-A c = 62, Lineage-B c/f = 55; n = 69 throughout.
+
+Axis labels use plotmath `beta` (not a literal U+03B2) because this machine has
+no cairo device and the PDF device drops non-Latin-1 glyphs -- same reason the
+y-axis already uses `expression(-log[10](...))`.
+
+Output: presentation_items/fig3_volcano_plots.{png,pdf},
+presentation_items_prevalence_filtered_insect/fig3_volcano_plots.{png,pdf}
+(regenerated); 4 analysis scripts + 2 figure scripts edited;
+compare_insect_fungi/add_standardized_slope_to_fig3_screens.R (new);
+5 screen CSVs gained beta_std(/_quad); project_organization.md (updated).
+
+**Follow-up, same day -- interpretation docs.** Updated the "top ranking taxa"
+tables/notes in both top-level interpretation docs to the |beta_std| ranking:
+- `lineage_A_family_filtered_insect_top_level_interepretation.md`: §1 insect~date
+  "top hits" table and §3 fungal~date "top 20" table both switched from |t| to
+  |beta_std| (the §1 table also picked up the linear+quadratic date-model update
+  it had never been refreshed for -- old Xyleborinus t=-8.5 was pre-quadratic,
+  current is -14.0; sig count 18/52 -> 19/52; fungal sig 2,116/33.4% ->
+  2,186/34.5%). Membership changes vs. the old |t| lists: §1 gains
+  *Pityogenes hopkinsi*, drops *Xylosandrus germanus* (still q=0.010, just
+  outside top 9); §3 top-20 becomes *Ramularia* 12 / *Cytospora* 6 /
+  *Piptoporus* 1 / one unresolved ASV, dropping the single *Ganoderma*,
+  *Diatrype* and *Aureobasidium* ASVs that a |t| ranking keeps. §2 got a note
+  that its 77-hit tallies are ranking-invariant but fig3 panel c now labels
+  *Grosmannia francke-grosmanniae* / *Sporothrix* sp. (Ophiostomatales) in
+  place of a *Sclerotiniaceae* + *Valsa* ASV. §4's n=2,116 flagged as pre-
+  model-update.
+- `lineage_B_prevalence_filtered_insect_top_level_interpretation.md`: §4's
+  two-taxon shape reclassification now quotes beta_std_quad (Xyleborinus
+  +0.51 / Melanophthalma -0.28, Lineage B; +0.52 / -0.21 Lineage A) instead
+  of t_quad; q-values unchanged. Added a §2 note on the metric switch. The
+  §2/§4 count tables and §5 Cytospora/Tympanis robustness tables are
+  significance-based, not effect-size rankings, so left as-is.

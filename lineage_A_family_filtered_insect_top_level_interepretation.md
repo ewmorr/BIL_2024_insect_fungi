@@ -15,30 +15,32 @@ Core current-state numbers (community level, all post-filter, from `interpretati
 
 ## 1. Insect taxa driving PCoA1 (the seasonal axis)
 
-Insect PCoA1 is still overwhelmingly a date/seasonal-turnover axis (r ≈ 0.78 with collection date, by far the largest term in the insect PERMANOVA). The clean, current-data way to ask "which taxa drive it" is the direct per-taxon date test (`data/2024_insect_data/insect_taxa_date_association.csv`), which supersedes the earlier informal PCoA1-correlation check — this is unaffected by the fungal Kingdom filter (insect side wasn't touched), but the earlier top-level summary understated it slightly (20/52 was reported informally; the current file gives **18/52 significant at q<0.10**).
+Insect PCoA1 is still overwhelmingly a date/seasonal-turnover axis (r ≈ 0.78 with collection date, by far the largest term in the insect PERMANOVA). The clean, current-data way to ask "which taxa drive it" is the direct per-taxon date test (`data/2024_insect_data/insect_taxa_date_association.csv`), which supersedes the earlier informal PCoA1-correlation check — this is unaffected by the fungal Kingdom filter (insect side wasn't touched), but the earlier top-level summary understated it slightly (20/52 was reported informally; the current file gives **19/52 significant at q<0.10**).
 
-By subfamily, the direction split is clean and matches the fig4 panel-a breakdown exactly:
+By subfamily, the direction split is clean and matches the fig4 panel-a breakdown exactly (sign-based, unchanged by the effect-size metric below):
 
-| Subfamily | Earlier-season (t<0) | Later-season (t>0) |
+| Subfamily | Earlier-season (β<0) | Later-season (β>0) |
 |---|---|---|
-| Scolytinae (bark/ambrosia beetles) | 11 | 2 |
+| Scolytinae (bark/ambrosia beetles) | 12 | 2 |
 | Cossoninae | 0 | 2 |
 | Corticariinae | 0 | 1 |
 | Molytinae | 1 | 1 |
 
-Top hits by \|t\|:
+Top hits by \|β\| (standardized partial slope β = b·sd(x)/sd(y); table refreshed 2026-09-08 for the fig3 t→β effect-size switch, and picks up the linear+quadratic date-model update in the same pass — see `iterative_analysis_updates.md`):
 
-| Taxon | Subfamily | t | Direction |
+| Taxon | Subfamily | β | Direction |
 |---|---|---|---|
-| Melanophthalma sp. | Corticariinae | +9.15 | later season |
-| Stenoscelis brevis | Cossoninae | +8.79 | later season |
-| Xyleborinus attenuatus | Scolytinae | -8.50 | earlier season |
-| Xyloterinus politus | Scolytinae | -5.08 | earlier season |
-| Pissodes strobi | Molytinae | -4.68 | earlier season |
-| Cyclorhipidion pelliculosum | Scolytinae | -4.49 | earlier season |
-| Corthylus columbianus | Scolytinae | +4.07 | later season |
-| Xylosandrus germanus | Scolytinae | -3.43 | earlier season |
-| Himatium errans | Cossoninae | +3.22 | later season |
+| Xyleborinus attenuatus | Scolytinae | -0.73 | earlier season |
+| Stenoscelis brevis | Cossoninae | +0.73 | later season |
+| Melanophthalma sp. | Corticariinae | +0.66 | later season |
+| Xyloterinus politus | Scolytinae | -0.52 | earlier season |
+| Corthylus columbianus | Scolytinae | +0.44 | later season |
+| Cyclorhipidion pelliculosum | Scolytinae | -0.42 | earlier season |
+| Pissodes strobi | Molytinae | -0.40 | earlier season |
+| Pityogenes hopkinsi | Scolytinae | -0.36 | earlier season |
+| Himatium errans | Cossoninae | +0.35 | later season |
+
+(By raw \|t\| the order differs only slightly — *Xyleborinus* t=-14.0 is the clear top, then *Melanophthalma* +9.9 / *Stenoscelis* +9.6 swap places, and *Xylosandrus germanus* t=-3.5 takes the last slot in place of *Himatium errans*; every taxon named here is significant at q≈0.006–0.014 either way.)
 
 **Interpretation (unchanged from before the filter, since it doesn't depend on the fungal side):** PCoA1 captures a spring ambrosia/bark-beetle-dominated catch (Scolytinae: *Xyleborinus*, *Xylosandrus*, *Cyclorhipidion*, *Pissodes*) giving way to a later-season catch dominated by fungivorous/detritivorous beetles (*Melanophthalma*, Corticariinae "minute brown scavenger beetles"; *Stenoscelis*, Cossoninae).
 
@@ -77,28 +79,32 @@ Genus-level, with an internal-consistency check (same logic as the original pre-
 
 **Same caveat as before still holds under current data:** these are associations with PCoA1 alone. Adding date as a covariate to the identical 200-candidate set collapses the result to **0/200 significant** (`fungal_insect_association_results.PCoA1_plus_date.csv` / `.no_lure.csv`), exactly as it did pre-filter. The Cytospora/bark-beetle association is the one piece of this that gets a second, independent line of support (see §3) — a direct fungal~date test, run without ever conditioning on the insect axes, points to the same genus and the same seasonal end.
 
+The counts, family tally and genus-consistency check above are all over the full 77-hit significant set and are unchanged by the 2026-09-08 fig3 t→β effect-size switch; that switch only re-orders *within* the significant set, so fig3 panel c now labels its highest-\|β\| hits (this brought *Grosmannia francke-grosmanniae* and *Sporothrix* sp., both in the Ophiostomatales row above, into the labelled set in place of a *Sclerotiniaceae* and a *Valsa* ASV).
+
 ---
 
 ## 3. Taxa that respond to date directly (top-loading ASVs, both communities)
 
 ### Fungal (unbiased screen, all 6,342 prevalence-filtered Kingdom==Fungi taxa, no pre-selection)
 
-Source: `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv`. **2,116 / 6,342 significant at q<0.10 (33.4%)** — up slightly from 32.6% (2,248/6,887) pre-filter, i.e. filtering out non-fungal ASVs modestly *increased* the seasonal fraction, consistent with those excluded ASVs being mostly low-abundance noise rather than a source of real seasonal signal. Direction split: 1,236 later-season (+) vs. 880 earlier-season (-).
+Source: `data/2024_fungi/fungal_taxa_date_association.all_taxa.csv`. **2,186 / 6,342 significant at q<0.10 (34.5%)** — up slightly from 32.6% (2,248/6,887) pre-filter, i.e. filtering out non-fungal ASVs modestly *increased* the seasonal fraction, consistent with those excluded ASVs being mostly low-abundance noise rather than a source of real seasonal signal. Direction split: 1,272 later-season (+) vs. 914 earlier-season (-). (This is the linear-term count from the current linear+quadratic model; the fig4/fig5 Order/Class tallies in §4 below predate that model update and quote the earlier 2,116/33.4%.)
 
-Top 20 hits by \|t\| split almost entirely into the same two genera identified pre-filter, now with corrected ASV IDs and t-statistics:
+Top 20 hits by \|β\| (standardized partial slope; ranking refreshed 2026-09-08 for the fig3 t→β switch) split almost entirely into the same two genera identified pre-filter:
 
 | Direction | Genus / species | Family / Order / Class | n in top 20 |
 |---|---|---|---|
-| Later season (+) | *Ramularia* spp. | Mycosphaerellaceae / Mycosphaerellales / Dothideomycetes | 11 |
-| Earlier season (-) | *Cytospora* spp. (incl. *C. prunicola*, *C. beilinensis*) | Valsaceae / Diaporthales / Sordariomycetes | 7 |
+| Later season (+) | *Ramularia* spp. | Mycosphaerellaceae / Mycosphaerellales / Dothideomycetes | 12 |
+| Earlier season (-) | *Cytospora* spp. (incl. *C. prunicola*, *C. beilinensis*) | Valsaceae / Diaporthales / Sordariomycetes | 6 |
 | Earlier season (-) | *Piptoporus betulinus* (birch polypore) | Fomitopsidaceae / Polyporales / Agaricomycetes | 1 |
-| Earlier season (-) | *Ganoderma* sp. (later in top 20) | Ganodermataceae / Polyporales / Agaricomycetes | 1 |
+| Earlier season (-) | one genus-unresolved ASV (ASV_1029) | — | 1 |
 
-*Ramularia* (foliar plant-pathogen genus, leaf-spot disease) building up over the season as leaf area increases is textbook phenology. *Cytospora* (canker fungus) being higher earlier in the season is now supported two independent ways: this direct date test, and the PCoA1-association test in §2 — both point to the same genus and the same seasonal/insect-community end, without one being derived from the other. Wood-decay taxa (*Piptoporus*, *Ganoderma*) tracking the same early-season/bark-associated direction as *Cytospora* is a third, weaker line pointing the same way.
+(Ranking by \|t\| gives the same two-genus picture — *Ramularia* 8, *Cytospora* 7, *Piptoporus* 1, ASV_1029 1 — but fills the last three slots with one ASV each of *Ganoderma*, *Diatrype decorticata* and *Aureobasidium pullulans* instead of three more *Ramularia*; those three sit just outside the top 20 on the β scale.)
+
+*Ramularia* (foliar plant-pathogen genus, leaf-spot disease) building up over the season as leaf area increases is textbook phenology. *Cytospora* (canker fungus) being higher earlier in the season is now supported two independent ways: this direct date test, and the PCoA1-association test in §2 — both point to the same genus and the same seasonal/insect-community end, without one being derived from the other. Wood-decay taxa (*Piptoporus*, and just outside the top 20, *Ganoderma*) tracking the same early-season/bark-associated direction as *Cytospora* is a third, weaker line pointing the same way.
 
 ### Insect (all 52 taxa, direct date test)
 
-See §1 for the full table — 18/52 significant, split cleanly by subfamily (Scolytinae early, Cossoninae/Corticariinae late).
+See §1 for the full table — 19/52 significant, split cleanly by subfamily (Scolytinae early, Cossoninae/Corticariinae late).
 
 ### Where both communities agree
 
@@ -110,7 +116,7 @@ The insect and fungal date signals point at the same underlying gradient (spring
 
 These come straight from the current fig4/fig5 (taxonomic) and fig7/fig8 (FungalTraits trophic-mode) output files, all of which post-date the Kingdom filter and were already computed on the current 6,342-taxon table — reproduced/verified here directly from the CSVs rather than from `interpretation.md`'s prose, since a couple of numbers there conflate the class-resolved (fig8) and class-pooled (fig7) versions of the same trait tally.
 
-### Order/Class level, date-associated hits (fig4/fig5, n=2,116)
+### Order/Class level, date-associated hits (fig4/fig5, n=2,116 — pre linear+quadratic model update; current linear count is 2,186, see §3)
 
 Cleanly one-directional orders:
 - **Mycosphaerellales** (*Ramularia*-dominated): 169 later vs. 12 earlier
