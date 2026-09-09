@@ -11,15 +11,28 @@
 # tail (singletons/doubletons) to estimate the richness/diversity that would
 # be seen with infinite additional sampling effort ("asymptotic" diversity).
 #
-# Insect table: the SAME full (all-families, singleton-taxon-filtered only,
-# no >=5-sample prevalence filter) construction as insect_fungal_alpha_
-# diversity.full_insect_table.r and Lineage C generally -- see
-# project_organization.md's Lineage C section and "When to prevalence-filter
-# vs. not". Asymptotic estimation is itself an alpha-diversity method (it
-# estimates how many taxa exist, the same quantity richness/Shannon/Simpson
-# summarize), so the same "don't prevalence-filter for alpha-diversity" rule
-# applies -- prevalence-filtering out rare taxa before asking "how many rare
-# taxa are we missing" would be circular.
+# Insect table: all families, RAW counts -- NO singleton-taxon filter, NO
+# >=5-sample prevalence filter. This departs from insect_fungal_alpha_
+# diversity.full_insect_table.r and Lineage C generally, which apply a global
+# singleton filter (colSums > 1) as noise-floor cleanup -- see project_
+# organization.md's Lineage C section and "When to prevalence-filter vs.
+# not". That cleanup is WRONG for Chao-type estimators specifically: Chao1
+# richness (S_obs + f1^2/(2*f2)), Chao-Shannon and Chao-Simpson are all
+# functions of the sample's rare tail -- the singleton count f1 (entering
+# squared for richness) and doubleton count f2, plus the Good-Turing
+# coverage C_hat = 1 - f1/n. A global singleton (colSums == 1) is by
+# definition a single individual in a single sample, i.e. a within-sample
+# singleton, so filtering these strips f1 mass directly and unevenly across
+# samples: it inflates estimated coverage and biases Chao richness/Shannon
+# downward (measured: up to ~2x on the worst-sampled insect samples).
+# Asymptotic estimation IS the method that reads the rare tail as signal, so
+# it must see the untouched counts -- "prevalence-filtering out rare taxa
+# before asking how many rare taxa we are missing would be circular", and
+# the singleton filter is the same circularity in milder form. The fungal
+# side was already raw (Kingdom==Fungi only, no singleton/prevalence
+# filter), so this brings the insect side into line. (Switched 2026-09-09
+# after the filtered version was found to distort the estimates; see
+# iterative_analysis_updates.md.)
 #
 # Fungal table: Kingdom==Fungi filtered, but UNRAREFIED (raw ASV counts) --
 # a deliberate departure from every other alpha-diversity script in this
@@ -93,9 +106,11 @@ out_fig_dir <- "figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_ins
 dir.create(out_data_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(out_fig_dir, showWarnings = FALSE, recursive = TRUE)
 
-## ---- 1. Load and match insect + fungal data (full insect table, all families, raw fungal counts) ----
-# Identical matching logic to insect_fungal_alpha_diversity.full_insect_table.r's
-# section 1, except the fungal table is left unrarefied (see header).
+## ---- 1. Load and match insect + fungal data (full insect table RAW counts, all families, raw fungal counts) ----
+# Matching logic follows insect_fungal_alpha_diversity.full_insect_table.r's
+# section 1, with two deliberate departures (both in the header): the fungal
+# table is left unrarefied, and the insect table keeps its raw counts with NO
+# singleton filter (Chao estimators key on the singleton/doubleton tail).
 
 sp_tab <- read.csv("data/2024_insect_data/insect_species_tab.csv")
 insect_meta_full <- read.csv("data/metadata/insect_community_metadata.csv")
@@ -106,9 +121,9 @@ stopifnot(!any(duplicated(sp_tab$Finest.ID)))
 sp_tab.t <- t(sp_tab %>% select(where(is.numeric)))
 colnames(sp_tab.t) <- sp_tab$Finest.ID
 
-sp_tab.t[, colSums(sp_tab.t) > 1] -> insect_full
-insect_full <- insect_full[rowSums(insect_full) > 0, ]
-cat("After dropping singleton taxa and empty samples:", nrow(insect_full), "samples,",
+# NO colSums > 1 singleton filter here -- raw counts feed the Chao estimators (see header).
+insect_full <- sp_tab.t[rowSums(sp_tab.t) > 0, ]
+cat("After dropping empty samples only (no singleton filter):", nrow(insect_full), "samples,",
     ncol(insect_full), "insect taxa.\n")
 
 id_map <- insect_meta_full %>% filter(col_names %in% rownames(insect_full))
@@ -167,8 +182,15 @@ compute_asymptotic_metrics <- function(count_matrix) {
 ## ---- 3. Compute asymptotic diversity for both communities -----------------
 
 cat("\nEstimating asymptotic diversity for", nrow(insect), "insect samples...\n")
+set.seed(1)
 insect_asymp <- compute_asymptotic_metrics(insect) %>% left_join(meta, by = "sample_id")
 cat("Estimating asymptotic diversity for", nrow(fungal), "fungal samples (this takes a few minutes)...\n")
+# Re-seed before the fungal pass so its ChaoShannon/ChaoSimpson bootstrap SEs
+# (B=200) are reproducible independent of how many RNG draws the insect pass
+# above consumed -- otherwise a change to the insect table (e.g. the
+# 2026-09-09 singleton-filter fix) silently shifts every fungal SE/CI even
+# though the fungal point estimates are untouched.
+set.seed(1)
 fungal_asymp <- compute_asymptotic_metrics(fungal) %>% left_join(meta, by = "sample_id")
 
 metrics <- c("richness", "shannon", "simpson")

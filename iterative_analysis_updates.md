@@ -1512,3 +1512,177 @@ tables/notes in both top-level interpretation docs to the |beta_std| ranking:
   of t_quad; q-values unchanged. Added a §2 note on the metric switch. The
   §2/§4 count tables and §5 Cytospora/Tympanis robustness tables are
   significance-based, not effect-size rankings, so left as-is.
+
+### #################################################################################
+### 2026-09-09 -- CORRECTION: Lineage C alpha diversity was fed a
+### singleton-filtered insect table; both scripts switched to raw counts and
+### re-run (+ set.seed added to the asymptotic script). See the "Follow-up"
+### subsection at the end for the observed-script change and the seed.
+### #################################################################################
+
+**What was wrong.** `compare_insect_fungi/insect_fungal_asymptotic_richness_
+iNEXT.full_insect_table.r` built its insect table with the same global
+singleton filter (`colSums(sp_tab.t) > 1`, drop any taxon whose total across
+all insect samples is 1) that `insect_fungal_alpha_diversity.full_insect_
+table.r` and Lineage C generally use as noise-floor cleanup. That filter is
+wrong for Chao-type estimators specifically. Chao1 richness is `S_obs +
+f1^2/(2*f2)`; `ChaoShannon`/`ChaoSimpson` (Hill q=1/q=2) are coverage-based
+estimators keyed on Good-Turing coverage `C_hat = 1 - f1/n`. All three are
+functions of the singleton count `f1`. A global singleton (colSums == 1) is
+by definition a single individual in a single sample -- i.e. a within-sample
+singleton -- so removing these strips `f1` mass directly and unevenly across
+samples. The fungal side was already raw (Kingdom==Fungi only, no
+singleton/prevalence filter), so only the insect side was affected.
+
+**Measured effect of the filter (on the 69 matched samples).** It removed
+148 of 426 insect taxa (35%); every removed taxon was a within-sample
+singleton in exactly one sample, a median of 9% (range 0-33%) of that
+sample's `f1`. Consequences, filtered -> raw:
+- insect sample coverage inflated: median 0.809 -> 0.792 (raw is the honest,
+  lower value);
+- insect asymptotic richness biased DOWN: median 69.9 -> 75.0, raw/filtered
+  ratio up to 2.18x on the worst-sampled samples (NH.62: Chao richness
+  176.6 -> 236.8; NH.139: 86.4 -> 135.9);
+- insect asymptotic Shannon (Hill q=1) biased down: median 21.6 -> 23.9,
+  ratio up to 2.12x;
+- insect asymptotic Simpson (Hill q=2) barely moved (up to 1.5x, median 1.0x
+  -- higher-order Hill numbers are dominated by well-sampled common taxa);
+- fungal point estimates: IDENTICAL (fungal table unchanged). Fungal
+  `shannon_se`/`simpson_se` shifted by <=0.23 -- those SEs are bootstrapped
+  (B=200) and the insect pass now consumes a different number of RNG draws
+  before the fungal pass runs; fungal `coverage`, all point estimates, and
+  `richness_se` (analytic) are byte-identical. Fungal covariate-test
+  t-statistics are also byte-identical; their `p_perm` values wobble +-0.02
+  from the same RNG-stream shift (one crossed the 0.10 line: fungal
+  simpson~site 0.117 -> 0.092, F-stat unchanged at 1.915 -- treat as
+  permutation noise, not a real change).
+
+**The patch.** Section 1 no longer applies `colSums > 1`; it drops
+empty samples only and passes the raw 426-taxon insect table to the
+estimators. Header comment block rewritten to explain why Chao needs the
+untouched rare tail. Insect matched-table taxon count in the run log goes
+277 -> 426; matched sample count still 69 (the 2 samples the filter used to
+empty out entirely are not in the fungal-paired set).
+
+**Did any conclusion move?**
+- Cross-community insect~fungal correlation (§8 of the Lineage C interp
+  doc): unchanged. Asymptotic Shannon rho -0.251 -> -0.258 (p 0.038 ->
+  0.032, still the one modest negative signal); richness and Simpson still
+  clean nulls (rho 0.006 / -0.080).
+- Date-shape classification (§11): all 6 community x metric calls unchanged
+  (insect richness hump, insect Shannon "no significant date pattern" with a
+  now-stronger linear p 0.079 -> 0.027, insect Simpson dip, fungal richness
+  no pattern, fungal Shannon complex/cubic, fungal Simpson dip).
+- Within-community covariate tests (§10): one spurious marginal finding
+  REMOVED -- insect Shannon ~ lure was p_perm 0.070 (just under this
+  project's 0.10 line) on the filtered table; on raw counts F drops
+  3.60 -> 2.60, p 0.070 -> 0.229. It was an artifact of the singleton
+  filter. insect Shannon ~ site stays significant (p 0.022 -> 0.019);
+  insect richness ~ date_quadratic stays significant (p 0.003 -> 0.002).
+- Lure x insect interaction on fungal asymptotic diversity (§9): Shannon
+  p_perm 0.075 -> 0.011. This was already flagged in §9 as the one metric
+  crossing the 0.10 convention; on the corrected insect table it is now
+  clearly under 0.05. Still a single uncorrected interaction test riding on
+  the poorly-sampled (mean coverage 0.77, one q1>q0 Hill-ordering violation
+  at NH.99) insect asymptotic Shannon values, so still "watch as data
+  accumulate," not a settled finding -- but it is now a stronger nominal
+  signal than before, and worth revisiting whether fig12 should carry a
+  lure-faceted Shannon panel.
+- The §10 "clean before/after extrapolation" comparison for insect richness
+  is now BROKEN: it relied on this script's observed insect richness being
+  identical to `insect_fungal_alpha_diversity.full_insect_table.r`'s (§4),
+  which was only true while both used the singleton filter. This script's
+  insect observed richness is now 6-75 (mean 34.8) vs. the other script's
+  filtered 4-68 (mean 32.7). The qualitative point still holds (observed
+  insect richness has a strong lure effect that asymptotic estimation
+  attenuates) but it is no longer a same-numbers comparison.
+
+New value ranges (n=69 both communities): insect richness observed 6-75
+(mean 34.8) / asymptotic 13.7-236.8 (mean 81.6); insect Shannon observed
+2.60-31.35 (mean 16.0) / asymptotic 3.21-84.64 (mean 26.5); insect Simpson
+observed 1.54-22.26 (mean 9.33) / asymptotic 1.55-30.92 (mean 11.1); insect
+coverage 0.07-0.98 (mean 0.77). Median asymptotic/observed ratio insect:
+richness 2.15x, Shannon 1.44x, Simpson 1.08x. Fungal asymptotic richness
+490.7-5546.7 (mean 2052.9) -- unchanged.
+
+Files: `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.full_
+insect_table.r` (patched); all 6 CSVs + 5 figures in
+`data/`+`figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_
+insect_table/` regenerated; `project_organization.md` (Lineage C rows
+updated); `lineage_C_alpha_div_full_insect_table_top_level_interpretation.md`
+(§7-12 + bottom-line items 8-10 updated). fig11/fig12
+(`presentation_items/`) read these CSVs and should be re-run for the
+refreshed figures.
+
+**Follow-up, same day (2026-09-09) -- two more changes, per user:**
+
+**(1) The OBSERVED-diversity script got the same raw-table treatment.**
+`compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r`
+(§1-6 of the Lineage C interp doc) also had its `colSums > 1` global
+singleton filter removed, insect table now the raw 426-taxon one. Rationale
+here is consistency, not a correctness bug: for plain observed richness/
+Shannon/Simpson the singleton filter is a defensible noise-floor choice (a
+taxon seen once across 72 samples could be a misID/contaminant/vagrant), but
+with the asymptotic script forced onto raw counts, keeping the observed
+script filtered means "observed richness" is defined differently in the two
+Lineage C scripts and their observed-vs-asymptotic comparison (§8) is
+apples-to-oranges. Now both use the same table. Effect on §1-6:
+- insect observed richness rose in 54/69 samples (median +2, max +8 taxa):
+  4-68/mean 32.7 -> 6-75/mean 34.8. Shannon entropy 0.87-3.38/2.59 ->
+  0.96-3.45/2.65; Simpson dominance 0.047-0.673/0.161 -> 0.045-0.648/0.155
+  (both barely moved -- global singletons carry negligible p_i).
+- Fungal alpha diversity BYTE-IDENTICAL (rarefy-and-average, doesn't touch
+  the insect table; n=68 after NH.54 drops below rarefaction depth, as
+  before).
+- Cross-community Spearman (§2): Shannon rho -0.264 -> -0.268 (p 0.030 ->
+  0.027, still the one significant signal); richness -0.119 -> -0.118
+  (n.s.); Simpson dominance -0.121 -> -0.131 (n.s.). Conclusion unchanged.
+- Lure interaction (§3): unchanged, all p_perm >= 0.83.
+- Covariate tests (§4): permutation draws are identical (same n, same
+  n_perm, same seed) so every p_perm shift here is driven by the changed
+  observed statistic, not RNG. `insect Shannon ~ date_linear` 0.103 ->
+  0.067 crosses the 0.10 line -> **date-shape classification (§5) for
+  insect Shannon flips from "no significant date pattern" to "linear
+  increase (late-season)"**. insect Shannon ~ site 0.071 -> 0.042; insect
+  Simpson ~ site 0.096 -> 0.079 (both were already <0.10). insect richness
+  ~ lure F 14.66 -> 13.16 (p 0.003 -> 0.008, still the biggest F in the
+  table); insect richness ~ date_quad/cubic still p<=0.002. Fungal
+  covariate rows all unchanged (fungal alpha identical + RNG identical).
+- Date shape (§5): insect richness still "complex (cubic)", insect Simpson
+  still "no significant date pattern", insect Shannon now "linear increase
+  (late-season)" (see above), all 3 fungal metrics still "complex (cubic)".
+Files: `insect_fungal_alpha_diversity.full_insect_table.r` (header + section
+1 rewritten); its 6 CSVs + 4 descriptive figures regenerated; fig9/fig10
+re-run.
+
+**(2) set.seed(1) added before the fungal pass in the asymptotic script.**
+`insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` now re-seeds
+immediately before `fungal_asymp <- compute_asymptotic_metrics(fungal)` (and
+redundantly right before the insect pass) so the fungal `ChaoShannon`/
+`ChaoSimpson` bootstrap SEs (B=200) are reproducible regardless of how many
+RNG draws the insect pass consumed -- previously an insect-table change
+silently shifted every fungal SE/CI even with the fungal point estimates
+untouched. Re-running with the seed shifted the permutation-based p_perm
+values in `asymptotic_diversity_covariate_tests.csv` / `..._date_shape.csv`
+/ `..._interaction_by_lure.csv` by RNG noise (all observed t/F-stats and all
+point estimates unchanged; no date-shape classification changed). Net effect
+on the §7-12 tables now in the interp doc, vs. the values in the first part
+of this entry: asymptotic Shannon lure-interaction p_perm 0.011 -> 0.013
+(still clearly significant); insect Shannon ~ date_linear (§10/§11) 0.027 ->
+0.037; several fungal date-term p_perms moved +-0.01; `fungal Simpson ~
+site` and `fungal Shannon ~ site` now sit at p_perm ~0.10-0.11 (F-stats
+1.92/1.93 unchanged) -- permutation noise straddling the line, not listed as
+significant. The interp doc §9-§11 tables were updated to these
+post-seed numbers.
+
+**Interp doc / project_organization.md updates for both (1) and (2):**
+`lineage_C_alpha_div_full_insect_table_top_level_interpretation.md` --
+header + §1 note + §1/§2/§3/§4/§5 numbers and §5 prose (observed change);
+§9/§10/§11 tables + §10 "vs §4" paragraph (§4 and this script now share the
+raw table again, so that comparison is once more a clean before/after);
+bottom-line items 2/3/5/9/10. `project_organization.md` -- Lineage C section
+prose, both Lineage C script rows in the index, and the "When to
+prevalence-filter vs. not" alpha-diversity bullet (now: raw counts, no
+filter at all, for both Lineage C scripts; Lineage A's frozen
+family-filtered `insect_fungal_alpha_diversity.r` still applies the singleton
+filter).

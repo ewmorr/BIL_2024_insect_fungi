@@ -46,20 +46,27 @@ with Lineage A retained for comparison/robustness-checking, not replaced.
 ### Lineage C -- "full insect table" (deliberate, alpha-diversity-only -- NOT the same as Lineage B, and not meant to be)
 
 `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r`
-builds the insect table as all families with **only** the singleton-taxon
-filter -- **no** >=5-sample prevalence filter. That gives **277 taxa**, a
-different number from Lineage B's 153. This is intentional and settled, not
-an inconsistency to fix: **the >=5-sample prevalence filter is a
-noise-reduction step for ordination/covariance-based methods** (it keeps a
-handful of very rare taxa from dominating a distance matrix or CoCA loading),
-**and is not appropriate for alpha-diversity metrics**, where the raw
-taxon-presence signal (richness, Shannon, Simpson dominance) is exactly what
-is being measured -- prevalence-filtering before computing richness would
-mean discarding real taxa and artificially deflating it. So for
-alpha-diversity work specifically, "all families, singleton-filter only" (no
-prevalence filter) is the CORRECT all-families construction, not a
-lesser/orphaned stand-in for Lineage B. See "When to prevalence-filter vs.
-not" below for the general rule this follows. Output lives in
+builds the insect table as all families, **raw counts** -- **no** >=5-sample
+prevalence filter, and (as of 2026-09-09) **no global singleton filter
+either**. That gives **426 taxa**, a different number from Lineage B's 153.
+This is intentional and settled, not an inconsistency to fix: **the
+>=5-sample prevalence filter is a noise-reduction step for ordination/
+covariance-based methods** (it keeps a handful of very rare taxa from
+dominating a distance matrix or CoCA loading), **and is not appropriate for
+alpha-diversity metrics**, where the raw taxon-presence signal (richness,
+Shannon, Simpson dominance) is exactly what is being measured --
+prevalence-filtering before computing richness would mean discarding real
+taxa and artificially deflating it. The milder `colSums > 1` global
+singleton filter this script used through 2026-09-08 was dropped on
+2026-09-09 for consistency with the asymptotic (`iNEXT`) script, which
+*cannot* use it (Chao estimators are built on the observed singleton count);
+with both Lineage C scripts now on the raw table, "observed richness" means
+the same thing in both. Effect was modest -- observed insect richness rose a
+median of ~2 taxa/sample (Shannon/Simpson dominance barely moved). See "When
+to prevalence-filter vs. not" below and the 2026-09-09 entry in
+`iterative_analysis_updates.md`. (Lineage A's family-filtered
+`insect_fungal_alpha_diversity.r` is frozen as the backup and keeps the
+singleton filter -- unchanged.) Output lives in
 `data/compare_insects_fungi_alpha_diversity_full_insect_table/` /
 `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` --
 directory name kept as-is (predates the Lineage A/B/C naming introduced in
@@ -225,8 +232,8 @@ never `cat_levels[i]`).
 
 | Script | What it does | Data output | Figure output |
 |---|---|---|---|
-| `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, singleton-filter only (277 taxa, NOT the 153-taxon Lineage B table). Date effects tested linear+quadratic+cubic (`alpha_diversity_date_shape.csv`); also tests an insect x lure interaction on the insect~fungal correlation (`alpha_diversity_insect_fungal_interaction_by_lure.csv`) -- not significant for any metric | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
-| `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` | Asymptotic (Chao-extrapolated) richness/Shannon(Hill q=1)/Simpson(Hill q=2) diversity via `iNEXT::ChaoRichness()`/`ChaoShannon()`/`ChaoSimpson()` (NOT `iNEXT()` itself -- its curve machinery didn't finish in 120s on the largest fungal sample; the point/SE/CI-only Chao*() functions reproduce its `$AsyEst` estimates and run in ~1-2s each), same 277-taxon full insect table as the alpha-diversity script above but fungal side left UNRAREFIED (raw Kingdom==Fungi counts -- extrapolation itself corrects for uneven sequencing depth, so pre-rarefying would discard the rare-tail information the estimator needs). Per-sample granularity (user's choice). Mirrors the alpha-diversity script's cross-community correlation (both observed and asymptotic reported side by side), lure-interaction test, and site/lure/date covariate tests + date-shape classification, the latter two run on asymptotic values only. "simpson" here = Hill q=2 diversity (higher=more even), opposite direction from "simpson_dominance" in the alpha-diversity script -- don't compare directly. See `iterative_analysis_updates.md`'s 2026-09-08 entry for results | `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` | `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` |
+| `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, **raw counts, no singleton filter as of 2026-09-09** (426 taxa, NOT the 153-taxon Lineage B table; was 277 under the `colSums > 1` filter through 2026-09-08 -- dropped for consistency with the asymptotic script below, see the Lineage C section and the 2026-09-09 log entry). Date effects tested linear+quadratic+cubic (`alpha_diversity_date_shape.csv`); also tests an insect x lure interaction on the insect~fungal correlation (`alpha_diversity_insect_fungal_interaction_by_lure.csv`) -- not significant for any metric | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
+| `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` | Asymptotic (Chao-extrapolated) richness/Shannon(Hill q=1)/Simpson(Hill q=2) diversity via `iNEXT::ChaoRichness()`/`ChaoShannon()`/`ChaoSimpson()` (NOT `iNEXT()` itself -- its curve machinery didn't finish in 120s on the largest fungal sample; the point/SE/CI-only Chao*() functions reproduce its `$AsyEst` estimates and run in ~1-2s each). Insect table = all families, **RAW counts, NO singleton filter** (426 taxa) -- required here because Chao1 (`S_obs + f1^2/(2*f2)`) and the coverage-based `ChaoShannon`/`ChaoSimpson` all key on the singleton count `f1`, and a global singleton is by definition a within-sample singleton, so filtering these biases every estimate (measured up to ~2x on the worst-sampled insect samples; corrected 2026-09-09, see the 2026-09-09 entry in `iterative_analysis_updates.md`). The observed-diversity script above was switched to the same raw 426-taxon table the same day, so both Lineage C scripts now share one insect-table construction. Fungal side also raw -- Kingdom==Fungi counts, left UNRAREFIED (extrapolation itself corrects for uneven sequencing depth, so pre-rarefying would discard the rare-tail information the estimator needs). Per-sample granularity (user's choice). Mirrors the alpha-diversity script's cross-community correlation (both observed and asymptotic reported side by side), lure-interaction test, and site/lure/date covariate tests + date-shape classification, the latter two run on asymptotic values only. "simpson" here = Hill q=2 diversity (higher=more even), opposite direction from "simpson_dominance" in the alpha-diversity script -- don't compare directly. See `iterative_analysis_updates.md`'s 2026-09-08 and 2026-09-09 entries for results | `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` | `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` |
 | `presentation_items/fig9_alpha_diversity_by_lure.R` | Presentation figure: insect (panel a) + fungal (panel b) alpha diversity vs. collection date, faceted metric x lure, cubic OLS trend lines. Lives directly in `presentation_items/` (not a dedicated Lineage C folder) since alpha diversity has no Lineage B counterpart to disambiguate from | -- (reads existing CSVs) | `figures/presentation_items/fig9_alpha_diversity_by_lure.{png,pdf}` |
 | `presentation_items/fig10_insect_fungal_alpha_diversity_correlation.R` | Presentation figure: per-sample insect vs. fungal alpha diversity, one panel per metric, colored by date, pooled Spearman correlation annotated. An earlier lure-faceted version was dropped after the interaction test above found no lure effect | -- (reads existing CSVs) | `figures/presentation_items/fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}` |
 | `presentation_items/fig11_asymptotic_diversity_by_lure.R` | Fig9's counterpart for ASYMPTOTIC (Chao-extrapolated, `insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r`) diversity -- same panel a/b (insect/fungal) x metric-row x lure-column layout, cubic OLS trend line. Row-strip metric labels shortened ("Shannon div. (q=1)" etc.) vs. fig9's, since the longer "Asymptotic Shannon diversity (Hill q=1)" wording clipped in the rotated switch="y" strip | -- (reads existing CSVs) | `figures/presentation_items/fig11_asymptotic_diversity_by_lure.{png,pdf}` |
@@ -291,15 +298,26 @@ all-families insect analysis:
   practice and is exactly what's already done on the fungal side throughout
   this project.
 - **Alpha-diversity metrics** (richness, Shannon, Simpson dominance) -- do
-  NOT prevalence-filter (Lineage C's "full table" construction, singleton
-  filter only). These metrics are direct summaries of how many/how evenly
-  distributed taxa are observed per sample; discarding taxa that happen to
-  occur in fewer than 5 samples across the whole dataset would mean
-  systematically undercounting richness and distorting diversity for
-  reasons unrelated to the sample being described. The singleton filter
-  (drop taxa with a single individual across the ENTIRE dataset) is kept
-  because that's noise-floor cleanup, not the same kind of aggressive
-  per-taxon filtering the >=5-sample rule applies.
+  NOT prevalence-filter, and as of 2026-09-09 do NOT global-singleton-filter
+  either: Lineage C's full-insect-table scripts (`insect_fungal_alpha_
+  diversity.full_insect_table.r` and `insect_fungal_asymptotic_richness_
+  iNEXT.full_insect_table.r`) both now use the **raw 426-taxon** insect
+  table. These metrics are direct summaries of how many/how evenly
+  distributed taxa are observed per sample; discarding taxa that occur in
+  fewer than 5 samples across the whole dataset would systematically
+  undercount richness for reasons unrelated to the sample being described.
+  The milder `colSums > 1` global singleton filter (drop taxa with a single
+  individual across the ENTIRE dataset) *was* kept through 2026-09-08 as
+  noise-floor cleanup, but is now also dropped: it is **outright wrong for
+  Chao-type asymptotic estimators** (`iNEXT` `ChaoRichness`/`ChaoShannon`/
+  `ChaoSimpson`), which estimate undetected taxa from the observed
+  singleton/doubleton counts (`f1`, `f2`) -- and a global singleton is
+  necessarily a within-sample singleton, so dropping it corrupts the
+  quantity the estimator is built on -- and was removed from the observed-
+  diversity script too so "observed richness" is defined identically in
+  both. (The Chao script had the filter through 2026-09-08; both were fixed
+  2026-09-09 -- see `iterative_analysis_updates.md`. Lineage A's frozen
+  family-filtered `insect_fungal_alpha_diversity.r` still applies it.)
 
 If a future analysis doesn't obviously fall into either bucket, ask rather
 than defaulting to whichever table is already loaded in the script you're

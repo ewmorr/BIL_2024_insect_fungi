@@ -5,9 +5,23 @@
 # reference), except the insect community table is NOT restricted to
 # Curculionidae + Latridiidae (the two families used throughout the rest of
 # this project's insect/fungal comparisons). Here the insect table is every
-# taxon in insect_species_tab.csv (79 families, 426 taxa total) -- the same
-# singleton-taxon and empty-sample filters are applied, just without the
-# family restriction.
+# taxon in insect_species_tab.csv (98 families, 426 taxa total), all families.
+#
+# Insect-table filtering (changed 2026-09-09): RAW counts, empty-sample drop
+# only -- NO global singleton filter (colSums > 1). This script previously
+# applied that filter as noise-floor cleanup (the convention documented in
+# project_organization.md's "When to prevalence-filter vs. not" for
+# alpha-diversity work). It is dropped here for consistency with
+# insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r, which MUST use
+# raw counts (Chao-type estimators are built on the observed singleton count
+# f1 -- see that script's header). With the observed script also on the raw
+# table, "observed richness" now means the same thing in both, so the
+# observed-vs-asymptotic comparison in that script is like-for-like. Effect
+# is modest: observed richness rises a median of ~2 taxa/sample (Shannon and
+# Simpson dominance barely move -- global singletons carry negligible p_i).
+# See the 2026-09-09 entry in iterative_analysis_updates.md. (Lineage A's
+# family-filtered insect_fungal_alpha_diversity.r is frozen as the backup and
+# is NOT changed -- it keeps the singleton filter.)
 #
 # All prior comparisons in this project (CoCA, per-taxon date/lure tests,
 # Procrustes) ask a beta-diversity question -- does community COMPOSITION
@@ -17,11 +31,10 @@
 # own diversity respond to site/lure/date the way its composition does?
 #
 # Community tables:
-# - Insect: the full raw trap-catch table (all families, singleton taxa and
-#   resulting empty samples dropped -- same filters insect_ords.R/fig2 apply
-#   to the Curculionidae+Latridiidae subset, just not restricted to those
-#   two families first). No rarefaction -- trap catch counts aren't subject
-#   to the same sequencing-depth artifact as amplicon reads.
+# - Insect: the full raw trap-catch table (all families, raw counts, only
+#   all-zero sample rows dropped -- NO singleton filter, see the filtering
+#   note above). No rarefaction -- trap catch counts aren't subject to the
+#   same sequencing-depth artifact as amplicon reads.
 # - Fungal: unchanged from insect_fungal_alpha_diversity.r -- the same
 #   multiple-subsampling (rarefy to depth 5000 x 100 iterations) approach
 #   used for the fungal NMDS/PERMANOVA (fungal_community_seasonality.r,
@@ -69,12 +82,10 @@ stopifnot(!any(duplicated(sp_tab$Finest.ID)))
 sp_tab.t <- t(sp_tab %>% select(where(is.numeric)))
 colnames(sp_tab.t) <- sp_tab$Finest.ID
 
-# drop singleton taxa (present as a single individual total) and any
-# resulting all-zero sample rows -- same filters applied to the
-# Curculionidae+Latridiidae subset elsewhere in this project.
-sp_tab.t[, colSums(sp_tab.t) > 1] -> insect_full
-insect_full <- insect_full[rowSums(insect_full) > 0, ]
-cat("After dropping singleton taxa and empty samples:", nrow(insect_full), "samples,",
+# NO singleton filter (changed 2026-09-09, see header) -- raw counts, drop
+# only any all-zero sample rows.
+insect_full <- sp_tab.t[rowSums(sp_tab.t) > 0, ]
+cat("After dropping empty samples only (no singleton filter):", nrow(insect_full), "samples,",
     ncol(insect_full), "insect taxa.\n")
 
 id_map <- insect_meta_full %>% filter(col_names %in% rownames(insect_full))
