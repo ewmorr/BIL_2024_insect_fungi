@@ -4,3 +4,14 @@
 .Ruserdata
 .DS_Store
 Rplots.pdf
+
+# Full pairwise insect x fungal association grids (all-taxa-pairs output,
+# 20-80MB each, triggers GitHub large-file warnings). Regenerable from
+# insect_fungal_pairwise_taxon_association[.residualized].r (Lineage A) /
+# insect_fungal_pairwise_taxon_association[.residualized].prevalence_filtered_insect.r
+# (Lineage B) -- see project_organization.md. Present locally, untracked
+# deliberately, not an oversight.
+data/compare_insects_fungi_pairwise_taxa/fungal_insect_pairwise_full_grid.csv
+data/compare_insects_fungi_pairwise_taxa/fungal_insect_pairwise_full_grid.date_site_residualized.csv
+data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/fungal_insect_pairwise_full_grid.csv
+data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/fungal_insect_pairwise_full_grid.date_site_residualized.csv

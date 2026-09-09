@@ -377,6 +377,30 @@ side, the statistical approach, or shared infrastructure:
   scalar -- always wrap in `unname()` before combining into a new named
   vector, or downstream `r["t_stat"]`-style extraction silently returns NA.
 
+## Untracked large outputs (present locally, not in git)
+
+As of 2026-09-09, four full-grid pairwise-association CSVs are `.gitignore`d
+and NOT tracked in git (20-80MB each, over GitHub's soft large-file warning
+threshold; they were briefly committed and pushed, then removed from all git
+history via `git filter-repo`):
+
+- `data/compare_insects_fungi_pairwise_taxa/fungal_insect_pairwise_full_grid.csv`
+- `data/compare_insects_fungi_pairwise_taxa/fungal_insect_pairwise_full_grid.date_site_residualized.csv`
+- `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/fungal_insect_pairwise_full_grid.csv`
+- `data/compare_insects_fungi_pairwise_taxa_prevalence_filtered_insect/fungal_insect_pairwise_full_grid.date_site_residualized.csv`
+
+These are the exhaustive all-pairs output of the pairwise taxon-association
+screens (`insect_fungal_pairwise_taxon_association.r` /
+`.residualized.r` for Lineage A,
+`insect_fungal_pairwise_taxon_association.prevalence_filtered_insect.r` /
+`.residualized.prevalence_filtered_insect.r` for Lineage B) -- fully
+regenerable by rerunning those scripts, so losing them from git costs
+nothing but rerun time. Anyone who clones this repo fresh (including via
+GitHub) will NOT have these four files and must rerun the corresponding
+script to reproduce them locally. Every other output derived from them
+(the BH-corrected summary CSVs, `original_vs_residualized_comparison.csv`,
+the flagged-taxon figures) is small and remains tracked normally.
+
 ## Top-level docs in this repo
 
 - `project_organization.md` (this file) -- structural map, current state.
