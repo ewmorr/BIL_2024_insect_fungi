@@ -1816,3 +1816,77 @@ Data/figures under `data/`+`figures/insect_exploratory/{target_genera,scolytinae
 Interp doc: `lineage_D_insect_fungus_cooccurence_patterns.md`.
 `project_organization.md` updated (Lineage D subsection + index table +
 top-level-docs entry, "Last updated" -> 2026-09-10).
+
+### #################################################################################
+### 2026-09-10 -- LINEAGE C add-on: total insect ABUNDANCE (individuals/sample) vs.
+### fungal alpha diversity -- the "insects as non-targeted dispersal vectors"
+### hypothesis. Null on every metric, raw and season-residualized.
+### #################################################################################
+
+**Motivation.** The main Lineage C result (§2 of the interp doc) is that insect
+and fungal alpha *diversity* are essentially decoupled -- only Shannon shows a
+weak, and *negative*, correlation (rho=-0.27, p=0.03); richness and Simpson
+null. That tests a partner-specificity idea (diverse insect assemblage carries
+diverse fungal assemblage). A different mechanism makes a different prediction:
+if insects are **non-targeted dispersal vectors** -- picking up whatever fungal
+propagules they contact as they move through the environment -- then the
+insect quantity that should matter is not how many insect *taxa* a trap caught
+but how many *individuals* it caught. More insect traffic = more independent
+draws from the environmental fungal pool = more fungal taxa detected. Predicted
+sign: **positive**, strongest for fungal richness.
+
+**Test.** New standalone script
+`compare_insect_fungi/insect_abundance_fungal_alpha_diversity.full_insect_table.r`.
+Insect abundance = `rowSums()` of the same raw all-families 426-taxon Lineage C
+trap-catch table (raw counts, empty-sample drop only, no filter). Fungal alpha
+diversity read straight from `fungal_alpha_diversity.csv` (rarefied 5000 x 100,
+averaged) and `fungal_asymptotic_diversity.csv` -- not recomputed, so the two
+scripts can't drift; a per-sample insect-richness cross-check guards the table
+reconstruction. Two analyses per fungal metric:
+- `raw_pooled` -- plain Spearman over all 68 matched samples (same unconstrained
+  Spearman as the main script's §5 cross-community correlation).
+- `season_residualized` -- residualize `log1p(total_individuals)` AND the fungal
+  metric on `site + factor(date)` (this project's `.residualized.r`
+  deseasonalising convention -- 6-level date factor absorbs any trend shape),
+  then Spearman on residuals; p by free permutation of one residual vector
+  (9999 perms). This is the analysis that actually bears on the hypothesis:
+  does a trap that caught *more insects than expected for its site and date*
+  also yield more fungal diversity than expected?
+
+3 fungal metrics x 2 analyses x {observed, asymptotic} = 12 tests, uncorrected
+p (small fixed a priori set, same convention as the §4 covariate tables).
+
+**Result -- flat null across the board.** Observed rarefied fungal diversity:
+
+| Fungal metric | raw_pooled rho (p_perm) | season-resid rho (p_perm) |
+|---|---|---|
+| Shannon | -0.02 (0.84) | +0.08 (0.50) |
+| Simpson dominance | +0.02 (0.87) | -0.11 (0.38) |
+| Richness | +0.08 (0.49) | +0.09 (0.48) |
+
+Asymptotic (Chao) fungal diversity: same picture, every |rho| <= 0.08, every
+p_perm >= 0.52. Nothing is significant; nothing is even suggestive; the
+richness rows -- where the dispersal-vector model predicts the clearest
+positive signal -- sit at rho ~ +0.08.
+
+**Why the null is informative, not just underpowered.** Total insect abundance
+here has a real, wide spread (6 to 857 individuals/sample, median 101) and
+behaves sensibly against everything *except* fungal diversity: it correlates
+strongly with insect richness (rho=0.70, more individuals -> more insect taxa
+seen, as expected) and -- notably -- is **essentially flat with collection
+date** (rho=0.01), unlike insect richness/composition and every fungal alpha
+metric, which are strongly seasonal (§4). So the season-residualized analysis
+barely changes anything on the insect side, and the raw and residualized
+results agree. The dispersal-vector hypothesis, as a driver of *fungal
+alpha diversity*, gets no support: fungal richness in these samples is set by
+site and season, not by how much insect biomass passed through the trap.
+
+**Files.** Script:
+`compare_insect_fungi/insect_abundance_fungal_alpha_diversity.full_insect_table.r`.
+Outputs in the existing Lineage C dirs with an `insect_abundance_` prefix:
+`data/compare_insects_fungi_alpha_diversity_full_insect_table/insect_abundance_fungal_alpha_correlation.csv`,
+`insect_abundance_by_sample.csv`, `insect_abundance_context_correlations.csv`;
+`figures/compare_insects_fungi_alpha_diversity_full_insect_table/insect_abundance_vs_fungal_alpha.{png,pdf}`
+(2 rows raw/residualized x 3 fungal metrics). Interp doc:
+`lineage_C_alpha_div_full_insect_table_top_level_interpretation.md` §13.
+`project_organization.md` Lineage C index table + section updated.

@@ -1,0 +1,13 @@
+"fungal_value","metric","analysis","predictor","rho","p_spearman","p_perm","n","note"
+"observed_rarefied","shannon","raw_pooled","total_individuals",-0.0237,0.8477,0.8397,68,NA
+"observed_rarefied","shannon","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",0.0815,0.5079,0.5034,68,NA
+"observed_rarefied","simpson_dominance","raw_pooled","total_individuals",0.0202,0.8702,0.8669,68,NA
+"observed_rarefied","simpson_dominance","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",-0.1067,0.3858,0.3824,68,NA
+"observed_rarefied","richness","raw_pooled","total_individuals",0.0842,0.4948,0.4905,68,NA
+"observed_rarefied","richness","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",0.0892,0.4687,0.4753,68,NA
+"asymptotic_chao","shannon","raw_pooled","total_individuals",-0.0086,0.9448,0.9444,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"
+"asymptotic_chao","shannon","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",-0.0253,0.8376,0.8394,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"
+"asymptotic_chao","simpson_dominance","raw_pooled","total_individuals",-0.0218,0.8597,0.862,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"
+"asymptotic_chao","simpson_dominance","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",-0.0785,0.5238,0.5232,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"
+"asymptotic_chao","richness","raw_pooled","total_individuals",0.004,0.974,0.971,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"
+"asymptotic_chao","richness","season_residualized","log1p(total_individuals) resid ~ site+factor(date)",-0.0452,0.714,0.7195,68,"asymptotic 'simpson_dominance' col is Hill q=2 DIVERSITY (higher=more even), opposite sign to observed"

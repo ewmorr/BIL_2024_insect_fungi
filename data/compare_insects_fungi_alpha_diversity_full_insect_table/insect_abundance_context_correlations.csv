@@ -1,0 +1,4 @@
+"comparison","rho"
+"total_individuals ~ date (numeric)",0.00980565442538422
+"total_individuals ~ insect_richness",0.699540766166628
+"total_individuals ~ insect_shannon",-0.0699363435771045
