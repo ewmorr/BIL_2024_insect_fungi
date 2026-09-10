@@ -1,0 +1,55 @@
+"Genus","Species","Lure","Lure_lab","date","n_individuals"
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-05-01,1
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-05-15,1
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-05-29,0
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-06-12,0
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-06-26,0
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2024-07-10,0
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-05-01,10
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-05-15,110
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-05-29,65
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-06-12,11
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-06-26,0
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",2024-07-10,1
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-05-01,0
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-05-15,0
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-05-29,0
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-06-12,0
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-06-26,0
+"Dendroctonus","Dendroctonus valens","I","Ips lure",2024-07-10,0
+"Ips","Ips grandicollis","E","Ethanol",2024-05-01,0
+"Ips","Ips grandicollis","E","Ethanol",2024-05-15,0
+"Ips","Ips grandicollis","E","Ethanol",2024-05-29,0
+"Ips","Ips grandicollis","E","Ethanol",2024-06-12,0
+"Ips","Ips grandicollis","E","Ethanol",2024-06-26,0
+"Ips","Ips grandicollis","E","Ethanol",2024-07-10,0
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-05-01,3
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-05-15,40
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-05-29,21
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-06-12,11
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-06-26,9
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",2024-07-10,8
+"Ips","Ips grandicollis","I","Ips lure",2024-05-01,0
+"Ips","Ips grandicollis","I","Ips lure",2024-05-15,0
+"Ips","Ips grandicollis","I","Ips lure",2024-05-29,0
+"Ips","Ips grandicollis","I","Ips lure",2024-06-12,0
+"Ips","Ips grandicollis","I","Ips lure",2024-06-26,0
+"Ips","Ips grandicollis","I","Ips lure",2024-07-10,0
+"Ips","Ips pini","E","Ethanol",2024-05-01,1
+"Ips","Ips pini","E","Ethanol",2024-05-15,0
+"Ips","Ips pini","E","Ethanol",2024-05-29,0
+"Ips","Ips pini","E","Ethanol",2024-06-12,0
+"Ips","Ips pini","E","Ethanol",2024-06-26,0
+"Ips","Ips pini","E","Ethanol",2024-07-10,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-05-01,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-05-15,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-05-29,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-06-12,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-06-26,0
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",2024-07-10,0
+"Ips","Ips pini","I","Ips lure",2024-05-01,2
+"Ips","Ips pini","I","Ips lure",2024-05-15,2
+"Ips","Ips pini","I","Ips lure",2024-05-29,1
+"Ips","Ips pini","I","Ips lure",2024-06-12,0
+"Ips","Ips pini","I","Ips lure",2024-06-26,0
+"Ips","Ips pini","I","Ips lure",2024-07-10,2

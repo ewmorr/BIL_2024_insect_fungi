@@ -1686,3 +1686,133 @@ prevalence-filter vs. not" alpha-diversity bullet (now: raw counts, no
 filter at all, for both Lineage C scripts; Lineage A's frozen
 family-filtered `insect_fungal_alpha_diversity.r` still applies the singleton
 filter).
+
+### #################################################################################
+### 2026-09-09 (extended 2026-09-10) -- New line, LINEAGE D: bark-beetle x
+### Ophiostomatales presence/absence co-occurrence. Target-genus + Scolytinae-wide
+### phenology, Jaccard co-occurrence screens, and a date-conditional re-test that
+### separates real associations from shared spring phenology.
+### #################################################################################
+
+**Why.** The EDRR traps are baited for *Ips* and *Dendroctonus*, and the whole
+bark/ambrosia-beetle subfamily (Scolytinae) has a well-known natural-history
+tie to ophiostomatoid ("blue-stain") fungi (Ophiostomatales). None of Lineage
+A/B (whole-community ordination/CoCA) or C (alpha diversity) looks at specific
+beetle-taxon x specific fungal-taxon pairs. This line does, on
+**presence/absence** with **Jaccard** similarity (`J = a/(a+b+c)`, shared
+absence excluded -- "focus on shared presence, downweight shared absence", per
+user). All scripts in `insect_exploratory/`; outputs in
+`data/`+`figures/insect_exploratory/{target_genera,scolytinae}/`. It does NOT
+add a new insect-table construction -- it is a **taxonomic slice** (Subfamily
+== Scolytinae) of the Lineage C raw all-families table, reduced to
+presence/absence. Written up as **Lineage D** in
+`lineage_D_insect_fungus_cooccurence_patterns.md`;
+`project_organization.md` got a Lineage D conceptual subsection + index table +
+top-level-docs entry on 2026-09-10.
+
+**Phenology (2026-09-09).** `target_genus_phenology.R` and
+`scolytinae_species_phenology.R`, on all insect trap data (not the
+fungal-matched 69). Two clean results:
+- **The lures partition the three target species almost perfectly.** Season
+  totals: *Dendroctonus valens* 197/199 individuals on Alpha-pinene+Ethanol
+  (EA), *Ips grandicollis* 92/92 on EA, *Ips pini* 7/8 on the Ips lure (0 on
+  EA). Ethanol catches ~nothing. So "the Ips lure barely works" (from the
+  earlier target-genus look) was wrong at the genus level -- it is
+  species-specific to *I. pini*; *I. grandicollis* rides the host-volatile
+  lure as bycatch. Only 3 target species exist in the data (92 / 8 / 199
+  individuals), so any "Ips + Dendroctonus" analysis is really these three.
+- **Scolytinae are strongly spring-weighted**: 45 species, 28 genera, 5,280
+  individuals; subfamily catch and richness peak 15-29 May on the E and EA
+  lures, collapse after 12 Jun. This spring concentration is the confound
+  that governs everything below.
+
+**Jaccard co-occurrence, `within_trap` null (2026-09-09).** Null = permute the
+beetle P/A vector within trap (blocks = site, plots = trap, within = free),
+1999 perms, fungal vector held observed; `p_perm = 2*min(p_pos,p_neg)`, BH
+within grid, Fisher's exact 2x2 as a structure-blind cross-check; shared
+engine `cooccurrence_lib.R::jaccard_grid_test()`. Fungal side: raw
+(un-rarefied) ASV table, Order == `o__Ophiostomatales`, rolled up as named
+species (20, prev>=3) / genus (10 units) / ASV (39, prev>=3); 68
+Ophiostomatales ASVs in the 69 matched samples.
+- `target_species_ophiostomatales_cooccurrence.R` (3 species): **only
+  *D. valens* x *Raffaelea* (genus) survives FDR, q_perm 0.09** (J 0.26 vs
+  null 0.08, z 3.8). *D. valens* is broadly positive across Ophiostomatales
+  genera; both *Ips* species are at/below chance once trap structure is
+  removed.
+- `scolytinae_ophiostomatales_cooccurrence.R` (34 species at >=3 prevalence):
+  **nothing survives FDR** over the larger grid. A block of early-season
+  beetles goes uniformly positive against nearly every Ophiostomatales genus
+  -- ranked by mean genus z: *Pityogenes hopkinsi* 3.11, *Xyleborinus
+  attenuatus* 2.25, *Cyclorhipidion pelliculosum* 2.08, *Dendroctonus valens*
+  2.00, *Heteroborips seriatus* 1.99, *Xyloterinus politus* 1.88, *Hylesinus
+  aculeatus* 1.61, *Hylastes opacus* 1.59; at the bottom *Dryocoetes
+  autographus* -1.71 (apparent avoidance). The uniform positivity across the
+  whole order is the fingerprint of a shared seasonal driver, not 8 separate
+  symbioses.
+
+**The seasonality problem.** The `within_trap` null permutes only the beetle
+vector, leaving the fungal vector's full seasonal signal intact to be
+"matched" -- so two partners that both peak in spring score as co-occurring.
+Controlling a confounder by permutation needs the confounder's relationship
+with BOTH variables preserved. Fix: permute the beetle vector within
+collection-date strata. Presence/absence analogue of the project's
+`.residualized.r` scripts (residualize on `site + factor(date)`).
+
+**Date-conditional re-test (2026-09-10).**
+`scolytinae_ophiostomatales_cooccurrence.residualized.R` re-tests an 11-beetle
+set -- the 8-beetle block above + 3 reference rows carried through as contrast:
+*Ips grandicollis*, *Ips pini* (flat anchors) and **\*Dryocoetes autographus\*
+as a negative control** (strongest avoidance in the unconditioned run; if that
+"avoidance" is also seasonal it should collapse under date control). Same
+observed Jaccard, three nulls: `within_trap` / `within_date` (blocks = date) /
+`within_site_x_date` (strict). Genus + species + ASV grids.
+- **Season control roughly halves the block.** Mean genus z, within_trap ->
+  within_date: *Pityogenes hopkinsi* 3.11 -> 2.67, *Dendroctonus valens*
+  2.00 -> 1.88, *Heteroborips seriatus* 1.99 -> 1.62, *Xyleborinus attenuatus*
+  2.25 -> 1.55 (all retain signal); *Cyclorhipidion pelliculosum* 2.08 ->
+  0.88, *Xyloterinus politus* 1.88 -> **-0.17**, *Hylesinus aculeatus*
+  1.61 -> 0.49, *Hylastes opacus* 1.59 -> 0.21 (seasonal artifacts). The
+  negative control worked: *Dryocoetes autographus* -1.71 -> +0.27 (its
+  "avoidance" was purely seasonal). And a NEW date-conditional signal appears
+  for *Ips grandicollis* (0.17 -> 1.56) that the within_trap null had masked.
+- **`within_date` FDR survivors (q_perm < 0.10) are all genus-level (8 of
+  110)**: *Pityogenes hopkinsi* x *Graphilbum* / *Leptographium* / Any-Oph /
+  *Ceratocystiopsis* (q 0.028-0.037); *Dendroctonus valens* x *Leptographium*
+  (q 0.028); *Heteroborips seriatus* x *Grosmannia* (q 0.037) / *Raffaelea*
+  (q 0.083); *Ips grandicollis* x *Leptographium* (q 0.083). Under the strict
+  `within_site_x_date` null only two clear BH: **\*D. valens\* x
+  \*Leptographium\*** and **\*Ips grandicollis\* x \*Leptographium\*** (both
+  q_perm 0.055).
+- **Species + ASV: nothing survives FDR** (220 / 429 pairs; sparser cells,
+  bigger burden) but the p_perm<0.05 hits are consistent, and **each
+  species-level signal resolves to essentially one ASV**: *Leptographium
+  gracile* = ASV_6117 (*D. valens*, *Ips grandicollis*, *Xyleborinus
+  attenuatus* -- all also survive site x date); *Grosmannia
+  francke-grosmanniae* = ASV_660 (*Heteroborips seriatus*, J 0.62 / z 6.0 --
+  the strongest single pair); *Raffaelea arxii* = ASV_1122 (*Heteroborips*);
+  *Ceratocystiopsis manitobensis* = ASV_8895 (*Pityogenes*); *Sporothrix
+  rossii* = ASV_8274 (*Pityogenes*, *D. valens*).
+
+**Where it lands.** The firmest theme after season control is **\*Leptographium\*
+(gracile / ASV_6117) with the pine bark/ambrosia beetles** (*D. valens*,
+*Ips grandicollis*, *Xyleborinus attenuatus*) -- robust at genus, species and
+ASV resolution and under the strict null -- plus *Pityogenes hopkinsi* as a
+broad Ophiostomatales carrier and *Heteroborips seriatus* with *Grosmannia
+francke-grosmanniae* / *Raffaelea arxii*. Nothing survives FDR below genus
+resolution, so species/ASV entries are candidates; read-depth bias (100x
+`num_reads` range) bites hardest at ASV level; several flagged cells are thin
+(shared_n 2-3). An abundance-based or larger-sample follow-up is the way to
+firm any of these up. Note the taxonomy has `Graphilbum ipis-grandicollis`
+(ASV_3518, named for *Ips grandicollis*) but that ASV was dropped in table
+construction and is absent from `ASV_tab.csv` -- untestable here.
+
+**Files.** Scripts: `insect_exploratory/target_genus_phenology.R`,
+`scolytinae_species_phenology.R`, `target_species_ophiostomatales_cooccurrence.R`,
+`scolytinae_ophiostomatales_cooccurrence.R`,
+`scolytinae_ophiostomatales_cooccurrence.residualized.R`, `cooccurrence_lib.R`.
+Data/figures under `data/`+`figures/insect_exploratory/{target_genera,scolytinae}/`
+(key CSVs: `*_jaccard.{species,genus,asv}.csv`,
+`scolytinae_ophiostomatales_jaccard.date_conditional_{comparison,long}.csv`).
+Interp doc: `lineage_D_insect_fungus_cooccurence_patterns.md`.
+`project_organization.md` updated (Lineage D subsection + index table +
+top-level-docs entry, "Last updated" -> 2026-09-10).

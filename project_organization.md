@@ -9,14 +9,17 @@ to find *where a script or output lives* and *which lineage it belongs to*.
 Keep both updated going forward -- this one in place (it describes current
 state, not history), the other by appending new dated sections.
 
-Last updated: 2026-09-08.
+Last updated: 2026-09-10.
 
 ## The core fact to understand before touching anything
 
 **There are two parallel insect-table constructions running through this
 entire project**, and almost every script, data file, and figure belongs to
 exactly one of them. Confusing the two is the single easiest way to produce
-numbers that don't match anything already reported.
+numbers that don't match anything already reported. (Two later lineages,
+C and D, do not add a third and fourth construction -- C uses a raw
+all-families table, and D uses a taxonomic *slice* of that same raw table.
+See their subsections below.)
 
 ### Lineage A -- "family-filtered" (original, kept as the reference/backup)
 
@@ -104,6 +107,39 @@ Lineage B counterpart to disambiguate from:
   fig10's rarefied-and-averaged fungal table) and why "Simpson" in fig11/
   fig12 is Hill number q=2 diversity (higher = more even), the OPPOSITE
   direction from fig9/fig10's Simpson dominance.
+
+### Lineage D -- "bark-beetle x Ophiostomatales co-occurrence" (targeted, presence/absence-only)
+
+A targeted, hypothesis-driven line, NOT a whole-community method and NOT a new
+insect-table construction: it takes the full all-families trap-catch table
+(the Lineage C raw table), restricts it **taxonomically** to Subfamily ==
+Scolytinae (the bark/ambrosia beetles the EDRR traps are baited for), reduces
+to **presence/absence**, and screens each beetle species against each
+**Ophiostomatales** ("blue-stain") fungal taxon for co-occurrence using
+**Jaccard similarity** (`J = a/(a+b+c)`, shared absence excluded) with a
+restricted-permutation null. Beetle x fungal-taxon pairs only -- no
+beetle-vs-beetle, no fungus-vs-fungus. The insect prevalence floor here
+(>=3 samples) only decides which beetles carry enough presences to test; it
+is not a Lineage-B-style statistical filter of the table.
+
+Fungal side: raw (un-rarefied) ASV table filtered to Order ==
+`o__Ophiostomatales`, presence/absence, rolled up three ways (named species /
+genus / individual ASV), each grid run separately. Matched dataset = the same
+69 insect+fungal samples the `compare_insect_fungi/` scripts use.
+
+Two permutation nulls matter (see the Lineage D interpretation doc for why):
+- `within_trap` (blocks = site, plots = trap, within = free) -- controls
+  site/trap/lure but NOT season; both Scolytinae and Ophiostomatales are
+  spring-weighted, so this null inflates co-occurrence from shared phenology.
+- `within_date` / `within_site_x_date` (blocks = collection date, or site x
+  date) -- holds each date's beetle prevalence fixed, so shared seasonality
+  cannot generate signal. This is the presence/absence analogue of the
+  `.residualized.r` scripts' "residualize on site + factor(date)".
+
+Scripts + outputs live in `insect_exploratory/` and
+`data/`+`figures/insect_exploratory/{target_genera,scolytinae}/` (see the
+Lineage D index table below). Findings are written up in
+`lineage_D_insect_fungus_cooccurence_patterns.md`.
 
 ## Directory and naming conventions
 
@@ -238,6 +274,21 @@ never `cat_levels[i]`).
 | `presentation_items/fig10_insect_fungal_alpha_diversity_correlation.R` | Presentation figure: per-sample insect vs. fungal alpha diversity, one panel per metric, colored by date, pooled Spearman correlation annotated. An earlier lure-faceted version was dropped after the interaction test above found no lure effect | -- (reads existing CSVs) | `figures/presentation_items/fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}` |
 | `presentation_items/fig11_asymptotic_diversity_by_lure.R` | Fig9's counterpart for ASYMPTOTIC (Chao-extrapolated, `insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r`) diversity -- same panel a/b (insect/fungal) x metric-row x lure-column layout, cubic OLS trend line. Row-strip metric labels shortened ("Shannon div. (q=1)" etc.) vs. fig9's, since the longer "Asymptotic Shannon diversity (Hill q=1)" wording clipped in the rotated switch="y" strip | -- (reads existing CSVs) | `figures/presentation_items/fig11_asymptotic_diversity_by_lure.{png,pdf}` |
 | `presentation_items/fig12_insect_fungal_asymptotic_diversity_correlation.R` | Fig10's counterpart for asymptotic diversity -- same one-panel-per-metric layout, pooled (lure-blind) Spearman correlation annotated, reading the `value_type == "asymptotic"` rows of `asymptotic_diversity_cross_community_correlation.csv` | -- (reads existing CSVs) | `figures/presentation_items/fig12_insect_fungal_asymptotic_diversity_correlation.{png,pdf}` |
+
+### Lineage D (bark-beetle x Ophiostomatales presence/absence co-occurrence -- see above)
+
+All outputs under `data/insect_exploratory/{target_genera,scolytinae}/` and
+`figures/insect_exploratory/{target_genera,scolytinae}/`. Full numbers +
+interpretation in `lineage_D_insect_fungus_cooccurence_patterns.md`.
+
+| Script | What it does | Data output | Figure output |
+|---|---|---|---|
+| `insect_exploratory/target_genus_phenology.R` | *Ips* + *Dendroctonus* individuals & species count vs. collection date, faceted by lure, pooled over sites (all insect trap data, not just the fungal-matched 69). Also the species x lure catch totals -- the lures partition the 3 target species (EA -> *D. valens* + *I. grandicollis*; Ips lure -> *I. pini* only) | `data/insect_exploratory/target_genera/target_{genus,species}_catch_by_date_lure.csv`, `target_species_totals_by_lure.csv` | `figures/insect_exploratory/target_genera/target_{genus,species}_phenology_by_lure.{png,pdf}`, `target_species_totals_by_lure.{png,pdf}` |
+| `insect_exploratory/scolytinae_species_phenology.R` | All 45 Scolytinae species x date abundance heat map, faceted by lure (rows ordered by abundance-weighted mean date) + subfamily-level individuals/richness per date x lure | `data/insect_exploratory/scolytinae/scolytinae_species_abundance_by_date_lure.csv`, `scolytinae_subfamily_totals_by_date_lure.csv`, `scolytinae_species_phenology_order.csv` | `figures/insect_exploratory/scolytinae/scolytinae_species_abundance_heatmap.{png,pdf}`, `scolytinae_subfamily_totals_by_lure.{png,pdf}` |
+| `insect_exploratory/target_species_ophiostomatales_cooccurrence.R` | Jaccard co-occurrence, 3 target species x Ophiostomatales (species/genus/ASV grids), `within_trap` null (1999 perms) + Fisher cross-check, BH within grid. Only FDR hit: *D. valens* x *Raffaelea* (genus, q_perm 0.09) | `data/insect_exploratory/target_genera/beetle_ophiostomatales_jaccard.{species,genus,asv}.csv`, `beetle_ophiostomatales_presence_absence.csv` | `figures/insect_exploratory/target_genera/beetle_ophiostomatales_jaccard.{species,genus,asv}.{png,pdf}` |
+| `insect_exploratory/scolytinae_ophiostomatales_cooccurrence.R` | Same screen for all 34 Scolytinae species at >=3-sample prevalence, `within_trap` null. Nothing survives FDR over the larger grid; a block of early-season beetles (*Pityogenes hopkinsi* etc.) goes broadly positive -- the shared-phenology signature the residualized script below is built to test | `data/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.{species,genus,asv}.csv`, `scolytinae_ophiostomatales_presence_absence.csv` | `figures/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.{species,genus,asv}.{png,pdf}` |
+| `insect_exploratory/scolytinae_ophiostomatales_cooccurrence.residualized.R` | Date-conditional re-test of an 11-beetle set (8-beetle top block by mean genus z + 3 reference rows incl. *Dryocoetes autographus* as a negative control): same observed Jaccard, three nulls (`within_trap` / `within_date` / `within_site_x_date`), genus + species + ASV grids. Season control halves the block; genus-level FDR survivors centre on *Pityogenes hopkinsi*, *Dendroctonus valens* x *Leptographium*, *Heteroborips seriatus* x *Grosmannia*/*Raffaelea*, *Ips grandicollis* x *Leptographium* | `data/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.date_conditional_comparison.csv`, `..._date_conditional_long.csv` | `figures/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.date_conditional.{genus,species,asv}.{png,pdf}`, `..._date_conditional.shrinkage.{png,pdf}` |
+| `insect_exploratory/cooccurrence_lib.R` | Shared engine -- `jaccard_grid_test(beetle_pa, fungal_pa, perm_mat, grid_name)`: per-pair Jaccard + permutation null + Fisher + BH. Sourced by both `*_ophiostomatales_cooccurrence*.R` scripts | -- | -- |
 
 ## Known gaps / open items (update as these get resolved)
 
@@ -459,3 +510,15 @@ the flagged-taxon figures) is small and remains tracked normally.
   (alpha-diversity-only by design, see the Lineage C section above), this
   document's scope is these two scripts and their four figures -- update it
   if any of them change, rather than retaining outdated numbers.
+- `lineage_D_insect_fungus_cooccurence_patterns.md` -- the Lineage D
+  (bark-beetle x Ophiostomatales presence/absence co-occurrence) counterpart
+  to the above: top-line numbers for the phenology figures, the Jaccard
+  co-occurrence screens (3 target species + all Scolytinae, `within_trap`
+  null), and the date-conditional re-test of the top block (`within_date` /
+  `within_site_x_date` nulls, genus/species/ASV). Matching the same
+  convention as the A/B/C interp docs -- numbered sections, tables, a bottom
+  line, an underlying-files list. Update it when any of the six
+  `insect_exploratory/` Lineage D scripts change. This line is still
+  exploratory; the results in the doc are candidates (nothing survives FDR
+  below genus resolution) pending an abundance-based or larger-sample
+  follow-up.

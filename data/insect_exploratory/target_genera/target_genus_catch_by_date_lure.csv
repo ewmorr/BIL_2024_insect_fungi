@@ -1,0 +1,37 @@
+"Genus","Lure","Lure_lab","date","n_species","n_individuals"
+"Ips","E","Ethanol",2024-05-01,1,1
+"Ips","E","Ethanol",2024-05-15,0,0
+"Ips","E","Ethanol",2024-05-29,0,0
+"Ips","E","Ethanol",2024-06-12,0,0
+"Ips","E","Ethanol",2024-06-26,0,0
+"Ips","E","Ethanol",2024-07-10,0,0
+"Ips","EA","Alpha-pinene + Ethanol",2024-05-01,1,3
+"Ips","EA","Alpha-pinene + Ethanol",2024-05-15,1,40
+"Ips","EA","Alpha-pinene + Ethanol",2024-05-29,1,21
+"Ips","EA","Alpha-pinene + Ethanol",2024-06-12,1,11
+"Ips","EA","Alpha-pinene + Ethanol",2024-06-26,1,9
+"Ips","EA","Alpha-pinene + Ethanol",2024-07-10,1,8
+"Ips","I","Ips lure",2024-05-01,1,2
+"Ips","I","Ips lure",2024-05-15,1,2
+"Ips","I","Ips lure",2024-05-29,1,1
+"Ips","I","Ips lure",2024-06-12,0,0
+"Ips","I","Ips lure",2024-06-26,0,0
+"Ips","I","Ips lure",2024-07-10,1,2
+"Dendroctonus","E","Ethanol",2024-05-01,1,1
+"Dendroctonus","E","Ethanol",2024-05-15,1,1
+"Dendroctonus","E","Ethanol",2024-05-29,0,0
+"Dendroctonus","E","Ethanol",2024-06-12,0,0
+"Dendroctonus","E","Ethanol",2024-06-26,0,0
+"Dendroctonus","E","Ethanol",2024-07-10,0,0
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-05-01,1,10
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-05-15,1,110
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-05-29,1,65
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-06-12,1,11
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-06-26,0,0
+"Dendroctonus","EA","Alpha-pinene + Ethanol",2024-07-10,1,1
+"Dendroctonus","I","Ips lure",2024-05-01,0,0
+"Dendroctonus","I","Ips lure",2024-05-15,0,0
+"Dendroctonus","I","Ips lure",2024-05-29,0,0
+"Dendroctonus","I","Ips lure",2024-06-12,0,0
+"Dendroctonus","I","Ips lure",2024-06-26,0,0
+"Dendroctonus","I","Ips lure",2024-07-10,0,0

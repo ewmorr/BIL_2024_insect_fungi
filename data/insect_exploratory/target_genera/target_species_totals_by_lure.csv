@@ -1,0 +1,10 @@
+"Genus","Species","Lure","Lure_lab","n_individuals"
+"Dendroctonus","Dendroctonus valens","E","Ethanol",2
+"Dendroctonus","Dendroctonus valens","EA","Alpha-pinene + Ethanol",197
+"Dendroctonus","Dendroctonus valens","I","Ips lure",0
+"Ips","Ips grandicollis","E","Ethanol",0
+"Ips","Ips grandicollis","EA","Alpha-pinene + Ethanol",92
+"Ips","Ips grandicollis","I","Ips lure",0
+"Ips","Ips pini","E","Ethanol",1
+"Ips","Ips pini","EA","Alpha-pinene + Ethanol",0
+"Ips","Ips pini","I","Ips lure",7
