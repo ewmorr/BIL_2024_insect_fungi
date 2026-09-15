@@ -1961,5 +1961,6 @@ into that same directory pair, no new dirs needed):
 `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_lure_anova.csv`,
 `insect_coverage_lure_pairwise.csv`;
 `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_by_lure.{png,pdf}`
-(bar plot, mean +/- SE with per-sample points, faceted by lure).
+(boxplot with per-sample jittered points, one box per lure; changed from an
+earlier bar+SE version to a boxplot 2026-09-15 same-day per user request).
 `project_organization.md` Lineage C index table + section updated.

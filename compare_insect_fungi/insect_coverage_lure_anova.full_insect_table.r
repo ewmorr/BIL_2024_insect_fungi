@@ -122,20 +122,14 @@ cat("\n--- Pairwise lure contrasts (site+date-adjusted, BH-corrected across",
 print(pairwise_result, row.names = FALSE)
 write.csv(pairwise_result, file.path(out_data_dir, "insect_coverage_lure_pairwise.csv"), row.names = FALSE)
 
-## ---- 4. Bar plot: mean coverage by lure -----------------------------------
-
-summary_df <- insect_asymp %>%
-  group_by(lure) %>%
-  summarise(mean_coverage = mean(coverage), se = sd(coverage) / sqrt(n()), n = n(), .groups = "drop")
+## ---- 4. Boxplot: coverage by lure ------------------------------------------
 
 p_label <- paste0("Permutation ANOVA (site+date controlled): F = ", round(obs_F, 2),
                    ", p = ", signif(p_perm_omnibus, 2))
 
-coverage_plot <- ggplot(summary_df, aes(x = lure, y = mean_coverage, fill = lure)) +
-  geom_col(width = 0.65, alpha = 0.85) +
-  geom_errorbar(aes(ymin = mean_coverage - se, ymax = mean_coverage + se), width = 0.15) +
-  geom_jitter(data = insect_asymp, aes(x = lure, y = coverage), inherit.aes = FALSE,
-              width = 0.08, size = 1.4, alpha = 0.5) +
+coverage_plot <- ggplot(insect_asymp, aes(x = lure, y = coverage, fill = lure)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7, width = 0.6) +
+  geom_jitter(width = 0.08, size = 1.4, alpha = 0.6) +
   scale_fill_brewer(palette = "Dark2", guide = "none") +
   coord_cartesian(ylim = c(0, 1)) +
   labs(x = "Lure", y = "Sample coverage (Good-Turing)",
