@@ -1,0 +1,3 @@
+"taxon_set","n_taxa","n_date_significant","median_window_days.significant","median_window_days.not_significant","wilcox_p","glm_window_days_coef","glm_window_days_p","glm_n_samples_present_coef","glm_n_samples_present_p"
+"insect (Lineage B, 153-taxon prevalence-filtered)",153,92,42,42,0.0276795480549339,-0.0685054389138862,1.19712005343715e-06,0.200984252747691,1.31986025581311e-06
+"fungal (shared prevalence-filtered screen)",6342,2490,70,56,0.488628075015325,-0.0352168433596298,2.29904189592218e-75,0.089195053396687,2.28865330394937e-185

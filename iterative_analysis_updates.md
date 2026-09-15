@@ -1964,3 +1964,85 @@ into that same directory pair, no new dirs needed):
 (boxplot with per-sample jittered points, one box per lure; changed from an
 earlier bar+SE version to a boxplot 2026-09-15 same-day per user request).
 `project_organization.md` Lineage C index table + section updated.
+
+### #################################################################################
+### 2026-09-15 -- DIAGNOSTIC: does a taxon's COLLECTION WINDOW bias the date-
+### significance screen (Lineage B insect + shared fungal)? No -- if anything the
+### opposite: narrow-window taxa are, at equal detection count, MORE readily
+### flagged significant. Rare (low-detection) taxa, not narrow-window ones, are
+### the ones being missed.
+### #################################################################################
+
+**Motivation (user-raised).** The linear+quadratic date screen used
+throughout Lineage A/B (`insect_taxa_date_association.prevalence_filtered_
+insect.r`, `fungal_community_seasonality.r`) fits a slope/curvature across
+the season. Concern: a taxon confined to a narrow slice of the season (e.g.
+caught only on the first 1-2 of the 6 collection dates) could carry an
+obvious early-/late-season signal that this model has too little date-spread
+to resolve, and get misclassified "no significant date pattern" for a reason
+that has nothing to do with whether it's actually seasonal.
+
+**Test.** New standalone diagnostic script
+`compare_insect_fungi/taxon_collection_window_vs_date_significance.r`.
+Reproduces the exact load/match/filter logic of the two screens above (same
+69-sample matched set, same taxon lists: 153 insect / 6,342 fungal) and, for
+each taxon, computes a seasonality-agnostic **collection window** = last
+collection date the taxon was PRESENT minus first date present (raw
+presence/absence, no abundance weighting; the 6 collection dates run 5/1-
+7/10/24 in 14-day steps, so window takes one of 6 values: 0/14/28/42/56/70).
+Joined against each screen's existing output; `date_significant` = q<0.10 on
+the linear OR quadratic date term (the project's existing "date-associated"
+union definition, e.g. fig6). Sanity check: the join reproduces the exact
+documented significant counts (92/153 insect, 2,490/6,342 fungal) with no
+NAs, confirming the window is computed on the identical taxon/sample sets
+the screens were fit on. Two tests per taxon set: an unconditional Wilcoxon
+rank-sum test of window by significance, and a logistic model
+(`date_significant ~ window_days + n_samples_present`) to separate window
+length from detection count, since the two are naturally correlated
+(Spearman ~0.55-0.57 in both taxon sets -- more detections mechanically tend
+to span more dates).
+
+**Result -- the opposite of the concern.** Unconditionally, insect window
+barely differs by significance (median 42 days either way, Wilcoxon
+p=0.028 driven by distribution shape, not a location shift); fungal shows no
+difference at all (p=0.49). The logistic model is the informative one: in
+BOTH taxon sets, `window_days` gets a **negative** coefficient (insect
+b=-0.069, p=1.2e-6; fungal b=-0.035, p=2.3e-75) -- at a FIXED detection
+count, a *narrower* window makes significance MORE likely, not less --
+while `n_samples_present` gets a large positive coefficient in both (as
+expected: more detections, more power). Crosstabs confirm this isn't a
+modeling artifact: insect taxa present on only 1 of 6 dates (window=0) are
+5/5 (100%) date-significant; taxa spanning the full season (window=70) are
+only 15/31 (48%) significant. Fungal shows the same direction (window=0:
+8/15=53% vs. window=70: 1250/3078=41%). Inspecting the low-detection insect
+taxa directly (`n_samples_present` 5-7, i.e. right at the >=5 prevalence
+floor) confirms the mechanism: several narrow-window taxa at the floor (e.g.
+*Melanotus americanus*, *Crypturgus alutaceus*, *Quedius cruentus* -- window
+0-14) still reach significance, while several WIDE-window taxa at the same
+floor (e.g. *Nudobius cephalus*, *Hydraena sp.*, window 28-70) do not. A
+narrow, concentrated run of detections is a stronger localized departure
+from a flat baseline than the same few detections spread thinly across the
+whole season -- the latter looks more like background noise to a linear/
+quadratic fit, not less.
+
+**Bottom line.** The screen's real failure mode for a genuinely seasonal
+taxon is **low overall detection count** (rarity, i.e. sitting right at or
+just above the >=5-sample prevalence floor), not window narrowness --
+narrow-window taxa are, if anything, easier to catch, not harder. This is
+reassuring for the existing fig3-fig8 peak-timing calls: don't revisit them
+on window-narrowness grounds. It does NOT rule out a different, real
+limitation -- a taxon detected on exactly 1-2 dates has very little
+information regardless of where in the season those dates fall, so its
+"not significant" call is a legitimate low-power result, not a
+misclassification -- but that is a detection-count problem, already handled
+by the existing >=5-sample prevalence filter, not a date-window problem.
+
+**Files.** Script:
+`compare_insect_fungi/taxon_collection_window_vs_date_significance.r`.
+Outputs: `data/compare_insects_fungi_collection_window/insect_taxon_
+collection_window.csv`, `fungal_taxon_collection_window.csv`,
+`collection_window_vs_significance_tests.csv`;
+`figures/compare_insects_fungi_collection_window/collection_window_by_
+significance.{png,pdf}` (2-panel boxplot+jitter, insect/fungal side by
+side, jitter colored by `n_samples_present`). `project_organization.md`
+updated with a new cross-lineage diagnostic section.

@@ -331,6 +331,47 @@ interpretation in `lineage_D_insect_fungus_cooccurence_patterns.md`.
 | `insect_exploratory/scolytinae_ophiostomatales_cooccurrence.residualized.R` | Date-conditional re-test of an 11-beetle set (8-beetle top block by mean genus z + 3 reference rows incl. *Dryocoetes autographus* as a negative control): same observed Jaccard, three nulls (`within_trap` / `within_date` / `within_site_x_date`), genus + species + ASV grids. Season control halves the block; genus-level FDR survivors centre on *Pityogenes hopkinsi*, *Dendroctonus valens* x *Leptographium*, *Heteroborips seriatus* x *Grosmannia*/*Raffaelea*, *Ips grandicollis* x *Leptographium* | `data/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.date_conditional_comparison.csv`, `..._date_conditional_long.csv` | `figures/insect_exploratory/scolytinae/scolytinae_ophiostomatales_jaccard.date_conditional.{genus,species,asv}.{png,pdf}`, `..._date_conditional.shrinkage.{png,pdf}` |
 | `insect_exploratory/cooccurrence_lib.R` | Shared engine -- `jaccard_grid_test(beetle_pa, fungal_pa, perm_mat, grid_name)`: per-pair Jaccard + permutation null + Fisher + BH. Sourced by both `*_ophiostomatales_cooccurrence*.R` scripts | -- | -- |
 
+## Cross-lineage diagnostic: collection window vs. date significance
+
+`compare_insect_fungi/taxon_collection_window_vs_date_significance.r`
+(added 2026-09-15) is a diagnostic, NOT a new lineage or a change to any
+existing screen: it asks whether the linear+quadratic date screen (Lineage
+B's `insect_taxa_date_association.prevalence_filtered_insect.r`, and the
+shared/lineage-invariant `fungal_community_seasonality.r`, which feeds both
+Lineage A and B's fig3-fig8) is biased against taxa confined to a narrow
+slice of the season -- e.g. a taxon caught only on the first 1-2 of the 6
+collection dates could carry an obvious early-season signal the model has
+too little date-spread to resolve. Reproduces each screen's exact load/
+match/filter logic (same 69-sample matched set, same 153 insect / 6,342
+fungal taxa) and computes a seasonality-agnostic **collection window**
+(last collection date present - first date present, raw presence/absence,
+6 possible values 0/14/28/42/56/70 since the season = 6 dates 5/1-7/10/24
+14 days apart) for every screened taxon, joined against each screen's
+existing `q_value`/`q_value_quad` output (`date_significant` = q<0.10
+linear OR quadratic -- the same union already used for "date-associated" in
+fig6/Known gaps).
+
+**Result: the opposite of the concern.** Controlling for detection count
+(`n_samples_present`, correlated with window at Spearman ~0.55-0.57 in both
+taxon sets), a logistic model of significance on window finds a
+significant NEGATIVE window coefficient in BOTH insect (b=-0.069,
+p=1.2e-6) and fungal (b=-0.035, p=2.3e-75) taxa -- at fixed detection
+count, a NARROWER window makes a significant call MORE likely, not less
+(confirmed by crosstab: insect window=0 taxa are 5/5 significant vs. 15/31
+at window=70). A narrow, concentrated run of detections is a stronger
+localized departure from baseline than the same few detections spread
+across the whole season. **The screen's real failure mode for a missed
+seasonal taxon is low overall detection count (rarity near the >=5-sample
+prevalence floor), not window narrowness** -- this is reassuring for the
+existing fig3-fig8 peak-timing calls, which don't need revisiting on
+window-narrowness grounds. See the 2026-09-15 entry in
+`iterative_analysis_updates.md` for full numbers and the low-detection
+taxon-level check.
+
+| Script | What it does | Data output | Figure output |
+|---|---|---|---|
+| `compare_insect_fungi/taxon_collection_window_vs_date_significance.r` | Computes per-taxon collection window (insect Lineage B 153-taxon table + shared fungal prevalence-filtered screen), joins to existing date-significance results, tests window vs. significance (Wilcoxon + logistic model adjusting for detection count) | `data/compare_insects_fungi_collection_window/` | `figures/compare_insects_fungi_collection_window/collection_window_by_significance.{png,pdf}` (boxplot+jitter), `collection_window_histogram.{png,pdf}` (stacked bar of taxon counts per window bin, added 2026-09-15 same day -- most taxa in both taxon sets sit at wide windows (42-70d); the significant/not-significant split within each bin doesn't shrink at narrow windows, visually confirming the logistic-model result above) |
+
 ## Known gaps / open items (update as these get resolved)
 
 As of 2026-09-01, ported to Lineage B: insect NMDS/PERMANOVA, the full CoCA
