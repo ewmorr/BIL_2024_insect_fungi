@@ -1890,3 +1890,76 @@ Outputs in the existing Lineage C dirs with an `insect_abundance_` prefix:
 (2 rows raw/residualized x 3 fungal metrics). Interp doc:
 `lineage_C_alpha_div_full_insect_table_top_level_interpretation.md` §13.
 `project_organization.md` Lineage C index table + section updated.
+
+### #################################################################################
+### 2026-09-15 -- LINEAGE C add-on: does LURE affect insect trap sample COVERAGE
+### (sampling efficiency), independent of diversity? Ips lure catches a less
+### complete sample than Alpha-pinene_EtOH or Ethanol.
+### #################################################################################
+
+**Motivation.** The main Lineage C asymptotic script
+(`insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r`) already tests
+lure's effect on each ASYMPTOTIC DIVERSITY metric (richness/Shannon/Simpson),
+but never tests lure against `coverage` itself -- the per-sample Good-Turing
+estimate (`DataInfo()$SC`) of how much of the true community a trap-catch
+captured. Coverage is a sampling-EFFICIENCY question (how complete a draw did
+this trap get?), not a diversity question (how much is out there?), and it's
+exactly the quantity the Chao estimators use to correct for undersampling in
+the first place -- worth testing on its own terms: do some lures just draw a
+more complete catch than others?
+
+**Test.** New standalone script
+`compare_insect_fungi/insect_coverage_lure_anova.full_insect_table.r`. Reads
+`coverage` (+ site/lure/date/trap_id) straight from the existing
+`insect_asymptotic_diversity.csv` -- no recomputation of the Chao estimates.
+Design: one trap per site x lure (4 sites x 3 lures = 12 traps), each sampled
+~5-6 times across the season (69 samples total) -- lure is constant within
+trap and samples from the same trap aren't independent lure replicates, so a
+naive one-way `aov(coverage ~ lure)` would pseudoreplicate and ignore the site
+confound. Followed this project's established lure permutation-ANOVA pattern
+(same form as `test_term_lure()` elsewhere in this project):
+- **Omnibus**: nested-model F-test, `coverage ~ site + lure + date` vs.
+  `coverage ~ site + date`; null from permuting lure labels among traps WITHIN
+  each site (999 perms, holding site/date fixed).
+- **Pairwise post-hoc**: site/date-adjusted lure-coefficient contrasts pulled
+  from the SAME full 3-lure model/permutation draws as the omnibus test (not a
+  separate 2-lure refit) -- BH-corrected across the 3 pairs. **Bug caught and
+  fixed during dev**: an initial version reran the nested-model F-test on each
+  2-lure subset separately, which (with only 1 trap per site x lure) leaves
+  just 2 traps to shuffle per site -- 2^4 = 16 possible permutation
+  configurations across the 4 sites, far too coarse to resolve a real effect
+  (pairwise p's of 0.06-0.13 despite a highly significant omnibus p=0.005).
+  Switched to extracting the pairwise contrasts as coefficient differences
+  from the single full 3-lure model already being refit per permutation (site/
+  date enter additively, so each lure's coefficient IS its site/date-adjusted
+  mean offset from the reference lure) -- same 6^4 = 1296-configuration null as
+  the omnibus test, at no extra fitting cost. Resolved the pairwise p's into a
+  coherent, interpretable pattern (below).
+
+**Result.** Omnibus: **F = 12.91, p_perm = 0.005** (r2 = 0.29) -- lure has a
+real effect on coverage. Pairwise (site/date-adjusted mean coverage
+difference, BH q):
+
+| Pair | Adjusted mean diff | p_perm | q |
+|---|---|---|---|
+| Alpha-pinene_EtOH vs. Ethanol | -0.028 | 0.760 | 0.760 |
+| Alpha-pinene_EtOH vs. Ips | +0.143 | 0.034 | 0.051 |
+| Ethanol vs. Ips | +0.171 | 0.002 | 0.006 |
+
+Raw group means: Ethanol 0.834, Alpha-pinene_EtOH 0.806, Ips 0.658. The
+omnibus effect is driven entirely by the **Ips lure catching a less complete
+sample** (lower coverage) than either of the other two lures, which don't
+differ from each other. This is a sampling-efficiency finding, distinct from
+(and not previously tested against) whether Ips also yields lower estimated
+*diversity* -- see the existing lure/diversity covariate tests in
+`asymptotic_diversity_covariate_tests.csv` for that comparison.
+
+**Files.** Script:
+`compare_insect_fungi/insect_coverage_lure_anova.full_insect_table.r`. Outputs
+in the existing Lineage C asymptotic-richness dirs (reads from, writes back
+into that same directory pair, no new dirs needed):
+`data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_lure_anova.csv`,
+`insect_coverage_lure_pairwise.csv`;
+`figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_by_lure.{png,pdf}`
+(bar plot, mean +/- SE with per-sample points, faceted by lure).
+`project_organization.md` Lineage C index table + section updated.

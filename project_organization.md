@@ -9,7 +9,7 @@ to find *where a script or output lives* and *which lineage it belongs to*.
 Keep both updated going forward -- this one in place (it describes current
 state, not history), the other by appending new dated sections.
 
-Last updated: 2026-09-10.
+Last updated: 2026-09-15.
 
 ## The core fact to understand before touching anything
 
@@ -105,6 +105,26 @@ the existing Lineage C alpha-diversity dirs with an `insect_abundance_`
 filename prefix. Written up in
 `lineage_C_alpha_div_full_insect_table_top_level_interpretation.md` §13 and
 the 2026-09-10 entry in `iterative_analysis_updates.md`.
+
+A fourth Lineage C script, `insect_coverage_lure_anova.full_insect_table.r`
+(added 2026-09-15), tests a sampling-EFFICIENCY question distinct from
+diversity: does lure identity affect insect trap sample **coverage** (the
+Good-Turing estimate of how complete a trap-catch was, already computed as
+the `coverage` column in `insect_asymptotic_diversity.csv`)? One trap per
+site x lure means lure is constant within trap, so this uses the same
+permutation-ANOVA design as the existing lure/diversity covariate tests
+(`coverage ~ site + lure + date` vs. `coverage ~ site + date`, lure permuted
+among traps within site) plus a pairwise post-hoc (lure-coefficient contrasts
+from that same full-model permutation null, BH-corrected across the 3 pairs
+-- see the 2026-09-15 entry in `iterative_analysis_updates.md` for why the
+post-hoc must reuse the full 3-lure null rather than refitting on 2-lure
+subsets, which are too permutation-coarse to resolve a real effect). Result:
+omnibus F=12.91, p_perm=0.005 -- driven entirely by the **Ips lure catching a
+less complete sample** than Alpha-pinene_EtOH or Ethanol (which don't differ
+from each other; pairwise q=0.051 and q=0.006 respectively vs. Ips). This is
+a coverage/efficiency finding, separate from whether Ips also yields lower
+estimated diversity (see the existing lure covariate tests in
+`asymptotic_diversity_covariate_tests.csv`).
 
 Four presentation figures cover this lineage, all living directly in
 `presentation_items/` alongside the Lineage A fig1-fig8 (not a dedicated
@@ -290,6 +310,7 @@ never `cat_levels[i]`).
 | `compare_insect_fungi/insect_fungal_alpha_diversity.full_insect_table.r` | Same alpha-diversity comparison as Lineage A's version, but insect table = all families, **raw counts, no singleton filter as of 2026-09-09** (426 taxa, NOT the 153-taxon Lineage B table; was 277 under the `colSums > 1` filter through 2026-09-08 -- dropped for consistency with the asymptotic script below, see the Lineage C section and the 2026-09-09 log entry). Date effects tested linear+quadratic+cubic (`alpha_diversity_date_shape.csv`); also tests an insect x lure interaction on the insect~fungal correlation (`alpha_diversity_insect_fungal_interaction_by_lure.csv`) -- not significant for any metric | `data/compare_insects_fungi_alpha_diversity_full_insect_table/` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/` |
 | `compare_insect_fungi/insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r` | Asymptotic (Chao-extrapolated) richness/Shannon(Hill q=1)/Simpson(Hill q=2) diversity via `iNEXT::ChaoRichness()`/`ChaoShannon()`/`ChaoSimpson()` (NOT `iNEXT()` itself -- its curve machinery didn't finish in 120s on the largest fungal sample; the point/SE/CI-only Chao*() functions reproduce its `$AsyEst` estimates and run in ~1-2s each). Insect table = all families, **RAW counts, NO singleton filter** (426 taxa) -- required here because Chao1 (`S_obs + f1^2/(2*f2)`) and the coverage-based `ChaoShannon`/`ChaoSimpson` all key on the singleton count `f1`, and a global singleton is by definition a within-sample singleton, so filtering these biases every estimate (measured up to ~2x on the worst-sampled insect samples; corrected 2026-09-09, see the 2026-09-09 entry in `iterative_analysis_updates.md`). The observed-diversity script above was switched to the same raw 426-taxon table the same day, so both Lineage C scripts now share one insect-table construction. Fungal side also raw -- Kingdom==Fungi counts, left UNRAREFIED (extrapolation itself corrects for uneven sequencing depth, so pre-rarefying would discard the rare-tail information the estimator needs). Per-sample granularity (user's choice). Mirrors the alpha-diversity script's cross-community correlation (both observed and asymptotic reported side by side), lure-interaction test, and site/lure/date covariate tests + date-shape classification, the latter two run on asymptotic values only. "simpson" here = Hill q=2 diversity (higher=more even), opposite direction from "simpson_dominance" in the alpha-diversity script -- don't compare directly. See `iterative_analysis_updates.md`'s 2026-09-08 and 2026-09-09 entries for results | `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` | `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/` |
 | `compare_insect_fungi/insect_abundance_fungal_alpha_diversity.full_insect_table.r` | Tests the non-targeted-dispersal-vector hypothesis: total insect ABUNDANCE (individuals/sample, `rowSums()` of the raw 426-taxon table) vs. fungal alpha diversity, per fungal metric, both raw-pooled Spearman and season-residualized (`log1p(abundance)` & fungal metric each residualized on `site + factor(date)`, Spearman on residuals, 9999-perm p); observed + asymptotic fungal diversity, read from the main script's CSVs. Flat null throughout (all \|rho\| <= 0.11, p_perm >= 0.38). Added 2026-09-10 | `data/compare_insects_fungi_alpha_diversity_full_insect_table/insect_abundance_{fungal_alpha_correlation,by_sample,context_correlations}.csv` | `figures/compare_insects_fungi_alpha_diversity_full_insect_table/insect_abundance_vs_fungal_alpha.{png,pdf}` |
+| `compare_insect_fungi/insect_coverage_lure_anova.full_insect_table.r` | Tests whether lure affects insect trap sample COVERAGE (Good-Turing sampling-completeness estimate, from `insect_asymptotic_diversity.csv`) -- a sampling-efficiency question, distinct from the diversity-metric lure tests already in the asymptotic script. Permutation ANOVA (`coverage ~ site + lure + date`, lure permuted within site, 999 perms) + pairwise post-hoc contrasts pulled from that same full-model null (BH-corrected). Omnibus F=12.91, p_perm=0.005; driven by Ips lure's lower coverage vs. Alpha-pinene_EtOH (q=0.051) and Ethanol (q=0.006), which don't differ from each other. Added 2026-09-15 | `data/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_lure_{anova,pairwise}.csv` | `figures/compare_insects_fungi_asymptotic_richness_iNEXT_full_insect_table/insect_coverage_by_lure.{png,pdf}` |
 | `presentation_items/fig9_alpha_diversity_by_lure.R` | Presentation figure: insect (panel a) + fungal (panel b) alpha diversity vs. collection date, faceted metric x lure, cubic OLS trend lines. Lives directly in `presentation_items/` (not a dedicated Lineage C folder) since alpha diversity has no Lineage B counterpart to disambiguate from | -- (reads existing CSVs) | `figures/presentation_items/fig9_alpha_diversity_by_lure.{png,pdf}` |
 | `presentation_items/fig10_insect_fungal_alpha_diversity_correlation.R` | Presentation figure: per-sample insect vs. fungal alpha diversity, one panel per metric, colored by date, pooled Spearman correlation annotated. An earlier lure-faceted version was dropped after the interaction test above found no lure effect | -- (reads existing CSVs) | `figures/presentation_items/fig10_insect_fungal_alpha_diversity_correlation.{png,pdf}` |
 | `presentation_items/fig11_asymptotic_diversity_by_lure.R` | Fig9's counterpart for ASYMPTOTIC (Chao-extrapolated, `insect_fungal_asymptotic_richness_iNEXT.full_insect_table.r`) diversity -- same panel a/b (insect/fungal) x metric-row x lure-column layout, cubic OLS trend line. Row-strip metric labels shortened ("Shannon div. (q=1)" etc.) vs. fig9's, since the longer "Asymptotic Shannon diversity (Hill q=1)" wording clipped in the rotated switch="y" strip | -- (reads existing CSVs) | `figures/presentation_items/fig11_asymptotic_diversity_by_lure.{png,pdf}` |
